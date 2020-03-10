@@ -1,0 +1,23 @@
+{
+  "name": "autonomous-cars",
+  "version": "0.1.0",
+  "main": "index.js",
+  "author": "David Laprell <david@laprell.eu>; Simon Laprell <simon@laprell.eu>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "parcel --no-autoinstall index.html"
+  },
+  "staticFiles": {
+    "staticPath": "static",
+    "watcherGlob": "**/**/*"
+  },
+  "dependencies": {
+    "three": "^0.114.0",
+    "three-controls": "^1.0.1"
+  },
+  "devDependencies": {
+    "parcel-bundler": "^1.12.4",
+    "parcel-plugin-static-files-copy": "^2.3.1"
+  }
+}

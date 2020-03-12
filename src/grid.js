@@ -1,12 +1,15 @@
 import * as THREE from 'three';
 
-import { TYPES, TILE_BY_TYPE } from './grid_tiles';
+import {
+  TYPES, TILE_BY_TYPE,
+  GRID_SIZE, TILE_SIZE
+} from './grid_tiles';
 
 const MAP = [
-  [ [ TYPES.CURVE, 0 ], [ TYPES.T_SECTION, 1 ], [ TYPES.ROAD, 1 ], [ TYPES.ROAD, -1 ] ],
-  [ [ TYPES.ROAD, 0 ], [ TYPES.ROAD, 0 ], [ TYPES.PLAIN, 1 ], [ TYPES.CURVE, 2 ] ],
-  [ [ TYPES.ROAD, 0 ], [ TYPES.PLAIN, 1 ], [ TYPES.ROAD, 0 ], [ TYPES.ROAD, 0 ] ],
-  [ [ TYPES.ROAD, 1 ], [ TYPES.ROAD, 1 ], [ TYPES.T_SECTION, 1 ], [ TYPES.CURVE, 2 ] ]
+  [ [ TYPES.CURVE, 0 ], [ TYPES.ROAD, 1 ], [ TYPES.ROAD, 1 ], [ TYPES.CURVE, 1 ] ],
+  [ [ TYPES.ROAD, 0 ], [ TYPES.CURVE, 0 ], [ TYPES.ROAD, 1 ], [ TYPES.T_SECTION, 2 ] ],
+  [ [ TYPES.T_SECTION, 0 ], [ TYPES.CURVE, 2 ], [ TYPES.PLAIN, 0 ], [ TYPES.ROAD, 0 ] ],
+  [ [ TYPES.CURVE, -1 ], [ TYPES.ROAD, 1 ], [ TYPES.ROAD, 1 ], [ TYPES.CURVE, 2 ] ]
 ];
 
 class GridMap {
@@ -24,6 +27,8 @@ class GridMap {
             };
 
             this._tileList.push(data);
+
+            return data;
           }
         )
       );
@@ -35,11 +40,64 @@ class GridMap {
     return this._group;
   }
 
+  size() {
+    return GRID_SIZE;
+  }
+
+  getDirectionFor(xA, yA, xB, yB) {
+    const d = Math.abs(xA - xB) + Math.abs(yA - yB);
+    if (d != 1) {
+      throw new Error('Tiles not adjacent');
+    }
+
+    if (xB < xA) {
+      return -1;
+    }
+
+    if (yB < yA) {
+      return 0;
+    }
+
+    if (xB > xA) {
+      return 1;
+    }
+
+    return 2;
+  }
+
+  getTileAt(x, y) {
+    return this._map[y][x];
+  }
+
+  getRelativeFrom(x, y, dir, steps = 1) {
+    // const anchor = this.getTileAt(x, y);
+    steps *= (dir === 0 || dir === -1) ? -1 : 1;
+
+    if (dir === 0 || dir === 2) {
+      x += steps;
+    } else {
+      y += steps;
+    }
+
+    return [ x, y ];
+  }
+
+  getTileAnchorPosition(x, y) {
+    return [
+      -1 * (GRID_SIZE / 2) + (x * TILE_SIZE),
+      -1 * (GRID_SIZE / 2) + (y * TILE_SIZE)
+    ];
+  }
+
   render() {
     for (const { x, y, tile } of this._tileList) {
-      tile.render(x, y);
+      tile.render();
+      const g = tile.getGroup();
 
-      this._group.add(tile.getGroup());
+      g.position.x += -1 * (GRID_SIZE / 2) + (y * TILE_SIZE);
+      g.position.z += -1 * (GRID_SIZE / 2) + (x * TILE_SIZE);
+
+      this._group.add(g);
     }
   }
 }
@@ -49,5 +107,7 @@ function initTiles() {
 }
 
 export {
+  GRID_SIZE,
+
   initTiles
 };

@@ -13,6 +13,7 @@
     "watcherGlob": "**/**/*"
   },
   "dependencies": {
+    "mitt": "^1.2.0",
     "three": "^0.114.0",
     "three-controls": "^1.0.1"
   },

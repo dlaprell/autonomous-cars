@@ -2,8 +2,8 @@ import * as THREE from 'three';
 
 import { rotate, normalizeRotation } from './utils';
 
-const DEBUG_TILES = true;
-const DEBUG_MOVEMENT = true;
+const DEBUG_TILES = false;
+const DEBUG_MOVEMENT = false;
 
 const TYPES = {
   PLAIN: 0,
@@ -21,6 +21,81 @@ const LINE_WIDTH = 0.05;
 
 const roadMaterial = new THREE.MeshBasicMaterial({ color: 0x777777, side: THREE.DoubleSide });
 const lineMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide });
+
+function interpolerateCurveMovement(from, to, distance, rotation) {
+  // First invert the rotation, then rotate the from accordingly
+  // -> rotFrom is now either 1 or 2
+  const rotFrom = rotate(from, -rotation);
+
+  const movRadius = (TILE_SIZE / 2) - (LANE_WIDTH / 2)
+    + (rotFrom === 1 ? 1 : 0) * LANE_WIDTH; // 2 -> inner lane, 1 outer lane
+
+  const circleLength = Math.PI * 2 * movRadius;
+  const amountMov = distance / circleLength;
+
+  // Overshoot if more than 0.25 -> would move beyond the curve
+  if (amountMov > 0.25) {
+    return {
+      x: null, y: null, angle: null,
+
+      overshoot: distance - (circleLength * 0.25)
+    };
+  }
+
+  const moveByDeg = (2 * Math.PI) * amountMov;
+
+  // Now also honor whether we go from down -> right or vice versa
+  const movAngle = rotFrom === 2
+    ? (3.0 / 2.0 * Math.PI) + moveByDeg // from down
+    : -1 * moveByDeg; // from right
+
+  const dirAngle = movAngle + (Math.PI / 2) * (rotFrom === 2 ? 1 : -1);
+
+  const xRef = TILE_SIZE + (movRadius * Math.sin(movAngle));
+  const yRef = TILE_SIZE - (movRadius * Math.cos(movAngle));
+
+  // Now rotate the coordinates back
+  let x = xRef;
+  let y = yRef;
+  let angle = dirAngle;
+
+  if (rotation === -1) {
+    x = yRef;
+    y = TILE_SIZE - xRef;
+    angle -= (Math.PI / 2);
+  } else if (rotation === 1) {  
+    x = TILE_SIZE - yRef;
+    y = xRef;
+    angle += (Math.PI / 2)
+  } else if (rotation === 2) {
+    x = TILE_SIZE - xRef;
+    y = TILE_SIZE - yRef;
+    angle += Math.PI;
+  }
+
+  return {
+    x,
+    y,
+    angle,
+    overshoot: 0
+  };
+}
+
+function interpolerateStraightMovement(from, to, distance, rotation) {
+  const isVert = from === 0 || from === 2;
+  const isInv = from === 2 || from === 1;
+
+  // now derive angle, x, y from it
+  const centerOfLane = (TILE_SIZE / 2) - (LANE_WIDTH / 2) + ((isInv ^ !isVert) ? LANE_WIDTH : 0);
+  const pos = isInv ? TILE_SIZE - distance : distance;
+
+  return {
+    x: isVert ? centerOfLane : pos,
+    y: isVert ? pos : centerOfLane,
+    angle: to * (Math.PI / 2),
+    overshoot: Math.max(0, distance - TILE_SIZE)
+  };
+}
 
 class Tile {
   constructor(type, rotation) {
@@ -153,20 +228,7 @@ class RoadTile extends Tile {
       }
     }
 
-    const isVert = from === 0 || from === 2;
-    const isInv = from === 2 || from === 1;
-
-    // now derive angle, x, y from it
-
-    const centerOfLane = (TILE_SIZE / 2) - (LANE_WIDTH / 2) + ((isInv ^ !isVert) ? LANE_WIDTH : 0);
-    const pos = isInv ? TILE_SIZE - distance : distance;
-
-    return {
-      x: isVert ? centerOfLane : pos,
-      y: isVert ? pos : centerOfLane,
-      angle: rotate(this._rotation, isInv ? 2 : 0) * (Math.PI / 2),
-      overshoot: Math.max(0, distance - TILE_SIZE)
-    };
+    return interpolerateStraightMovement(from, to, distance, this._rotation);
   }
 }
 
@@ -265,62 +327,7 @@ class CurveTile extends Tile {
       }
     }
 
-    // First invert the rotation, then rotate the from accordingly
-    // -> rotFrom is now either 1 or 2
-    const rotFrom = rotate(from, -this._rotation);
-
-    const movRadius = (TILE_SIZE / 2) - (LANE_WIDTH / 2)
-      + (rotFrom === 1 ? 1 : 0) * LANE_WIDTH; // 2 -> inner lane, 1 outer lane
-
-    const circleLength = Math.PI * 2 * movRadius;
-    const amountMov = distance / circleLength;
-
-    // Overshoot if more than 0.25 -> would move beyond the curve
-    if (amountMov > 0.25) {
-      return {
-        x: null, y: null, angle: null,
-
-        overshoot: distance - (circleLength * 0.25)
-      };
-    }
-
-    const moveByDeg = (2 * Math.PI) * amountMov;
-
-    // Now also honor whether we go from down -> right or vice versa
-    const movAngle = rotFrom === 2
-      ? (3.0 / 2.0 * Math.PI) + moveByDeg // from down
-      : -1 * moveByDeg; // from right
-
-    const dirAngle = -movAngle + (Math.PI / 2) * (rotFrom === 2 ? 1 : -1);
-
-    const xRef = TILE_SIZE + (movRadius * Math.sin(movAngle));
-    const yRef = TILE_SIZE - (movRadius * Math.cos(movAngle));
-
-    // Now rotate the coordinates back
-    let x = xRef;
-    let y = yRef;
-    let angle = dirAngle;
-
-    if (this._rotation === -1) {
-      x = yRef;
-      y = TILE_SIZE - xRef;
-      angle -= (Math.PI / 2);
-    } else if (this._rotation === 1) {  
-      x = TILE_SIZE - yRef;
-      y = xRef;
-      angle -= (Math.PI / 2)
-    } else if (this._rotation === 2) {
-      x = TILE_SIZE - xRef;
-      y = TILE_SIZE - yRef;
-      angle += Math.PI;
-    }
-
-    return {
-      x,
-      y,
-      angle,
-      overshoot: 0
-    };
+    return interpolerateCurveMovement(from, to, distance, this._rotation);
   }
 }
 
@@ -426,82 +433,6 @@ class TSectionTile extends Tile {
     return this.entranceSides();
   }
 
-  _interpolerateMovementStraight(from, to, distance) {
-    const isVert = from === 0 || from === 2;
-    const isInv = from === 2 || from === 1;
-
-    // now derive angle, x, y from it
-
-    const centerOfLane = (TILE_SIZE / 2) - (LANE_WIDTH / 2) + ((isInv ^ !isVert) ? LANE_WIDTH : 0);
-    const pos = isInv ? TILE_SIZE - distance : distance;
-
-    return {
-      x: isVert ? centerOfLane : pos,
-      y: isVert ? pos : centerOfLane,
-      angle: rotate(this._rotation, isInv ? 2 : 0) * (Math.PI / 2),
-      overshoot: Math.max(0, distance - TILE_SIZE)
-    };
-  }
-
-  _interpolerateMovementCurve(from, to, distance, rotation) {
-    // First invert the rotation, then rotate the from accordingly
-    // -> rotFrom is now either 1 or 2
-    const rotFrom = rotate(from, -rotation);
-
-    const movRadius = (TILE_SIZE / 2) - (LANE_WIDTH / 2)
-      + (rotFrom === 1 ? 1 : 0) * LANE_WIDTH; // 2 -> inner lane, 1 outer lane
-
-    const circleLength = Math.PI * 2 * movRadius;
-    const amountMov = distance / circleLength;
-
-    // Overshoot if more than 0.25 -> would move beyond the curve
-    if (amountMov > 0.25) {
-      return {
-        x: null, y: null, angle: null,
-
-        overshoot: distance - (circleLength * 0.25)
-      };
-    }
-
-    const moveByDeg = (2 * Math.PI) * amountMov;
-
-    // Now also honor whether we go from down -> right or vice versa
-    const movAngle = rotFrom === 2
-      ? (3.0 / 2.0 * Math.PI) + moveByDeg // from down
-      : -1 * moveByDeg; // from right
-
-    const dirAngle = -movAngle + (Math.PI / 2) * (rotFrom === 2 ? 1 : -1);
-
-    const xRef = TILE_SIZE + (movRadius * Math.sin(movAngle));
-    const yRef = TILE_SIZE - (movRadius * Math.cos(movAngle));
-
-    // Now rotate the coordinates back
-    let x = xRef;
-    let y = yRef;
-    let angle = dirAngle;
-
-    if (rotation === -1) {
-      x = yRef;
-      y = TILE_SIZE - xRef;
-      angle -= (Math.PI / 2);
-    } else if (rotation === 1) {  
-      x = TILE_SIZE - yRef;
-      y = xRef;
-      angle -= (Math.PI / 2)
-    } else if (rotation === 2) {
-      x = TILE_SIZE - xRef;
-      y = TILE_SIZE - yRef;
-      angle += Math.PI;
-    }
-
-    return {
-      x,
-      y,
-      angle,
-      overshoot: 0
-    };
-  }
-
   interpolerateMovement(from, to, distance) {
     if (DEBUG_MOVEMENT) {
       const en = this.entranceSides();
@@ -524,14 +455,14 @@ class TSectionTile extends Tile {
         + this._rotation // Rotate according to this tile rotation
       );
 
-      return this._interpolerateMovementCurve(
+      return interpolerateCurveMovement(
         from,
         to,
         distance,
         rotation
       );
     } else {
-      return this._interpolerateMovementStraight(from, to, distance);
+      return interpolerateStraightMovement(from, to, distance, this._rotation);
     }
   }
 }

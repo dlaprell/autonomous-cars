@@ -34,6 +34,7 @@ controls.minDistance = 1;
 controls.maxDistance = 500; // 25;
 
 scene.add(camera);
+// scene.add(new THREE.AxesHelper(20));
 
 scene.background = new THREE.CubeTextureLoader()
   .setPath('/images/clouds1/')
@@ -76,7 +77,9 @@ new THREE.TextureLoader().load('/images/grass.png', grassTexture => {
 
   window.app = {
     grid,
-    scene
+    scene,
+
+    followVehicle: true
   };
 
   const path1 = new GridMovementPath(
@@ -95,11 +98,15 @@ new THREE.TextureLoader().load('/images/grass.png', grassTexture => {
   const car2 = new Car(grid, path2);
 
   car2.onUpdate(({ x, y, angle }) => {
+    if (!window.app.followVehicle) {
+      return;
+    }
+
     camera.position.y = 1;
     camera.position.x = x;
     camera.position.z = y;
 
-    camera.rotation.y = angle;
+    camera.rotation.y = -angle;
     camera.rotation.x = 0;
     camera.rotation.z = 0;
   });
@@ -113,9 +120,13 @@ new THREE.TextureLoader().load('/images/grass.png', grassTexture => {
   scene.add(car1.getGroup());
   scene.add(car2.getGroup());
 
-  car1.update(10000);
+  car1.update(2000);
 
   updateableObjects.push(car1, car2);
+
+
+  // car2.getGroup().rotation.y = Math.PI / 2;
+  // render();
 
   animationLoop();
 });

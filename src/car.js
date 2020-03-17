@@ -29,7 +29,7 @@ class Car {
 
     this._group.position.x = x;
     this._group.position.z = y;
-    this._group.rotation.y = angle;
+    this._group.rotation.y = -angle;
 
     this._emitter.emit('update', {
       target: this,
@@ -53,6 +53,17 @@ class Car {
     const cube = new THREE.Mesh(geometry, material);
 
     cube.position.y += 0.5;
+
+    const circle = new THREE.Mesh(
+      new THREE.CircleGeometry(0.25),
+      new THREE.MeshBasicMaterial({ color: 0xFF0000, side: THREE.DoubleSide })
+    );
+
+    circle.position.y += 1.0001;
+    circle.position.z -= 1;
+    circle.rotation.x = -Math.PI / 2;
+
+    this._group.add(circle);
     this._group.add(cube);
   }
 }

@@ -1,11 +1,9 @@
 import * as THREE from 'three';
 import mitt from 'mitt';
 
-import { GridMovement } from './movement';
-
 class Car {
-  constructor(grid, path) {
-    this._movement = new GridMovement(grid, path);
+  constructor(movement) {
+    this._movement = movement;
 
     this._group = new THREE.Group();
 
@@ -18,6 +16,10 @@ class Car {
 
   setSpeed(s) {
     this._movement.setSpeed(s);
+  }
+
+  setAcceleration(a) {
+    this._movement.setAcceleration(a);
   }
 
   update(timeDeltaMs) {
@@ -40,6 +42,8 @@ class Car {
       y,
       angle
     });
+
+    return { x, y, angle };
   }
 
   getGroup() {

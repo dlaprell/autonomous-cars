@@ -148,6 +148,10 @@ class Tile {
     this._group.add(obj);
   }
 
+  speedLimitation() {
+    return 0.02;
+  }
+
   entranceSides() {
     return [];
   }

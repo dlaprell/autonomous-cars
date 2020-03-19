@@ -74,9 +74,9 @@ class GridMap {
     steps *= (dir === 0 || dir === -1) ? -1 : 1;
 
     if (dir === 0 || dir === 2) {
-      x += steps;
-    } else {
       y += steps;
+    } else {
+      x += steps;
     }
 
     return [ x, y ];

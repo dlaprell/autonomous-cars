@@ -1,0 +1,107 @@
+/** @jsx h */
+
+import { Scene, Group } from 'three';
+import { h, Component, createContext } from 'preact';
+
+import { SimulationRenderer } from './SimulationRenderer';
+
+const SceneContext = createContext(null);
+
+class SimluationScene extends Component {
+  constructor(...args) {
+    super(...args);
+
+    this._scene = new Scene();
+    
+    this._updateableElements = new Set();
+
+    const {
+      background
+    } = this.props;
+
+    if (background) {
+      this._scene.background = background;
+    }
+  }
+
+  update(time, delta, rest) {
+    for (const e of this._updateableElements.values()) {
+      e.update(time, delta, rest);
+    }
+
+    rest.renderer.render(this._scene, rest.camera);
+  }
+
+  addElement(e) {
+    this._scene.add(e.group());
+
+    if (typeof e.update === 'function') {
+      this._updateableElements.add(e);
+    }
+  }
+
+  removeElement(e) {
+    this._scene.remove(e.group());
+
+    this._updateableElements.remove(e);
+  }
+  
+  render() {
+    const { children } = this.props;
+
+    return (
+      <SceneContext.Provider value={this}>
+        {children}
+
+        <SimulationRenderer
+          onUpdate={this.update.bind(this)}
+        />
+      </SceneContext.Provider>
+    );
+  }
+}
+
+class SimluationSceneElement extends Component {
+  constructor(...args) {
+    super(...args);
+
+    this._group = new Group();
+  
+    this._assignedScene = null;
+
+    this._updateAssignment = (scene) => {
+      if (!scene || scene !== this._assignedScene) {
+        if (this._assignedScene) {
+          this._assignedScene.removeElement(this);
+          this._assignedScene = null;
+        }
+      }
+
+      if (scene) {
+        scene.addElement(this);
+        this._assignedScene = scene;
+      }
+    }
+  }
+
+  group() {
+    return this._group;
+  }
+
+  // update(time, renderer, camera) {
+  //
+  // }
+
+  render() {
+    return (
+      <SceneContext.Consumer
+        children={this._updateAssignment}
+      />
+    );
+  }
+}
+
+export {
+  SimluationScene,
+  SimluationSceneElement
+};

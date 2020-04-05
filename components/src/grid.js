@@ -1,16 +1,98 @@
 import * as THREE from 'three';
 
 import {
-  TYPES, TILE_BY_TYPE,
-  GRID_SIZE, TILE_SIZE
+  TYPES,
+  TILE_BY_TYPE,
+
+  TILE_SIZE
 } from './grid_tiles';
+import { TileDecorator, DECORATOR_TYPES } from './tile_decorators';
 
 const MAP = [
-  [ [ TYPES.CURVE, 0 ], [ TYPES.ROAD, 1 ], [ TYPES.ROAD, 1 ], [ TYPES.CURVE, 1 ] ],
-  [ [ TYPES.ROAD, 0 ], [ TYPES.CURVE, 0 ], [ TYPES.ROAD, 1 ], [ TYPES.T_SECTION, 2 ] ],
-  [ [ TYPES.T_SECTION, 0 ], [ TYPES.CURVE, 2 ], [ TYPES.PLAIN, 0 ], [ TYPES.ROAD, 0 ] ],
-  [ [ TYPES.CURVE, -1 ], [ TYPES.ROAD, 1 ], [ TYPES.ROAD, 1 ], [ TYPES.CURVE, 2 ] ]
+  [
+    [ TYPES.CURVE, 0 ],
+    [ TYPES.ROAD, 1 ],
+    [ TYPES.ROAD, 1 ],
+    [ TYPES.T_SECTION, 1 ],
+    [ TYPES.ROAD, 1 ],
+    [ TYPES.T_SECTION, 1 ],
+    [ TYPES.ROAD, 1 ],
+    [ TYPES.CURVE, 1 ],
+  ],
+  [
+    [ TYPES.ROAD, 0 ],
+    [ TYPES.CURVE, 0 ],
+    [ TYPES.ROAD, 1 ],
+    [ TYPES.T_SECTION, 2 ],
+    [ TYPES.PLAIN, 0 ],
+    [ TYPES.ROAD, 0 ],
+    [ TYPES.PLAIN, 0 ],
+    [ TYPES.ROAD, 0 ]
+  ],
+  [
+    [ TYPES.T_SECTION, 0 ],
+    [ TYPES.CURVE, 2 ],
+    [ TYPES.PLAIN, 0 ],
+    [ TYPES.T_SECTION, 0 ],
+    [ TYPES.ROAD, 1 ],
+    [ TYPES.T_SECTION, 2 ],
+    [ TYPES.PLAIN, 0 ],
+    [ TYPES.ROAD, 0 ]
+  ],
+  [
+    [ TYPES.T_SECTION, 0 ],
+    [ TYPES.ROAD, 1 ],
+    [ TYPES.ROAD, 1 ],
+    [ TYPES.CURVE, 2 ],
+    [ TYPES.PLAIN, 0 ],
+    [ TYPES.ROAD, 0 ],
+    [ TYPES.PLAIN, 0 ],
+    [ TYPES.ROAD, 0 ]
+  ],
+  [
+    [ TYPES.ROAD, 0 ],
+    [ TYPES.PLAIN, 0 ],
+    [ TYPES.PLAIN, 0 ],
+    [ TYPES.PLAIN, 0 ],
+    [ TYPES.PLAIN, 0 ],
+    [ TYPES.ROAD, 0 ],
+    [ TYPES.PLAIN, 0 ],
+    [ TYPES.ROAD, 0 ]
+  ],
+  [
+    [ TYPES.CURVE, -1 ],
+    [ TYPES.ROAD, 1 ],
+    [ TYPES.ROAD, 1 ],
+    [ TYPES.T_SECTION, 1 ],
+    [ TYPES.ROAD, 1 ],
+    [ TYPES.CURVE, 2 ],
+    [ TYPES.PLAIN, 0 ],
+    [ TYPES.ROAD, 0 ]
+  ],
+  [
+    [ TYPES.PLAIN, 0 ],
+    [ TYPES.PLAIN, 0 ],
+    [ TYPES.PLAIN, 0 ],
+    [ TYPES.ROAD, 0 ],
+    [ TYPES.PLAIN, 0 ],
+    [ TYPES.PLAIN, 0 ],
+    [ TYPES.PLAIN, 0 ],
+    [ TYPES.ROAD, 0 ]
+  ],
+  [
+    [ TYPES.PLAIN, 0 ],
+    [ TYPES.PLAIN, 0 ],
+    [ TYPES.PLAIN, 0 ],
+    [ TYPES.CURVE, -1 ],
+    [ TYPES.ROAD, 1 ],
+    [ TYPES.ROAD, 1 ],
+    [ TYPES.ROAD, 1 ],
+    [ TYPES.CURVE, 2 ]
+  ]
 ];
+
+const GRID_TILE_WIDTH = MAP.length; // Tile map 6 x 6
+const GRID_SIZE = TILE_SIZE * GRID_TILE_WIDTH;
 
 class GridMap {
   constructor() {
@@ -98,6 +180,17 @@ class GridMap {
       g.position.z += -1 * (GRID_SIZE / 2) + (x * TILE_SIZE);
 
       this._group.add(g);
+
+      if (x === 0 && y === 0) {
+        const dec = new TileDecorator(tile, [
+          { type: DECORATOR_TYPES.PAVEMENT }
+        ]);
+        const g = dec.render();
+        g.position.x += -1 * (GRID_SIZE / 2) + (x * TILE_SIZE);
+        g.position.z += -1 * (GRID_SIZE / 2) + (y * TILE_SIZE);
+
+        this._group.add(g);
+      }
     }
   }
 }

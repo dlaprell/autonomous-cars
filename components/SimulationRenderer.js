@@ -7,11 +7,12 @@ class SimulationRenderer extends Component {
   constructor(...args) {
     super(...args);
 
-    this._startTime = null;
+    this._totalTime = 0;
     this._lastTime = null;
   
     this._ref = null;
     this._mounted = false;
+    this._paused = false;
 
     this._renderer = new WebGLRenderer({ antialias: false });
 
@@ -40,26 +41,30 @@ class SimulationRenderer extends Component {
     }
 
     this._runUpdate = () => {
-      if (!this._mounted) {
+      if (!this._mounted || this._paused) {
         return;
       }
 
       window.requestAnimationFrame(this._runUpdate);
 
-      if (this._startTime === null) {
-        this._startTime = new Date();
+      if (this._lastTime === null) {
+        this._lastTime = new Date();
       }
 
-      const sinceStart = Math.max(1, new Date() - this._startTime);
-      const delta = sinceStart - this._lastTime;
-      this._lastTime = sinceStart;
+      const delta = Math.min(100, Math.max(1, new Date() - this._lastTime));
+      this._totalTime += delta;
 
       const { onUpdate } = this.props;
       if (onUpdate) {
-        onUpdate(sinceStart, delta, {
-          renderer: this._renderer,
-          camera: this._camera
-        });
+        try {
+          onUpdate(this._totalTime, delta, {
+            renderer: this._renderer,
+            camera: this._camera
+          });
+        } catch (ex) {
+          this._paused = true;
+          throw ex;
+        }
       }
     };
   }
@@ -78,7 +83,7 @@ class SimulationRenderer extends Component {
 
   componentDidMount() {
     this._camera = new PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 2500);
-    this._camera.position.set(0, 100, 3);
+    this._camera.position.set(0, 200, 3);
 
     this._renderer.setSize(window.innerWidth, window.innerHeight);
 

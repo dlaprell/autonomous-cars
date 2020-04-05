@@ -37,11 +37,7 @@ class MovingCar extends SimluationSceneElement {
   }
 
   render() {
-    const { speed, acceleration } = this.props;
-
-    if (!Number.isNaN(Number(speed))) {  
-      this._car.setSpeed(speed);
-    }
+    const { acceleration } = this.props;
 
     if (!Number.isNaN(Number(acceleration))) {
       this._car.setAcceleration(acceleration);

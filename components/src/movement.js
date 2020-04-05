@@ -1,9 +1,9 @@
 import { rotate } from './utils';
-import { initTiles } from './grid';
 
 class GridMovementPath {
   constructor(initialTile, initialFrom, directions) {
     this._initial = initialTile;
+    this._initialFrom = initialFrom;
     this._directions = directions;
   
     this._current = {
@@ -32,6 +32,14 @@ class GridMovementPath {
       to: this._directions[this._currentIndex]
     };
   }
+
+  nextDirections() {
+    const to = this._directions[this._currentIndex + 1];
+    return {
+      from: rotate(this._current.to, 2),
+      to
+    };
+  }
 }
 
 class GridMovementBase {
@@ -55,8 +63,8 @@ class GridMovementBase {
     this._acceleration = acc;
   }
 
-  setSpeed(speed) {
-    this._speed = speed;
+  speed() {
+    return this._speed;
   }
 
   getX() {
@@ -76,10 +84,20 @@ class GridMovementBase {
     return this._grid;
   }
 
-  peekAtTargetTile() {
+  currentTile() {
+    const { tile } = this.getCurrentTileMovement();
+    return this._grid.getTileAt(tile[0], tile[1]);
+  }
+
+  targetTile() {
     const { to, tile } = this.getCurrentTileMovement();
 
-    return this._grid.getRelativeFrom(tile[0], tile[1], to);
+    const [ x, y ] = this._grid.getRelativeFrom(tile[0], tile[1], to);
+    return this._grid.getTileAt(x, y);
+  }
+
+  getNextTileDirections() {
+    return null;
   }
 
   getCurrentTileMovement() {
@@ -123,11 +141,18 @@ class GridMovementBase {
         (-baseSpeed - o) / this._acceleration
       ];
 
-      const neededTime = Math.min(res.filter(x => x >= 0));
+      const neededTime = Math.min(...res.filter(x => x >= 0));
 
       this._speed += this._acceleration * (timeDeltaMs - neededTime);
+      if (this._speed < 0) {
+        this._speed = 0;
+      }
 
       this._internalTime += (timeDeltaMs - neededTime);
+
+      if (neededTime * 0.95 > timeDeltaMs) {
+        debugger;
+      }
 
       this.update(neededTime);
     } else {
@@ -153,7 +178,17 @@ class RandomMovement extends GridMovementBase {
 
     this._currentTile = initialTile;
     this._from = this.randomFrom(initialTile[0], initialTile[1]);
-    this._to = this.randomTo(initialTile[0], initialTile[1], this._from);
+    
+    const to = this.randomTo(initialTile[0], initialTile[1], this._from);
+    const next = this.randomTo(
+      ...grid.getRelativeFrom(initialTile[0], initialTile[1], to),
+      rotate(to, 2)
+    );
+
+    this._nextSteps = [
+      to,
+      next
+    ];
   }
 
   randomFrom(x, y) {
@@ -179,18 +214,32 @@ class RandomMovement extends GridMovementBase {
 
     return {
       from: this._from,
-      to: this._to,
+      to: this._nextSteps[0],
       tile: this._currentTile
+    };
+  }
+
+  getNextTileDirections() {
+    return {
+      from: rotate(this._nextSteps[0], 2),
+      to: this._nextSteps[1]
     };
   }
 
   useNextTile() {
     const [ x, y ] = this._currentTile;
-    const nT = this.grid().getRelativeFrom(x, y, this._to);
+    const [ reached, newDir ] = this._nextSteps;
 
+    const nT = this.grid().getRelativeFrom(x, y, reached);
+    
+    // Update tile to the next in line
     this._currentTile = nT;
-    this._from = rotate(this._to, 2);
-    this._to = this.randomTo(nT[0], nT[1], this._from);
+    this._from = rotate(reached, 2);
+
+    const [ nX, nY ] = this.grid().getRelativeFrom(nT[0], nT[1], newDir);
+    const futureDir = this.randomTo(nX, nY, rotate(newDir, 2));
+
+    this._nextSteps = [ newDir, futureDir ];
   }
 }
 
@@ -202,13 +251,11 @@ class PathMovement extends GridMovementBase {
   }
 
   getCurrentTileMovement() {
-    // const {
-    //   from,
-    //   to,
-    //   tile: [ xTile, yTile ]
-    // } = this._path.current();
-
     return this._path.current();
+  }
+
+  getNextTileDirections() {
+    return this._path.nextDirections();
   }
 
   useNextTile() {

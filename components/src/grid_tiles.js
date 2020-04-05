@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 import { rotate, normalizeRotation } from './utils';
 
-const DEBUG_TILES = false;
+const DEBUG_TILES = true;
 const DEBUG_MOVEMENT = false;
 
 const TYPES = {
@@ -12,11 +12,9 @@ const TYPES = {
   T_SECTION: 3
 };
 
-const GRID_TILE_WIDTH = 4;
 const TILE_SIZE = 16;
-const GRID_SIZE = TILE_SIZE * GRID_TILE_WIDTH /* 128 */; // Tile map 128 * 128
 const LANE_WIDTH = 2.5;
-const PAVEMENT_WIDTH = 0.5;
+const PAVEMENT_WIDTH = 1.0;
 const LINE_WIDTH = 0.05;
 
 const roadMaterial = new THREE.MeshBasicMaterial({ color: 0x777777, side: THREE.DoubleSide });
@@ -97,6 +95,36 @@ function interpolerateStraightMovement(from, to, distance, rotation) {
   };
 }
 
+function calculateCurveGeometry(radiusOuter, radiusInner) {
+  const curvedShape = new THREE.Shape();
+
+  const anchorX = TILE_SIZE / 2;
+  const anchorY = TILE_SIZE / 2;
+
+  curvedShape.moveTo(anchorX - radiusOuter, anchorY);
+  curvedShape.lineTo(anchorX - radiusInner, anchorY);
+  curvedShape.absarc(
+    anchorX,
+    anchorY,
+    radiusInner,
+    -Math.PI,
+    -Math.PI / 2,
+    false
+  );
+  curvedShape.lineTo(anchorX, anchorY - radiusOuter);
+
+  curvedShape.absarc(
+    anchorX,
+    anchorY,
+    radiusOuter,
+    -Math.PI / 2,
+    -Math.PI,
+    true
+  );
+
+  return new THREE.ShapeGeometry(curvedShape);
+}
+
 class Tile {
   constructor(type, rotation) {
     this._type = type;
@@ -149,7 +177,7 @@ class Tile {
   }
 
   speedLimitation() {
-    return 0.02;
+    return 0.002;
   }
 
   entranceSides() {
@@ -481,12 +509,12 @@ const TILE_BY_TYPE = {
 export {
   TYPES,
 
-  GRID_TILE_WIDTH,
   TILE_SIZE,
-  GRID_SIZE,
   LANE_WIDTH,
   PAVEMENT_WIDTH,
   LINE_WIDTH,
 
-  TILE_BY_TYPE
+  TILE_BY_TYPE,
+
+  calculateCurveGeometry
 };

@@ -43,27 +43,28 @@ class Simulation extends Component {
       <SimluationScene
         background={this._background}
       >
+        <OrbitControls enabled={true} />
+
         <MovingCar
           grid={this._grid}
-          speed={0.01}
           initial={[ 0, 0 ]}
           random={this._random}
+          following={false}
         />
 
         <MovingCar
           grid={this._grid}
-          speed={0.01}
-          initial={[ 0, 3 ]}
+          initial={[ 4, 0 ]}
           random={this._random}
         />
 
         <MovingCar
           grid={this._grid}
-          speed={0.01}
-          initial={[ 0, 1 ]}
+          initial={[ 0, 4 ]}
           random={this._random}
         />
 
+{/*
         <MovingCar
           grid={this._grid}
           speed={0.01}
@@ -126,8 +127,7 @@ class Simulation extends Component {
           initial={[ 1, 0 ]}
           random={this._random}
         />
-
-        <OrbitControls enabled />
+*/}
 
         <Ground grid={this._grid} />
         <GridRenderer grid={this._grid} />

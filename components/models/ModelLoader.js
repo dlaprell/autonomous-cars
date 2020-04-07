@@ -10,7 +10,8 @@ const MODELS = {
 
   streetCurve: 'street/curve.gltf',
   streetStraight: 'street/straight.gltf',
-  streetTSection: 'street/straight.gltf',
+  streetTCross: 'street/t_cross.gltf',
+  streetCross: 'street/cross.gltf',
 
   carPurple: 'car/purple.gltf'
 };

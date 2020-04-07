@@ -4,11 +4,10 @@ import { h, Component } from 'preact';
 import { CubeTextureLoader } from 'three';
 
 import { initTiles } from './src/grid';
-import { GridMovementPath } from './src/movement';
 
 import { SimluationScene } from './SimulationScene';
 import { Ground, GridRenderer } from './World';
-import { MovingCar } from './Vehicles';
+import { MovingCar, TrafficManager } from './Vehicles';
 import { OrbitControls } from './OrbitControls';
 import { RandomGen } from './src/randomgen';
 
@@ -26,7 +25,7 @@ class Simulation extends Component {
 
     this._random = new RandomGen();
 
-    this._grid = initTiles(this._random);
+    this._grid = null;
 
     this._background = new CubeTextureLoader()
       .setPath('/images/clouds1/')
@@ -43,9 +42,7 @@ class Simulation extends Component {
   componentDidMount() {
     loadModels({
       onLoad: (models) => {
-        console.log(models);
-
-        this.setState({ loaded: true });
+        this.setState({ loaded: true, models });
       },
 
       onProgress: (_, finished, total) => {
@@ -61,10 +58,14 @@ class Simulation extends Component {
   render() {
     const { loaded, models } = this.state;
 
-    const withCamera = false;
+    const withCamera = true;
 
     if (!loaded) {
       return null;
+    }
+
+    if (this._grid === null) {
+      this._grid = initTiles(this._random, models);
     }
 
     return (
@@ -75,45 +76,68 @@ class Simulation extends Component {
         >
           <OrbitControls enabled={withCamera} />
 
-          <MovingCar
-            grid={this._grid}
-            initial={[ 0, 0 ]}
-            random={this._random}
-            following={!withCamera}
-          />
+          <TrafficManager>
+            <MovingCar
+              grid={this._grid}
+              initial={[ 0, 0 ]}
+              random={this._random}
+              following={!withCamera}
+            />
 
-          <MovingCar
-            grid={this._grid}
-            speed={0.01}
-            initial={[ 2, 3 ]}
-            random={this._random}
-          />
+            <MovingCar
+              grid={this._grid}
+              initial={[ 2, 3 ]}
+              random={this._random}
+            />
 
-          <MovingCar
-            grid={this._grid}
-            initial={[ 4, 0 ]}
-            random={this._random}
-          />
+            <MovingCar
+              grid={this._grid}
+              initial={[ 4, 0 ]}
+              random={this._random}
+            />
 
-          <MovingCar
-            grid={this._grid}
-            speed={0.01}
-            initial={[ 1, 3 ]}
-            random={this._random}
-          />
+            <MovingCar
+              grid={this._grid}
+              initial={[ 1, 3 ]}
+              random={this._random}
+            />
 
-          <MovingCar
-            grid={this._grid}
-            initial={[ 0, 4 ]}
-            random={this._random}
-          />
+            <MovingCar
+              grid={this._grid}
+              initial={[ 0, 4 ]}
+              random={this._random}
+            />
 
-          <MovingCar
-            grid={this._grid}
-            speed={0.01}
-            initial={[ 0, 2 ]}
-            random={this._random}
-          />
+            <MovingCar
+              grid={this._grid}
+              initial={[ 0, 2 ]}
+              random={this._random}
+            />
+
+            <MovingCar
+              grid={this._grid}
+              initial={[ 0, 5 ]}
+              random={this._random}
+            />
+
+            <MovingCar
+              grid={this._grid}
+              initial={[ 3, 3 ]}
+              random={this._random}
+            />
+
+            <MovingCar
+              grid={this._grid}
+              initial={[ 3, 4 ]}
+              random={this._random}
+            />
+            
+            <MovingCar
+              grid={this._grid}
+              initial={[ 3, 5 ]}
+              random={this._random}
+            />
+          </TrafficManager>
 
           <Ground grid={this._grid} />
           <GridRenderer grid={this._grid} />

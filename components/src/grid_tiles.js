@@ -1,8 +1,8 @@
 import * as THREE from 'three';
+import { MeshLambertMaterial, DoubleSide } from 'three';
 
 import { rotate, normalizeRotation } from './utils';
-import { Tree } from './tree';
-import { GLTFLoader } from '../third-party/GLTFLoader';
+import { adaptTreeObject } from './tree';
 
 const DEBUG_TILES = false;
 const DEBUG_MOVEMENT = false;
@@ -125,6 +125,48 @@ function calculateCurveGeometry(radiusOuter, radiusInner) {
   return new THREE.ShapeGeometry(curvedShape);
 }
 
+const streetMaterial = new MeshLambertMaterial({
+  color: '#918e84',
+  side: DoubleSide
+});
+
+const surroundingMaterial = new MeshLambertMaterial({
+  color: '#88bd99',
+  side: DoubleSide
+});
+
+const sideWalkMaterial = new MeshLambertMaterial({
+  color: '#969492',
+  side: DoubleSide
+});
+
+function adaptStreetObject(obj) {
+  const o = obj.clone();
+
+  o.traverse((child) => {
+    if (!child.isMesh) {
+      return;
+    }
+
+    if (child.name.endsWith('Surrounding')) {
+      child.material = surroundingMaterial;
+      child.visible = false;
+    }
+  
+    if (child.name.endsWith('Street')) {
+      child.material = streetMaterial;
+    }
+
+    if (child.name.endsWith('Sidewalk')) {
+      child.material = sideWalkMaterial;
+    }
+  });
+
+  o.rotation.x -= Math.PI;
+  o.receiveShadow = true;
+  return o;
+}
+
 class Tile {
   constructor(type, rotation) {
     this._type = type;
@@ -163,6 +205,18 @@ class Tile {
       this._group.add(circle);
       this._group.add(mesh);
     }
+
+    this._ownLanes = [];
+    this._lanes = {
+      '0': null,
+      '-1': null,
+      '1': null,
+      '2': null
+    };
+  }
+
+  getRotation() {
+    return this._rotation;
   }
 
   getGroup() {
@@ -203,33 +257,12 @@ class Tile {
 }
 
 class RoadTile extends Tile {
-  constructor(rotation) {
+  constructor(rotation, { models }) {
     super(TYPES.ROAD, rotation);
 
-    // new THREE.TextureLoader()
-    //   .load('/images/tiles/road_straight.png', (texture) => {
-    //     const tile = new THREE.Mesh(
-    //       new THREE.PlaneGeometry(TILE_SIZE, TILE_SIZE, 2, 2),
-    //       new THREE.MeshLambertMaterial( {
-    //         map: texture,
-    //         side: THREE.BackSide,
-    //         transparent: true
-    //        })
-    //     );
-    
-    //     this.add(tile);
-    //   });
-
-    new GLTFLoader()
-      .load(`/objects/Gerade.gltf`, (gltf) => {
-        const object = gltf.scene;
-        // object.scale.multiplyScalar(0.3);
-
-        object.rotation.x = -Math.PI / 2;
-        
-        object.receiveShadow = true;
-        this.add(object);
-      }, null, err => console.error(err));
+    const o = adaptStreetObject(models.streetStraight);
+    o.rotation.z += Math.PI / 2;
+    this.add(o);
   }
 
   entranceSides() {
@@ -259,35 +292,10 @@ class RoadTile extends Tile {
 }
 
 class CurveTile extends Tile {
-  constructor(rotation) {
+  constructor(rotation, { models }) {
     super(TYPES.CURVE, rotation);
 
-    // new THREE.TextureLoader()
-    //   .load('/images/tiles/road_curve.png', (texture) => {
-    //     const tile = new THREE.Mesh(
-    //       new THREE.PlaneGeometry(TILE_SIZE, TILE_SIZE, 2, 2),
-    //       new THREE.MeshLambertMaterial( {
-    //         map: texture,
-    //         side: THREE.BackSide,
-    //         transparent: true
-    //       })
-    //     );
-
-    //     tile.rotation.z += Math.PI / 2;
-    
-    //     this.add(tile);
-    //   });
-
-    new GLTFLoader()
-      .load(`/objects/Kurve.gltf`, (gltf) => {
-        const object = gltf.scene;
-        // object.scale.multiplyScalar(0.3);
-
-        object.rotation.x = -Math.PI / 2;
-        
-        object.receiveShadow = true;
-        this.add(object);
-      }, null, err => console.error(err));
+    this.add(adaptStreetObject(models.streetCurve));
   }
 
   _getOutlineGeometry(radiusOuter, radiusInner) {
@@ -351,22 +359,10 @@ class CurveTile extends Tile {
 }
 
 class TSectionTile extends Tile {
-  constructor(rotation) {
+  constructor(rotation, { models }) {
     super(TYPES.T_SECTION, rotation);
 
-    new THREE.TextureLoader()
-      .load('/images/tiles/road_t_section.png', (texture) => {
-        const tile = new THREE.Mesh(
-          new THREE.PlaneGeometry(TILE_SIZE, TILE_SIZE, 2, 2),
-          new THREE.MeshLambertMaterial( {
-            map: texture,
-            side: THREE.BackSide,
-            transparent: true
-           })
-        );
-    
-        this.add(tile);
-      });
+    this.add(adaptStreetObject(models.streetTCross));
   }
 
   entranceSides() {
@@ -420,31 +416,29 @@ class TSectionTile extends Tile {
 }
 
 const treeDis = [
-  { type: Tree.TYPES.SPREADING, mean: 12 },
-  { type: Tree.TYPES.PYRAMIDAL, mean: 4 },
-  { type: Tree.TYPES.OPEN, mean: 1 },
-  { type: Tree.TYPES.ROUND, mean: 8 },
-  { type: Tree.TYPES.BRANCHED, mean: 3 },
+  { type: 'Spreading', mean: 12 },
+  { type: 'Pyramidal', mean: 4 },
+  { type: 'Open', mean: 1 },
+  { type: 'Round', mean: 8 },
+  { type: 'Branched', mean: 3 },
 ];
 
 class TreeTile extends Tile {
-  constructor(rotation, { random }) {
+  constructor(rotation, { random, models }) {
     super(TYPES.TREE, rotation);
 
     const rnd = random.derive();
     
-    for (const { type, mean, deviation } of treeDis) {
+    for (const { type, mean } of treeDis) {
       const count = Math.round(rnd.normalDistribution(mean).value());
 
       for (let i = 0; i < count; i++) {
-        const t = new Tree(type);
-        t.render();
+        const t = adaptTreeObject(models[`tree${type}`]);
   
-        const treeGroup = t.group();
-        treeGroup.position.x += random.integer(-8, 8);
-        treeGroup.position.y += random.integer(-8, 8);
+        t.position.x += random.integer(-8, 8);
+        t.position.y += random.integer(-8, 8);
   
-        this.add(treeGroup);
+        this.add(t);
       }
     }
   }

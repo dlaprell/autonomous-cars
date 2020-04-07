@@ -16,9 +16,17 @@ class ModelManager extends Component {
   }
 }
 
-const ModelConsumer = ModelContext.Consumer;
+function ModelConsumer({ component, ...props }) {
+  return (
+    <ModelContext.Consumer>
+      {models => h(component, { models, ...props })}
+    </ModelContext.Consumer>
+  );
+}
 
 export {
+  ModelContext,
+
   ModelManager,
   ModelConsumer
 };

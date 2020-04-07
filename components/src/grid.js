@@ -95,7 +95,7 @@ const GRID_TILE_WIDTH = MAP.length; // Tile map 6 x 6
 const GRID_SIZE = TILE_SIZE * GRID_TILE_WIDTH;
 
 class GridMap {
-  constructor(rd) {
+  constructor(rd, models) {
     this._tileList = [];
     this._map = MAP
       .map(
@@ -105,7 +105,7 @@ class GridMap {
             const data = {
               x,
               y,
-              tile: new tile(rotation, { random: rd })
+              tile: new tile(rotation, { random: rd, models })
             };
 
             this._tileList.push(data);
@@ -115,7 +115,46 @@ class GridMap {
         )
       );
 
+    this._initLanes();
+
     this._group = new THREE.Group();
+  }
+
+  _initLanes() {
+    const visited = new Set();
+    let front = new Set([ 0, 0 ]);
+
+    while (front.size > 0) {
+      const f = front;
+      front = new Set();
+
+      for (const [ x, y ] of f) {
+        const { tile } = this.getTileAt(x, y);
+
+        if (tile.entranceSides().length === 0) {
+          continue;
+        }
+
+        // First assign only lanes to the road and curve sections
+        if (tile.getType() === TYPES.ROAD || tile.getType() === TYPES.CURVE) {
+          if (tile._ownLanes.length !== 0) {
+            // So either we find a connecting tile to the left or the top, otherwise
+            // we cannot find a lane and have to add a newly created one.
+            // Note: in the case of a curve, we can also connect two previously existing
+            //       lanes that should now be connected
+
+            for (const side of tile.entranceSides()) {
+              if (side !== 0 && side !== -1) {
+                continue;
+              }
+
+              
+            }
+          }
+        }
+      }
+    }
+
   }
 
   getGroup() {
@@ -195,8 +234,8 @@ class GridMap {
   }
 }
 
-function initTiles(rd) {
-  return new GridMap(rd);
+function initTiles(rd, models) {
+  return new GridMap(rd, models);
 }
 
 export {

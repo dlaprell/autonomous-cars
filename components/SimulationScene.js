@@ -1,6 +1,6 @@
 /** @jsx h */
 
-import { Scene, Group } from 'three';
+import { Scene, Group, AmbientLight, PointLight } from 'three';
 import { h, Component, createContext } from 'preact';
 
 import { SimulationRenderer } from './SimulationRenderer';
@@ -12,6 +12,15 @@ class SimluationScene extends Component {
     super(...args);
 
     this._scene = new Scene();
+
+    var ambientLight = new AmbientLight(0xA0A0A0, 0.8); // soft white light
+    this._scene.add(ambientLight);
+
+    var spotLight = new PointLight( 0xffffff, 0.8);
+    spotLight.position.set(-150, 500, 200);
+    spotLight.castShadow = true;
+
+    this._scene.add(spotLight);
     
     this._updateableElements = new Set();
 
@@ -47,13 +56,14 @@ class SimluationScene extends Component {
   }
   
   render() {
-    const { children } = this.props;
+    const { children, loop } = this.props;
 
     return (
       <SceneContext.Provider value={this}>
         {children}
 
         <SimulationRenderer
+          loop={Boolean(loop)}
           onUpdate={this.update.bind(this)}
         />
       </SceneContext.Provider>

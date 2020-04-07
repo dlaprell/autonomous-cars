@@ -14,7 +14,8 @@ class SimulationRenderer extends Component {
     this._mounted = false;
     this._paused = false;
 
-    this._renderer = new WebGLRenderer({ antialias: false });
+    this._renderer = new WebGLRenderer({ antialias: false /* , alpha: true */ });
+    // this._renderer.shadowMap.enabled = true;
 
     this._resizeHandler = () => {
       const width = window.innerWidth;
@@ -45,14 +46,24 @@ class SimulationRenderer extends Component {
         return;
       }
 
+      const { loop } = this.props;
+
       window.requestAnimationFrame(this._runUpdate);
 
       if (this._lastTime === null) {
         this._lastTime = new Date();
       }
 
-      const delta = Math.min(100, Math.max(1, new Date() - this._lastTime));
-      this._totalTime += delta;
+      let delta = 0;
+
+      if (loop) {
+        const now = new Date();
+
+        delta = Math.min(100, Math.max(1, now - this._lastTime));
+        this._totalTime += delta;
+
+        this._lastTime = now;
+      }
 
       const { onUpdate } = this.props;
       if (onUpdate) {
@@ -82,7 +93,7 @@ class SimulationRenderer extends Component {
   }
 
   componentDidMount() {
-    this._camera = new PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 2500);
+    this._camera = new PerspectiveCamera(12, window.innerWidth / window.innerHeight, 1, 2000);
     this._camera.position.set(0, 200, 3);
 
     this._renderer.setSize(window.innerWidth, window.innerHeight);

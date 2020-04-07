@@ -135,17 +135,27 @@ class GridMovementBase {
       this._tileTime = 0;
       this._tileDistance = 0;
 
-      const o = Math.sqrt(Math.pow(baseSpeed, 2) + 2 * this._acceleration * deltaDistance);
-      const res = [
-        (-baseSpeed + o) / this._acceleration,
-        (-baseSpeed - o) / this._acceleration
-      ];
+      let neededTime = NaN;
 
-      const neededTime = Math.min(...res.filter(x => x >= 0));
+      if (this._acceleration == 0) {
+        // So there was no acceleration and we can use the basic speed and time
+        // equotations
+        neededTime = (deltaDistance / (1 / this._speed));
+      } else {
+        // This one is a bit more complex since we have to account for the acceleration
+        // during the movement
+        const o = Math.sqrt(Math.pow(baseSpeed, 2) + 2 * this._acceleration * deltaDistance);
+        const res = [
+          (-baseSpeed + o) / this._acceleration,
+          (-baseSpeed - o) / this._acceleration
+        ];
 
-      this._speed += this._acceleration * (timeDeltaMs - neededTime);
-      if (this._speed < 0) {
-        this._speed = 0;
+        neededTime = Math.min(...res.filter(x => x >= 0));
+
+        this._speed += this._acceleration * (timeDeltaMs - neededTime);
+        if (this._speed < 0) {
+          this._speed = 0;
+        }
       }
 
       this._internalTime += (timeDeltaMs - neededTime);

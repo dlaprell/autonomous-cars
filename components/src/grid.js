@@ -24,7 +24,7 @@ const MAP = [
     [ TYPES.CURVE, 0 ],
     [ TYPES.ROAD, 1 ],
     [ TYPES.T_SECTION, 2 ],
-    [ TYPES.PLAIN, 0 ],
+    [ TYPES.TREE, 0 ],
     [ TYPES.ROAD, 0 ],
     [ TYPES.PLAIN, 0 ],
     [ TYPES.ROAD, 0 ]
@@ -32,11 +32,11 @@ const MAP = [
   [
     [ TYPES.T_SECTION, 0 ],
     [ TYPES.CURVE, 2 ],
-    [ TYPES.PLAIN, 0 ],
+    [ TYPES.TREE, 0 ],
     [ TYPES.T_SECTION, 0 ],
     [ TYPES.ROAD, 1 ],
     [ TYPES.T_SECTION, 2 ],
-    [ TYPES.PLAIN, 0 ],
+    [ TYPES.TREE, 0 ],
     [ TYPES.ROAD, 0 ]
   ],
   [
@@ -44,19 +44,19 @@ const MAP = [
     [ TYPES.ROAD, 1 ],
     [ TYPES.ROAD, 1 ],
     [ TYPES.CURVE, 2 ],
-    [ TYPES.PLAIN, 0 ],
+    [ TYPES.TREE, 0 ],
     [ TYPES.ROAD, 0 ],
     [ TYPES.PLAIN, 0 ],
     [ TYPES.ROAD, 0 ]
   ],
   [
     [ TYPES.ROAD, 0 ],
-    [ TYPES.PLAIN, 0 ],
-    [ TYPES.PLAIN, 0 ],
-    [ TYPES.PLAIN, 0 ],
-    [ TYPES.PLAIN, 0 ],
+    [ TYPES.TREE, 0 ],
+    [ TYPES.TREE, 0 ],
+    [ TYPES.TREE, 0 ],
+    [ TYPES.TREE, 0 ],
     [ TYPES.ROAD, 0 ],
-    [ TYPES.PLAIN, 0 ],
+    [ TYPES.TREE, 0 ],
     [ TYPES.ROAD, 0 ]
   ],
   [
@@ -66,23 +66,23 @@ const MAP = [
     [ TYPES.T_SECTION, 1 ],
     [ TYPES.ROAD, 1 ],
     [ TYPES.CURVE, 2 ],
-    [ TYPES.PLAIN, 0 ],
+    [ TYPES.TREE, 0 ],
     [ TYPES.ROAD, 0 ]
   ],
   [
-    [ TYPES.PLAIN, 0 ],
-    [ TYPES.PLAIN, 0 ],
-    [ TYPES.PLAIN, 0 ],
+    [ TYPES.TREE, 0 ],
+    [ TYPES.TREE, 0 ],
+    [ TYPES.TREE, 0 ],
     [ TYPES.ROAD, 0 ],
-    [ TYPES.PLAIN, 0 ],
-    [ TYPES.PLAIN, 0 ],
-    [ TYPES.PLAIN, 0 ],
+    [ TYPES.TREE, 0 ],
+    [ TYPES.TREE, 0 ],
+    [ TYPES.TREE, 0 ],
     [ TYPES.ROAD, 0 ]
   ],
   [
-    [ TYPES.PLAIN, 0 ],
-    [ TYPES.PLAIN, 0 ],
-    [ TYPES.PLAIN, 0 ],
+    [ TYPES.TREE, 0 ],
+    [ TYPES.TREE, 0 ],
+    [ TYPES.TREE, 0 ],
     [ TYPES.CURVE, -1 ],
     [ TYPES.ROAD, 1 ],
     [ TYPES.ROAD, 1 ],
@@ -95,7 +95,7 @@ const GRID_TILE_WIDTH = MAP.length; // Tile map 6 x 6
 const GRID_SIZE = TILE_SIZE * GRID_TILE_WIDTH;
 
 class GridMap {
-  constructor() {
+  constructor(rd) {
     this._tileList = [];
     this._map = MAP
       .map(
@@ -105,7 +105,7 @@ class GridMap {
             const data = {
               x,
               y,
-              tile: new tile(rotation)
+              tile: new tile(rotation, { random: rd })
             };
 
             this._tileList.push(data);
@@ -195,8 +195,8 @@ class GridMap {
   }
 }
 
-function initTiles() {
-  return new GridMap();
+function initTiles(rd) {
+  return new GridMap(rd);
 }
 
 export {

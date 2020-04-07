@@ -1,24 +1,24 @@
 import * as THREE from 'three';
 
 import { rotate, normalizeRotation } from './utils';
+import { Tree } from './tree';
+import { GLTFLoader } from '../third-party/GLTFLoader';
 
-const DEBUG_TILES = true;
+const DEBUG_TILES = false;
 const DEBUG_MOVEMENT = false;
 
 const TYPES = {
   PLAIN: 0,
   ROAD: 1,
   CURVE: 2,
-  T_SECTION: 3
+  T_SECTION: 3,
+  TREE: 4
 };
 
 const TILE_SIZE = 16;
 const LANE_WIDTH = 2.5;
 const PAVEMENT_WIDTH = 1.0;
 const LINE_WIDTH = 0.05;
-
-const roadMaterial = new THREE.MeshBasicMaterial({ color: 0x777777, side: THREE.DoubleSide });
-const lineMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide });
 
 function interpolerateCurveMovement(from, to, distance, rotation) {
   // First invert the rotation, then rotate the from accordingly
@@ -131,6 +131,7 @@ class Tile {
     this._rotation = rotation;
 
     this._group = new THREE.Group();
+    this._group.receiveShadow = true;
 
     if (DEBUG_TILES) {
       const outlineShape = new THREE.Shape();
@@ -177,7 +178,7 @@ class Tile {
   }
 
   speedLimitation() {
-    return 0.002;
+    return 0.006;
   }
 
   entranceSides() {
@@ -205,37 +206,30 @@ class RoadTile extends Tile {
   constructor(rotation) {
     super(TYPES.ROAD, rotation);
 
-    const laneMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(LANE_WIDTH * 2, TILE_SIZE, 2, 2),
-      roadMaterial
-    );
-  
-    const centerLineMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(LINE_WIDTH, TILE_SIZE, 2, 2),
-      lineMaterial
-    );
-  
-    const leftLineMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(LINE_WIDTH, TILE_SIZE, 2, 2),
-      lineMaterial
-    );
-    leftLineMesh.position.x -= (LINE_WIDTH / 2) + LANE_WIDTH;
-  
-    const rightLineMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(LINE_WIDTH, TILE_SIZE, 2, 2),
-      lineMaterial
-    );
-    rightLineMesh.position.x += (LINE_WIDTH / 2) + LANE_WIDTH;
+    // new THREE.TextureLoader()
+    //   .load('/images/tiles/road_straight.png', (texture) => {
+    //     const tile = new THREE.Mesh(
+    //       new THREE.PlaneGeometry(TILE_SIZE, TILE_SIZE, 2, 2),
+    //       new THREE.MeshLambertMaterial( {
+    //         map: texture,
+    //         side: THREE.BackSide,
+    //         transparent: true
+    //        })
+    //     );
+    
+    //     this.add(tile);
+    //   });
 
-    this.add(laneMesh);
+    new GLTFLoader()
+      .load(`/objects/Gerade.gltf`, (gltf) => {
+        const object = gltf.scene;
+        // object.scale.multiplyScalar(0.3);
 
-    const lineGroup = new THREE.Group();
-    lineGroup.add(centerLineMesh);
-    lineGroup.add(leftLineMesh);
-    lineGroup.add(rightLineMesh);
-    lineGroup.position.y = 0.02;
-  
-    this.add(lineGroup);
+        object.rotation.x = -Math.PI / 2;
+        
+        object.receiveShadow = true;
+        this.add(object);
+      }, null, err => console.error(err));
   }
 
   entranceSides() {
@@ -267,40 +261,33 @@ class RoadTile extends Tile {
 class CurveTile extends Tile {
   constructor(rotation) {
     super(TYPES.CURVE, rotation);
-  
-    const curvedGeometry = this._getOutlineGeometry(
-      TILE_SIZE / 2 + LANE_WIDTH,
-      TILE_SIZE / 2 - LANE_WIDTH
-    );
-    const curveMesh = new THREE.Mesh(curvedGeometry, roadMaterial);
-  
-    const centerLineGeometry = this._getOutlineGeometry(
-      (TILE_SIZE / 2) - (LINE_WIDTH / 2),
-      (TILE_SIZE / 2) + (LINE_WIDTH / 2)
-    );
-    const centerLineMesh = new THREE.Mesh(centerLineGeometry, lineMaterial);
-  
-    const outerLineGeometry = this._getOutlineGeometry(
-      (TILE_SIZE / 2) + LANE_WIDTH + LINE_WIDTH,
-      (TILE_SIZE / 2) + LANE_WIDTH
-    );
-    const outerLineMesh = new THREE.Mesh(outerLineGeometry, lineMaterial);
-  
-    const innerLineGeometry = this._getOutlineGeometry(
-      (TILE_SIZE / 2) - LANE_WIDTH - LINE_WIDTH,
-      (TILE_SIZE / 2) - LANE_WIDTH
-    );
-    const innerLineMesh = new THREE.Mesh(innerLineGeometry, lineMaterial);
 
-    this.add(curveMesh);
+    // new THREE.TextureLoader()
+    //   .load('/images/tiles/road_curve.png', (texture) => {
+    //     const tile = new THREE.Mesh(
+    //       new THREE.PlaneGeometry(TILE_SIZE, TILE_SIZE, 2, 2),
+    //       new THREE.MeshLambertMaterial( {
+    //         map: texture,
+    //         side: THREE.BackSide,
+    //         transparent: true
+    //       })
+    //     );
 
-    const lineGroup = new THREE.Group();
-    lineGroup.add(centerLineMesh);
-    lineGroup.add(outerLineMesh);
-    lineGroup.add(innerLineMesh);
-    lineGroup.position.y = 0.02;
-  
-    this.add(lineGroup);
+    //     tile.rotation.z += Math.PI / 2;
+    
+    //     this.add(tile);
+    //   });
+
+    new GLTFLoader()
+      .load(`/objects/Kurve.gltf`, (gltf) => {
+        const object = gltf.scene;
+        // object.scale.multiplyScalar(0.3);
+
+        object.rotation.x = -Math.PI / 2;
+        
+        object.receiveShadow = true;
+        this.add(object);
+      }, null, err => console.error(err));
   }
 
   _getOutlineGeometry(radiusOuter, radiusInner) {
@@ -367,86 +354,19 @@ class TSectionTile extends Tile {
   constructor(rotation) {
     super(TYPES.T_SECTION, rotation);
 
-    const laneMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(LANE_WIDTH * 2, TILE_SIZE),
-      roadMaterial
-    );
-  
-    const halfMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(TILE_SIZE / 2 - LANE_WIDTH, LANE_WIDTH * 2),
-      roadMaterial
-    );
-    halfMesh.position.x += (TILE_SIZE / 2 - LANE_WIDTH) / 2 + LANE_WIDTH;
-  
-    const leftLineMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(LINE_WIDTH, TILE_SIZE),
-      lineMaterial
-    );
-    leftLineMesh.position.x -= (LINE_WIDTH / 2) + LANE_WIDTH;
-  
-    const rightTopLineMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(LINE_WIDTH, TILE_SIZE / 2 - LANE_WIDTH),
-      lineMaterial
-    );
-    rightTopLineMesh.position.x += (LINE_WIDTH / 2) + LANE_WIDTH;
-    rightTopLineMesh.position.y += (TILE_SIZE / 2 - LANE_WIDTH) / 2 + LANE_WIDTH;
-  
-    const centerTopLineMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(LINE_WIDTH, TILE_SIZE / 2 - LANE_WIDTH),
-      lineMaterial
-    );
-    centerTopLineMesh.position.x += (LINE_WIDTH / 2);
-    centerTopLineMesh.position.y += (TILE_SIZE / 2 - LANE_WIDTH) / 2 + LANE_WIDTH;
-  
-    const rightBottomLineMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(LINE_WIDTH, TILE_SIZE / 2 - LANE_WIDTH),
-      lineMaterial
-    );
-    rightBottomLineMesh.position.x += (LINE_WIDTH / 2) + LANE_WIDTH;
-    rightBottomLineMesh.position.y -= (TILE_SIZE / 2 - LANE_WIDTH) / 2 + LANE_WIDTH;
-  
-    const centerBottomLineMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(LINE_WIDTH, TILE_SIZE / 2 - LANE_WIDTH),
-      lineMaterial
-    );
-    centerBottomLineMesh.position.x += (LINE_WIDTH / 2);
-    centerBottomLineMesh.position.y -= (TILE_SIZE / 2 - LANE_WIDTH) / 2 + LANE_WIDTH;
-  
-    const armCenterLineMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(TILE_SIZE / 2 - LANE_WIDTH, LINE_WIDTH),
-      lineMaterial
-    );
-    armCenterLineMesh.position.x += (TILE_SIZE / 2 - LANE_WIDTH) / 2 + LANE_WIDTH;
-  
-    const armTopLineMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(TILE_SIZE / 2 - LANE_WIDTH, LINE_WIDTH),
-      lineMaterial
-    );
-    armTopLineMesh.position.x += (TILE_SIZE / 2 - LANE_WIDTH) / 2 + LANE_WIDTH;
-    armTopLineMesh.position.y -= LANE_WIDTH - (LINE_WIDTH / 2);
-  
-    const armBottomLineMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(TILE_SIZE / 2 - LANE_WIDTH, LINE_WIDTH),
-      lineMaterial
-    );
-    armBottomLineMesh.position.x += (TILE_SIZE / 2 - LANE_WIDTH) / 2 + LANE_WIDTH;
-    armBottomLineMesh.position.y += LANE_WIDTH - (LINE_WIDTH / 2);
-
-    this.add(laneMesh);
-    this.add(halfMesh);
-
-    const lineGroup = new THREE.Group();
-    lineGroup.add(leftLineMesh);
-    lineGroup.add(rightTopLineMesh);
-    lineGroup.add(rightBottomLineMesh);
-    lineGroup.add(centerBottomLineMesh);
-    lineGroup.add(centerTopLineMesh);
-    lineGroup.add(armCenterLineMesh);
-    lineGroup.add(armTopLineMesh);
-    lineGroup.add(armBottomLineMesh);
-    lineGroup.position.y = 0.02;
-  
-    this.add(lineGroup);
+    new THREE.TextureLoader()
+      .load('/images/tiles/road_t_section.png', (texture) => {
+        const tile = new THREE.Mesh(
+          new THREE.PlaneGeometry(TILE_SIZE, TILE_SIZE, 2, 2),
+          new THREE.MeshLambertMaterial( {
+            map: texture,
+            side: THREE.BackSide,
+            transparent: true
+           })
+        );
+    
+        this.add(tile);
+      });
   }
 
   entranceSides() {
@@ -499,11 +419,43 @@ class TSectionTile extends Tile {
   }
 }
 
+const treeDis = [
+  { type: Tree.TYPES.SPREADING, mean: 12 },
+  { type: Tree.TYPES.PYRAMIDAL, mean: 4 },
+  { type: Tree.TYPES.OPEN, mean: 1 },
+  { type: Tree.TYPES.ROUND, mean: 8 },
+  { type: Tree.TYPES.BRANCHED, mean: 3 },
+];
+
+class TreeTile extends Tile {
+  constructor(rotation, { random }) {
+    super(TYPES.TREE, rotation);
+
+    const rnd = random.derive();
+    
+    for (const { type, mean, deviation } of treeDis) {
+      const count = Math.round(rnd.normalDistribution(mean).value());
+
+      for (let i = 0; i < count; i++) {
+        const t = new Tree(type);
+        t.render();
+  
+        const treeGroup = t.group();
+        treeGroup.position.x += random.integer(-8, 8);
+        treeGroup.position.y += random.integer(-8, 8);
+  
+        this.add(treeGroup);
+      }
+    }
+  }
+}
+
 const TILE_BY_TYPE = {
   [TYPES.PLAIN]: Tile,
   [TYPES.ROAD]: RoadTile,
   [TYPES.CURVE]: CurveTile,
-  [TYPES.T_SECTION]: TSectionTile
+  [TYPES.T_SECTION]: TSectionTile,
+  [TYPES.TREE]: TreeTile
 };
 
 export {

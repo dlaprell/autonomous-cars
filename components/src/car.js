@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import mitt from 'mitt';
-import { OBJLoader } from '../third-party/OBJLoader';
+
+import { GLTFLoader } from '../third-party/GLTFLoader';
 
 class Car {
   constructor(movement) {
@@ -45,7 +46,7 @@ class Car {
     let acc = 0;
 
     if (cur > curLimit) {
-      acc = -0.0000012;
+      acc = -0.000004;
     } else if (cur > nextLimit) {
       acc = -0.0000004;
     } else if (cur < curLimit) {
@@ -86,46 +87,32 @@ class Car {
   }
 
   render() {
-    // // TODO: replace with an actual car model
-    // const geometry = new THREE.BoxGeometry(1.5, 1, 3);
-    // const material = new THREE.MeshBasicMaterial({ color: 0x0000FF, side: THREE.FrontSide });
-    // const cube = new THREE.Mesh(geometry, material);
+    const manager = new THREE.LoadingManager();
 
-    // cube.position.y += 0.5;
+    new GLTFLoader(manager)
+      .load('/objects/Car_Tuerkis_v3.gltf', (gltf) => {
+        gltf.scene.traverse(function (child) {
+          if (child.isMesh) { 
+              child.material.alphaTest = 0.2;
+           }
+        });
 
-    // const circle = new THREE.Mesh(
-    //   new THREE.CircleGeometry(0.25),
-    //   new THREE.MeshBasicMaterial({ color: 0xFF0000, side: THREE.DoubleSide })
-    // );
+        const object = gltf.scene;
 
-    // circle.position.y += 1.0001;
-    // circle.position.z -= 1;
-    // circle.rotation.x = -Math.PI / 2;
+        object.rotation.x -= (Math.PI / 2);
+        object.rotation.z += Math.PI / 2;
+        object.rotation.z += Math.PI;
+        object.position.y -= 0.42;
 
-    // this._group.add(circle);
-    // this._group.add(cube);
-
-    var loader = new OBJLoader();
-
-    // load a resource
-    loader.load(
-      // resource URL
-      '/objects/Low_Poly_City_Cars.obj',
-      // called when resource is loaded
-      (object) => {
-        this._group.add( object );
-      },
-      // called when loading is in progresses
-      function ( xhr ) {
-
-        console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-
-      },
-      // called when loading has errors
-      function ( error ) {
-        console.log( 'An error happened', error);
-      }
-    );
+        this._group.add(object);
+    
+        gltf.animations; // Array<THREE.AnimationClip>
+        gltf.scene; // THREE.Group
+        gltf.scenes; // Array<THREE.Group>
+        gltf.cameras; // Array<THREE.Camera>
+        gltf.asset; // Object
+    
+      }, null, err => console.error(err));
   }
 }
 

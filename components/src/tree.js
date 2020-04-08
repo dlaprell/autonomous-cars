@@ -23,7 +23,7 @@ function adaptTreeObject(tree) {
     }
   });
 
-  t.scale.multiplyScalar(0.3);
+  t.scale.multiplyScalar(0.6);
   t.rotation.x = -Math.PI / 2;
   
   t.castShadow = true;

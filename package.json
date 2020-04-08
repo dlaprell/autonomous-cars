@@ -6,7 +6,10 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "dev": "parcel --no-autoinstall index.html"
+    "dev": "parcel --no-autoinstall index.html creator.html"
+  },
+  "browserslist": {
+    "development": "last 1 chrome versions, last 1 firefox versions, last 1 edge versions, not ie > 0, not op_mini all"
   },
   "staticFiles": {
     "staticPath": "static",
@@ -15,7 +18,7 @@
   "dependencies": {
     "mersenne-twister": "^1.1.0",
     "mitt": "^1.2.0",
-    "preact": "^10.3.4",
+    "preact": "^10.4.0",
     "three": "^0.114.0",
     "three-controls": "^1.0.1"
   },

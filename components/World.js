@@ -1,4 +1,4 @@
-import { TextureLoader, RepeatWrapping, MeshBasicMaterial, Mesh, DoubleSide, PlaneGeometry } from 'three';
+import { TextureLoader, RepeatWrapping, MeshLambertMaterial, Mesh, DoubleSide, PlaneGeometry } from 'three';
 
 import { SimluationSceneElement } from './SimulationScene';
 
@@ -28,7 +28,7 @@ class Ground extends SimluationSceneElement {
   
     grassTexture.repeat.set(64, 64);
   
-    const grassMaterial = new MeshBasicMaterial({
+    const grassMaterial = new MeshLambertMaterial({
       map: grassTexture,
       side: DoubleSide
     });
@@ -37,6 +37,10 @@ class Ground extends SimluationSceneElement {
       new PlaneGeometry(grid.size(), grid.size(), 2, 2),
       grassMaterial
     );
+
+    groundMesh.calculateTilePosition = (x, y) => {
+      return grid.computeTileFromPosition(x, y);
+    }
   
     groundMesh.rotation.x = Math.PI / 2;
     this.group().add(groundMesh);

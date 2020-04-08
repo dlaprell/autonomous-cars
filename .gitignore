@@ -2,3 +2,5 @@
 dist
 car-demo-threejs-master
 node_modules
+.DS_Store
+.vscode

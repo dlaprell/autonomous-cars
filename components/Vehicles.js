@@ -1,12 +1,33 @@
 import { h, createContext } from 'preact';
+import { Color } from 'three';
 
 import { SimluationSceneElement } from './SimulationScene';
 
 import { Car } from './src/car';
 import { RandomMovement } from './src/movement';
 import { ModelContext } from './ModelManager';
-import { rotate, normalizeRotation } from './src/utils';
+import { rotate, normalizeRotation, angle } from './src/utils';
 import { TYPES } from './src/grid_tiles';
+import { assert } from './utils/assert';
+
+const ACCELERATION = {
+  MAX_BRAKE: -0.000009,
+
+  SOFT_BRAKE: -0.0000075,
+
+  MEDIUM_ACCEL: 0.0000015,
+  MAX_ACCEL: 0.000001
+};
+
+function laneDistanceUpTo(lane, tile) {
+  const pos = lane._includedTilesOrder.indexOf(tile);
+  let distance = 0;
+  for (let i = 0; i < pos; i++) {
+    distance += lane._includedTilesDistances[i];
+  }
+
+  return distance;
+}
 
 const TrafficContext = createContext(null);
 
@@ -20,123 +41,261 @@ class TrafficManager extends SimluationSceneElement {
   update() {
     // So we want to check in every frame whether one car is approaching a t-section or
     // 4-four crossing ('conflict zones') and try to use the standard rules of traffic
-    const vehiclesNearConflictZones = [];
+    const onLane = new Map();
+    const atConflictZone = new Map();
+
+    const acc = new Map();
+
+    function setAcc(vehicle, acc) {
+      if (!acc.has(vehicle)) {
+        acc.set(vehicle, lim);
+      } else {
+        const a = acc.get(vehicle);
+        acc.set(vehicle, Math.max(ACCELERATION.MAX_BRAKE, Math.min(a, lim)));
+      }
+    }
 
     const limiter = new Map();
 
-    // First build a grid of all positions
-    const grid = {};
-    function addToGrid(t, v, cur, dirs) {
-      if (t.tile.getType() !== TYPES.T_SECTION) {
-        return;
+    function addLimiter(vehicle, lim) {
+      if (!limiter.has(vehicle)) {
+        limiter.set(vehicle, lim);
+      } else {
+        const l = limiter.get(vehicle);
+        limiter.set(vehicle, Math.max(0, Math.min(l, lim)));
+      }
+    }
+
+    function addToConflictZone(tile, vehicle, distance, ahead, { from, to }) {
+      let set;
+
+      if (atConflictZone.has(tile)) {
+        set = atConflictZone.get(tile);
+      } else {
+        set = [];
+        atConflictZone.set(tile, set);
       }
 
-      if (typeof grid[t.x] === 'undefined') {
-        grid[t.x] = {};
+      set.push({ vehicle, distance, from, to, ahead });
+    }
+
+    function addToLane(lane, distance, vehicle) {
+      let queue;
+      
+      if (onLane.has(lane)) {
+        queue = onLane.get(lane);
+      } else {
+        queue = [];
+        onLane.set(lane, queue);
       }
 
-      if (typeof grid[t.x][t.y] === 'undefined') {
-        grid[t.x][t.y] = [];
-      }
+      const toNext = lane._totalDistance - distance;
 
-      const type = t.tile.getType();
-      const tRot = t.tile.getRotation();
-
-      let action = null;
-      if (type === TYPES.ROAD || type === TYPES.CURVE) {
-        throw new Error('Did not expect this type');
-      } else if (type === TYPES.T_SECTION) {
-        const normFrom = rotate(dirs.from, -tRot);
-        const normTo = rotate(dirs.to, -tRot);
-
-        if (normFrom === 0) {
-          action = normTo === 2 ? 'pass' : 'leftTurnMain';
-        } else if (normFrom === 2) {
-          action = normTo === 0 ? 'passNear' : 'rightTurnMain';
-        } else {
-          action = normTo === 0 ? 'rightTurn' : 'leftTurn';
-        }
-      }
-
-      grid[t.x][t.y].push({
-        vehicle: v,
-        loc: cur ? 'cur' : 'next',
-        tile: t,
-        dirs,
-        action
+      queue.push({
+        vehicle,
+        distance,
+        toNext
       });
     }
-    
+
     for (const vehicle of this._managedObjects) {
+      vehicle.before = new Set();
       const mov = vehicle.movement();
 
-      const { from, to } = mov.getCurrentTileMovement();
-      const nextDir = mov.getNextTileDirections();
+      const curTile = mov.currentTile().tile;
 
-      const curTile = mov.currentTile();
-      const next = mov.targetTile();
+      const tileDistance = mov.getDistanceCurTile();
+      const curDirs =  mov.getCurrentTileMovement();
 
-      addToGrid(curTile, vehicle, true, { from, to });
-      addToGrid(next, vehicle, false, nextDir);
-    }
+      let ahead;
+      let completed;
 
-    for (const [ x, cols ] of Object.entries(grid)) {
-      for (const [ y, vehicles ] of Object.entries(cols)) {
-        if (vehicles.length <= 1) {
-          continue;
+      if (curTile.getType() === TYPES.T_SECTION) {
+        ahead = curTile.getTotalDistance(curDirs.from, curDirs.to) - tileDistance;
+        completed = tileDistance;
+
+        addToConflictZone(curTile, vehicle, tileDistance, ahead, curDirs);
+      } else if (curTile.getType() === TYPES.ROAD || curTile.getType() === TYPES.CURVE) {
+        const lane = curTile._lanes[curDirs.to].outgoing;
+        completed = laneDistanceUpTo(lane, curTile) + tileDistance;
+
+        ahead = lane._totalDistance - completed;
+
+        addToLane(lane, completed, vehicle);
+      }
+
+      if (completed < 12) {
+        // So if we just barely made it to the current tile, then still count this
+        // vehicle also to the previous section
+        const preTile = mov.previousTile().tile;
+
+        // So if the previous one is a t-section then we
+        // ignore this here, since we are no longer in the section
+        if (preTile.getType() !== TYPES.T_SECTION) {
+          const lane = curTile._lanes[curDirs.from].incoming;
+          addToLane(lane, lane._totalDistance + tileDistance, vehicle);
         }
+      } else if (ahead < 12) {
+        // The other case where we will reach the next tile very shortly
 
-        // Now we have to test the conflicts against another
+        const nextTile = mov.targetTile().tile;
 
-        // First the current ones
-        let hasCurNearPass = false;
-        let hasCurFarPass = false;
-        let hasCurLeftTurnSide = false;
-        let hasCurRightTurnSide = false;
-        let hasCurMainRightTurn = false;
-        let hasCurMainLeftTurn = false;
+        if (nextTile.getType() === TYPES.T_SECTION) {
+          const nextDirs = mov.getNextTileDirections();
+          const nextStepDistance = nextTile.getTotalDistance(nextDirs.from, nextDirs.to);
+          addToConflictZone(nextTile, vehicle, -ahead, nextStepDistance + ahead, nextDirs);
+        } else {
+          assert(nextTile.getType() === TYPES.ROAD || nextTile.getType() === TYPES.CURVE);
 
-        for (const { action, loc } of vehicles) {
-          if (loc === 'cur') {
-            hasCurNearPass |= action === 'passNear';
-            hasCurFarPass |= action === 'pass';
-            hasCurLeftTurnSide |= action === 'leftTurn';
-            hasCurRightTurnSide |= action === 'rightTurn';
-            hasCurMainRightTurn |= action === 'rightTurnMain';
-            hasCurMainLeftTurn |= action === 'leftTurnMain';
-          }
-        } 
-
-        const hasCurSide = hasCurLeftTurnSide || hasCurRightTurnSide;
-        const hasCurMainMov = hasCurFarPass || hasCurNearPass
-
-        for (const { vehicle, action, loc } of vehicles) {
-          if (loc === 'cur') {
-            if (!hasCurSide) {
-              continue;
-            }
-
-            if (action === 'rightTurn' && !hasCurNearPass) {
-              // limiter.set(vehicle, 0);
-              continue;
-            }
-
-            if (action === 'leftTurn' && !hasCurMainMov) {
-              limiter.set(vehicle, 0.7);
-              continue;
-            }
-
-            if (action === 'leftTurn' || action === 'rightTurn') {
-              limiter.set(vehicle, 0);
-              continue;
-            }
-          }
+          const lane = nextTile._lanes[rotate(curDirs.to, 2)].incoming;
+          addToLane(lane, -ahead, vehicle);
         }
       }
     }
 
-    if (limiter.size > 0) {
-      console.log(limiter);
+    for (const queue of onLane.values()) {
+      queue.sort((a, b) => b.distance - a.distance);
+
+      for (let i = 1; i < queue.length; i++) {
+        const { vehicle: befVehicle, distance: befDistance } = queue[i - 1];
+        const { vehicle: curVehicle, distance: curDistance } = queue[i];
+
+        curVehicle.before.add({
+          delta: befDistance - curDistance,
+          vehicle: befVehicle
+        });
+      }
+    }
+
+    for (const [ tile, vehicles ] of atConflictZone.entries()) {
+      if (vehicles.length <= 1) {
+        continue;
+      }
+
+      // First determine which conflicts we have here.
+      // Step 1: order by destinations
+      const inCenter = new Set();
+      const atDest = { 0: new Set(), '-1': new Set(), 1: new Set(), 2: new Set() };
+      const atBeginning = { 0: new Set(), '-1': new Set(), 1: new Set(), 2: new Set() };
+
+      for (const d of vehicles) {
+        if (d.ahead < 6) {
+          atDest[d.to].add(d);
+        } else if (d.distance < 4) {
+          atBeginning[d.from].add(d);
+        } else {
+          inCenter.add(d);
+        }
+
+        d.action = angle(d.from, d.to);
+      }
+
+      const front = { 0: null, '-1': null, 1: null, 2: null };
+      for (const [ side, sets ] of Object.entries(atBeginning)) {
+        const sorted = [ ...sets ].sort((a, b) => a.ahead - b.ahead);
+        if (sorted.length > 0) {
+          front[side] = sorted[0];
+
+          for (let i = 1; i < sorted.length; i++) {
+            const { vehicle: befVehicle, distance: befDistance } = sorted[i - 1];
+            const { vehicle: curVehicle, distance: curDistance } = sorted[i];
+
+            curVehicle.before.add({
+              delta: befDistance - curDistance,
+              vehicle: befVehicle
+            });
+          }
+        }
+      }
+
+      const blockedByCenter = new Set();
+      const blockedByFront = new Set();
+
+      for (const d of vehicles) {
+        if (atDest[d.to].has(d)) {
+          continue;
+        } else if (inCenter.has(d)) {
+          if (atDest[d.to].size > 0) {
+            // TODO: make this vehicle just follow the other in front of it
+            addLimiter(d.vehicle, 0);
+          }
+          continue;
+        } else if (atBeginning[d.from].has(d)) {
+          if (front[d.from] !== d) {
+            continue;
+          }
+
+          for (const c of inCenter) {
+            if (c.from === d.from) {
+              const delta = c.distance - d.distance;
+              d.vehicle.before.add({
+                vehicle: c.vehicle,
+                delta
+              });
+              continue;
+            }
+
+            const ang = angle(d.from, c.from);
+
+            if (ang === 2 && c.action === d.action) {
+              continue;
+            }
+
+            if (d.action === 2 && c.action !== -1 && ang === -1) {
+              continue;
+            }
+
+            if (d.action === -1 && c.action !== 2 && ang === 1) {
+              continue;
+            }
+
+            // so this vehicle is at the front, but cannot currently drive
+            // into the intersection -> make it stop just before the entrance
+            blockedByCenter.add(d);
+            break;
+          }
+
+          if (d.action === -1) { // right turn
+            // Check for:
+            // - one that is before us (aka all that drive to the same direction)
+            continue;
+          } else if (d.action === 2) { // straight
+            // Check for:
+            // - all from the right side
+            if (front[rotate(d.from, -1)]) {
+              blockedByFront.add(d);
+              continue;
+            }
+          } else /* d.action === 1 */ { // left turn
+            // Check for:
+            // - straight: straight + right
+            // - right: left, straight
+            const st = front[rotate(d.from, 2)];
+            if (st && st.angle !== 1) {
+              blockedByFront.add(d);
+              continue;
+            }
+
+            const ri = front[rotate(d.from, -1)];
+            if (ri && ri.angle !== -1) {
+              blockedByFront.add(d);
+              continue;
+            }
+          }
+        } else {
+          assert(0);
+        }
+      }
+
+      for (const d of vehicles) {
+        if (blockedByFront.has(d) || blockedByCenter.has(d)) {
+          if (d.distance < -3) {
+            addLimiter(d.vehicle, 0.1);
+          } else {
+            addLimiter(d.vehicle, 0);
+          }
+        }
+      }
     }
 
     for (const vehicle of this._managedObjects) {
@@ -144,34 +303,43 @@ class TrafficManager extends SimluationSceneElement {
 
       const cur = mov.speed();
 
+      const ownSpeed = mov.scaledSpeed();
+
+      // So we want to check if we need to brake because in front of us
+      // is another vehicle that we otherwise might drive into
+      let acc = ACCELERATION.MEDIUM_ACCEL;
+      for (const { delta, vehicle: other } of vehicle.before) {
+        const desiredDistance = Math.max(8, ownSpeed / 2);
+
+        const factor = desiredDistance / delta;
+        if (factor > 2.5) {
+          acc = Math.min(acc, ACCELERATION.MAX_BRAKE)
+          break;
+        } else if  (factor > 1.1) {
+          acc = Math.min(acc, ACCELERATION.SOFT_BRAKE);
+        }
+      }
+
       const { from, to } = mov.getCurrentTileMovement();
       const nextDir = mov.getNextTileDirections();
 
       const curTile = mov.currentTile().tile;
-      const next = mov.targetTile().tile;
+      const lim = limiter.has(vehicle) ? limiter.get(vehicle) : 1;
+      let tileSpeedLimit = curTile.speedLimitation() * lim;
 
-      let lim = 1;
-      if (limiter.has(vehicle)) {
-        lim = limiter.get(vehicle);
-      }/*  else {
-        if (((from + to) % 2) !== 0) {
-          lim = 0.5;
-        } else if (((nextDir.from + nextDir.to) % 2) !== 0) {
-          lim = 0.66;
-        }
-      } */
+      if (((from + to) % 2) !== 0) {
+        tileSpeedLimit = Math.min(tileSpeedLimit, 0.008);
+      } else if (((nextDir.from + nextDir.to) % 2) !== 0) {
+        tileSpeedLimit = Math.min(tileSpeedLimit, 0.009);
+      }
 
-      const curLimit = curTile.speedLimitation() * lim;
-      const nextLimit = next.speedLimitation() * lim;
+      if (cur > tileSpeedLimit) {
+        acc = Math.min(acc, ACCELERATION.SOFT_BRAKE);
+      }
 
-      let acc = 0;
-
-      if (cur > curLimit) {
-        acc = -0.000004;
-      } else if (cur > nextLimit) {
-        acc = -0.0000004;
-      } else if (cur < curLimit) {
-        acc =  0.0000008;
+      if (cur < 0) {
+        acc = 0;
+        mov._speed = 0;
       }
 
       mov.setAcceleration(acc);
@@ -191,11 +359,38 @@ class TrafficManager extends SimluationSceneElement {
   }
 }
 
+const colors = [
+  '#fcba03',
+  '#ebebeb',
+  '#008dd4',
+  '#00b05b',
+  '#8900ba'
+];
+
+function adaptCar(car, color) {
+  car.traverse((child) => {
+    if (child.isMesh) {
+      if (child.name === 'Car_Model') {
+        child.material = child.material.clone();
+        child.material.color = new Color(color);
+      }
+
+      if (child.name === 'Car_Windows') {
+        child.material.transparent = true;
+        child.material.opacity = 0.5;
+      }
+    }
+  });
+}
+
 class MovingCar extends SimluationSceneElement {
   constructor(...args) {
     super(...args);
 
     const { grid, initial, random, manager } = this.props;
+
+    const { tile } = grid.getTileAt(...initial);
+    assert(tile.entranceSides().length > 0);
 
     this._car = new Car(
       new RandomMovement(grid, initial, random)
@@ -203,12 +398,13 @@ class MovingCar extends SimluationSceneElement {
 
     manager.push(this._car);
 
-    this._carObject = this.props.models.carPurple.clone();
+    this._carObject = this.props.models.carBaseHuman.clone();
 
-    this._carObject.rotation.x -= (Math.PI / 2);
-    this._carObject.rotation.z += Math.PI / 2;
-    this._carObject.rotation.z += Math.PI;
-    this._carObject.position.y -= 0.42;
+    const color = colors[random.integer(0, colors.length - 1)];
+    adaptCar(this._carObject, color);
+
+    this._carObject.position.y += 0.2;
+    this._carObject.rotation.y += -Math.PI / 2;
 
     this.group().add(this._carObject);
   }
@@ -227,12 +423,12 @@ class MovingCar extends SimluationSceneElement {
 
     const camera = rest.camera;
 
-    camera.position.y = 0.95;
+    camera.position.y = 1.1;
     camera.position.x = x;
     camera.position.z = y;
 
     const offsetX = -0.225;
-    const offsetY = 1.6;
+    const offsetY = 1.4;
 
     camera.position.x += offsetX * Math.cos(angle) - offsetY * Math.sin(angle);
     camera.position.z += offsetY * Math.cos(angle) + offsetX * Math.sin(angle);
@@ -240,7 +436,7 @@ class MovingCar extends SimluationSceneElement {
     camera.rotation.y = -angle;
     camera.rotation.x = 0;
     camera.rotation.z = 0;
-    camera.rotateOnAxis({ x: 1, y: 0, z: 0 }, -1 * Math.PI * 0.01);
+    camera.rotateOnAxis({ x: 1, y: 0, z: 0 }, -1 * Math.PI * 0.02);
   }
 
   render() {

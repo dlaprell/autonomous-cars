@@ -13,7 +13,18 @@ const MODELS = {
   streetTCross: 'street/t_cross.gltf',
   streetCross: 'street/cross.gltf',
 
-  carPurple: 'car/purple.gltf'
+  carPurple: 'car/purple.gltf',
+  carTuerkis: 'car/tuerkis.gltf',
+  carBase: 'car/base.gltf',
+  carBaseMaterial: 'car/base_material.gltf',
+  carBaseHuman: 'car/base_human_3.gltf',
+
+  architectureHouseSimple: 'architecture/house_simple.gltf',
+  architectureHouseBungalow: 'architecture/house_bungalow.gltf',
+  architectureHouseFlat: 'architecture/house_flat.gltf',
+  architectureHouseDouble: 'architecture/house_double.gltf',
+
+  sign: 'sign/signs.gltf'
 };
 
 export default function loadModels({ onLoad, onProgress, onError }) {

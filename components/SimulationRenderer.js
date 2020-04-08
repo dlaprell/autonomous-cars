@@ -18,8 +18,8 @@ class SimulationRenderer extends Component {
     // this._renderer.shadowMap.enabled = true;
 
     this._resizeHandler = () => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
+      const width = this._ref.clientWidth;
+      const height = this._ref.clientHeight;
       this._renderer.setSize( width, height );
       this._camera.aspect = width / height; // aspect ratio
       this._camera.updateProjectionMatrix();
@@ -93,10 +93,15 @@ class SimulationRenderer extends Component {
   }
 
   componentDidMount() {
-    this._camera = new PerspectiveCamera(12, window.innerWidth / window.innerHeight, 1, 2000);
+    const width = this._ref.clientWidth;
+    const height = this._ref.clientHeight;
+
+    const { creatorView } = this.props;
+
+    this._camera = new PerspectiveCamera(20, width / height, 1, creatorView ? 2500 : 750);
     this._camera.position.set(0, 200, 3);
 
-    this._renderer.setSize(window.innerWidth, window.innerHeight);
+    this._renderer.setSize(width, height);
 
     window.addEventListener('resize', this._resizeHandler);
   }
@@ -110,8 +115,8 @@ class SimulationRenderer extends Component {
       <div
         ref={this._updateRef}
         style={{
-          width: '100vw',
-          height: '100vh',
+          width: '100%',
+          height: '100%',
 
           margin: 0,
           padding: 0

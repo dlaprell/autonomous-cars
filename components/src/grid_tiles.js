@@ -12,7 +12,8 @@ const TYPES = {
   ROAD: 1,
   CURVE: 2,
   T_SECTION: 3,
-  TREE: 4
+  TREE: 4,
+  HOUSE: 5
 };
 
 const TILE_SIZE = 16;
@@ -168,14 +169,14 @@ function adaptStreetObject(obj) {
 }
 
 class Tile {
-  constructor(type, rotation) {
+  constructor(type, rotation, baseOptions) {
     this._type = type;
     this._rotation = rotation;
 
     this._group = new THREE.Group();
     this._group.receiveShadow = true;
 
-    if (DEBUG_TILES) {
+    if (DEBUG_TILES || (baseOptions && baseOptions.drawBorders)) {
       const outlineShape = new THREE.Shape();
   
       const anchorX = TILE_SIZE / 2;
@@ -202,8 +203,8 @@ class Tile {
       mesh.position.y += 0.1;
       circle.position.x += 0.1;
 
-      this._group.add(circle);
-      this._group.add(mesh);
+      this.add(circle);
+      this.add(mesh);
     }
 
     this._ownLanes = [];
@@ -213,6 +214,10 @@ class Tile {
       '1': null,
       '2': null
     };
+
+    this._group._getTilePosition = () => {
+      return [ this._x, this._y ];
+    }
   }
 
   getRotation() {
@@ -232,7 +237,7 @@ class Tile {
   }
 
   speedLimitation() {
-    return 0.006;
+    return 0.01;
   }
 
   entranceSides() {
@@ -247,6 +252,12 @@ class Tile {
     return { x: 0, y: 0, angle: 0 };
   }
 
+  getTotalDistance(from, to) {
+    const dis = TILE_SIZE * 3;
+    const { overshoot } = this.interpolerateMovement(from, to, dis);
+    return dis - overshoot;
+  }
+
   render() {
     this._group.position.x += (TILE_SIZE / 2);
     this._group.position.z += (TILE_SIZE / 2);
@@ -257,8 +268,8 @@ class Tile {
 }
 
 class RoadTile extends Tile {
-  constructor(rotation, { models }) {
-    super(TYPES.ROAD, rotation);
+  constructor(rotation, { models, drawBorders }) {
+    super(TYPES.ROAD, rotation, { drawBorders });
 
     const o = adaptStreetObject(models.streetStraight);
     o.rotation.z += Math.PI / 2;
@@ -292,8 +303,8 @@ class RoadTile extends Tile {
 }
 
 class CurveTile extends Tile {
-  constructor(rotation, { models }) {
-    super(TYPES.CURVE, rotation);
+  constructor(rotation, { models, drawBorders }) {
+    super(TYPES.CURVE, rotation, { drawBorders });
 
     this.add(adaptStreetObject(models.streetCurve));
   }
@@ -359,8 +370,8 @@ class CurveTile extends Tile {
 }
 
 class TSectionTile extends Tile {
-  constructor(rotation, { models }) {
-    super(TYPES.T_SECTION, rotation);
+  constructor(rotation, { models, drawBorders }) {
+    super(TYPES.T_SECTION, rotation, { drawBorders });
 
     this.add(adaptStreetObject(models.streetTCross));
   }
@@ -424,8 +435,8 @@ const treeDis = [
 ];
 
 class TreeTile extends Tile {
-  constructor(rotation, { random, models }) {
-    super(TYPES.TREE, rotation);
+  constructor(rotation, { random, models, drawBorders }) {
+    super(TYPES.TREE, rotation, { drawBorders });
 
     const rnd = random.derive();
     
@@ -435,8 +446,8 @@ class TreeTile extends Tile {
       for (let i = 0; i < count; i++) {
         const t = adaptTreeObject(models[`tree${type}`]);
   
-        t.position.x += random.integer(-8, 8);
-        t.position.y += random.integer(-8, 8);
+        t.position.x += random.integer(-7, 7);
+        t.position.y += random.integer(-7, 7);
   
         this.add(t);
       }
@@ -444,12 +455,43 @@ class TreeTile extends Tile {
   }
 }
 
+class HouseTile extends Tile {
+  constructor(rotation, { random, models, drawBorders }, options) {
+    super(TYPES.HOUSE, rotation, { drawBorders });
+
+    const rnd = random.derive();
+
+    const type = (options && options.type) || 'Simple';
+    
+    const house = models[`architectureHouse${type}`].clone();
+    house.rotation.x = Math.PI;
+    if (type === 'Flat') {
+      house.rotation.z = -Math.PI / 2;
+    } else {
+      house.rotation.z = Math.PI;
+    }
+
+    if (type === 'Double') {
+      house.position.x -= TILE_SIZE / 2;
+    }
+
+    this.add(house);
+  }
+}
+
+class PlainTile extends Tile {
+  constructor(rotation, { drawBorders }) {
+    super(TYPES.PLAIN, rotation, { drawBorders });
+  }
+}
+
 const TILE_BY_TYPE = {
-  [TYPES.PLAIN]: Tile,
+  [TYPES.PLAIN]: PlainTile,
   [TYPES.ROAD]: RoadTile,
   [TYPES.CURVE]: CurveTile,
   [TYPES.T_SECTION]: TSectionTile,
-  [TYPES.TREE]: TreeTile
+  [TYPES.TREE]: TreeTile,
+  [TYPES.HOUSE]: HouseTile
 };
 
 export {

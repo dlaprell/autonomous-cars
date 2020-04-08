@@ -1,4 +1,5 @@
 import { rotate } from './utils';
+import { assert } from '../utils/assert';
 
 class GridMovementPath {
   constructor(initialTile, initialFrom, directions) {
@@ -59,12 +60,21 @@ class GridMovementBase {
     this._tileDistance = 0;
   }
 
+  getDistanceCurTile() {
+    return this._tileDistance;
+  }
+
   setAcceleration(acc) {
+    assert(!isNaN(acc));
     this._acceleration = acc;
   }
 
   speed() {
-    return this._speed;
+    return this._speed; // in m / ms
+  }
+
+  scaledSpeed() {
+    return (this._speed * 1000 * 60 * 60) / 1000; // in km / h
   }
 
   getX() {
@@ -82,6 +92,13 @@ class GridMovementBase {
   /** @returns Grid */
   grid() {
     return this._grid;
+  }
+
+  previousTile() {
+    const { tile, from } = this.getCurrentTileMovement();
+
+    const [ x, y ] = this._grid.getRelativeFrom(tile[0], tile[1], from);
+    return this._grid.getTileAt(x, y);
   }
 
   currentTile() {
@@ -116,9 +133,7 @@ class GridMovementBase {
 
     const distance = this._tileDistance + deltaDistance;
 
-    if (Number.isNaN(distance)) {
-      debugger;
-    }
+    assert(!isNaN(distance));
 
     const {
       from,
@@ -160,9 +175,7 @@ class GridMovementBase {
 
       this._internalTime += (timeDeltaMs - neededTime);
 
-      if (neededTime * 0.95 > timeDeltaMs) {
-        debugger;
-      }
+      assert(neededTime * 0.95 < timeDeltaMs);
 
       this.update(neededTime);
     } else {
@@ -295,10 +308,6 @@ class GridMovement {
     this._acceleration = acc;
   }
 
-  setSpeed(speed) {
-    this._speed = speed;
-  }
-
   getX() {
     return this._x;
   }
@@ -319,9 +328,7 @@ class GridMovement {
 
     const distance = this._tileDistance + deltaDistance;
 
-    if (Number.isNaN(distance)) {
-      debugger;
-    }
+    assert(!isNaN(distance));
 
     const {
       from,

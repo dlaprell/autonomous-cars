@@ -13,10 +13,10 @@ class SimluationScene extends Component {
 
     this._scene = new Scene();
 
-    var ambientLight = new AmbientLight(0xA0A0A0, 0.8); // soft white light
+    var ambientLight = new AmbientLight(0xA0A0A0, 0.5); // soft white light
     this._scene.add(ambientLight);
 
-    var spotLight = new PointLight( 0xffffff, 0.8);
+    var spotLight = new PointLight( 0xffffff, 0.6);
     spotLight.position.set(-150, 500, 200);
     spotLight.castShadow = true;
 
@@ -31,6 +31,8 @@ class SimluationScene extends Component {
     if (background) {
       this._scene.background = background;
     }
+
+    this._camera = null;
   }
 
   update(time, delta, rest) {
@@ -38,6 +40,7 @@ class SimluationScene extends Component {
       e.update(time, delta, rest);
     }
 
+    this._camera = rest.camera;
     rest.renderer.render(this._scene, rest.camera);
   }
 
@@ -52,17 +55,18 @@ class SimluationScene extends Component {
   removeElement(e) {
     this._scene.remove(e.group());
 
-    this._updateableElements.remove(e);
+    this._updateableElements.delete(e);
   }
   
   render() {
-    const { children, loop } = this.props;
+    const { children, loop, creatorView } = this.props;
 
     return (
       <SceneContext.Provider value={this}>
         {children}
 
         <SimulationRenderer
+          creatorView={creatorView}
           loop={Boolean(loop)}
           onUpdate={this.update.bind(this)}
         />
@@ -91,6 +95,12 @@ class SimluationSceneElement extends Component {
         scene.addElement(this);
         this._assignedScene = scene;
       }
+    }
+  }
+
+  componentWillUnmount() {
+    if (this._assignedScene) {
+      this._assignedScene.removeElement(this);
     }
   }
 

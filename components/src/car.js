@@ -15,8 +15,8 @@ class Car {
     this._emitter.on('update', listener);
   }
 
-  setSpeed(s) {
-    this._movement.setSpeed(s);
+  speed() {
+    return this._movement.speed();
   }
 
   setAcceleration(a) {

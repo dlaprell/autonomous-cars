@@ -9,7 +9,12 @@ function rotate(base, by) {
   );
 }
 
+function angle(base, to) {
+  return rotate(to, -base);
+}
+
 export {
   normalizeRotation,
-  rotate
+  rotate,
+  angle
 };

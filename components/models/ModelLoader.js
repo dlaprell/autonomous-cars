@@ -13,6 +13,9 @@ const MODELS = {
   streetTCross: 'street/t_cross.gltf',
   streetCross: 'street/cross.gltf',
 
+  streetDecorationTrashcan: 'street/trashcan.gltf',
+  streetDecorationBench: 'street/bench.gltf',
+
   carPurple: 'car/purple.gltf',
   carTuerkis: 'car/tuerkis.gltf',
   carBase: 'car/base.gltf',

@@ -214,10 +214,43 @@ class Tile {
       '1': null,
       '2': null
     };
+  }
 
-    this._group._getTilePosition = () => {
-      return [ this._x, this._y ];
+  addBench(models, inner = false) {
+    const bench = models.streetDecorationBench.clone();
+
+    bench.rotation.x = Math.PI;
+
+    if (inner) {
+      bench.rotation.z = Math.PI;
+
+      bench.position.x -= 6;
+      bench.position.y += 3;
+    } else {
+      bench.rotation.z = -Math.PI / 2;
+
+      bench.position.y -= 6;
+      bench.position.x += 3;
     }
+
+    this.add(bench);
+  }
+
+  addTrashCan(models, inner = false) {
+    const bench = models.streetDecorationTrashcan.clone();
+    bench.rotation.x = Math.PI;
+
+    if (inner) {
+      bench.position.x -= 6;
+      bench.position.y -= 3;
+    } else {
+      bench.rotation.z = Math.PI / 2;
+
+      bench.position.y -= 6;
+      bench.position.x -= 3;
+    }
+
+    this.add(bench);
   }
 
   getRotation() {
@@ -268,12 +301,20 @@ class Tile {
 }
 
 class RoadTile extends Tile {
-  constructor(rotation, { models, drawBorders }) {
+  constructor(rotation, { models, drawBorders }, options) {
     super(TYPES.ROAD, rotation, { drawBorders });
 
     const o = adaptStreetObject(models.streetStraight);
     o.rotation.z += Math.PI / 2;
     this.add(o);
+
+    if (options.bench) {
+      this.addBench(models, true);
+    }
+
+    if (options.trashCan) {
+      this.addTrashCan(models, true);
+    }
   }
 
   entranceSides() {
@@ -370,10 +411,18 @@ class CurveTile extends Tile {
 }
 
 class TSectionTile extends Tile {
-  constructor(rotation, { models, drawBorders }) {
+  constructor(rotation, { models, drawBorders }, options) {
     super(TYPES.T_SECTION, rotation, { drawBorders });
 
     this.add(adaptStreetObject(models.streetTCross));
+
+    if (options.bench) {
+      this.addBench(models, true);
+    }
+
+    if (options.trashCan) {
+      this.addTrashCan(models, true);
+    }
   }
 
   entranceSides() {
@@ -435,10 +484,12 @@ const treeDis = [
 ];
 
 class TreeTile extends Tile {
-  constructor(rotation, { random, models, drawBorders }) {
+  constructor(rotation, { random, models, drawBorders }, options) {
     super(TYPES.TREE, rotation, { drawBorders });
 
     const rnd = random.derive();
+
+    const hasSideDecoration = options.bench && options.trashCan;
     
     for (const { type, mean } of treeDis) {
       const count = Math.round(rnd.normalDistribution(mean).value());
@@ -447,21 +498,26 @@ class TreeTile extends Tile {
         const t = adaptTreeObject(models[`tree${type}`]);
   
         t.position.x += random.integer(-7, 7);
-        t.position.y += random.integer(-7, 7);
+        t.position.y += random.integer(hasSideDecoration ? -4 : -7, 7);
   
         this.add(t);
       }
+    }
+
+    if (options.bench) {
+      this.addBench(models);
+    }
+
+    if (options.trashCan) {
+      this.addTrashCan(models);
     }
   }
 }
 
 class HouseTile extends Tile {
-  constructor(rotation, { random, models, drawBorders }, options) {
+  constructor(rotation, { models, drawBorders }, options) {
     super(TYPES.HOUSE, rotation, { drawBorders });
-
-    const rnd = random.derive();
-
-    const type = (options && options.type) || 'Simple';
+    const type = options.type || 'Simple';
     
     const house = models[`architectureHouse${type}`].clone();
     house.rotation.x = Math.PI;
@@ -475,13 +531,37 @@ class HouseTile extends Tile {
       house.position.x -= TILE_SIZE / 2;
     }
 
+    house.position.z += 0.25;
+
+    house.traverse(child => {
+      if (child.isMesh && child.name.indexOf('Surrounding') !== -1) {
+        child.visible = false;
+      }
+    });
+
     this.add(house);
+
+    if (options.bench) {
+      this.addBench(models);
+    }
+
+    if (options.trashCan) {
+      this.addTrashCan(models);
+    }
   }
 }
 
 class PlainTile extends Tile {
-  constructor(rotation, { drawBorders }) {
+  constructor(rotation, { drawBorders, models }, options) {
     super(TYPES.PLAIN, rotation, { drawBorders });
+
+    if (options.bench) {
+      this.addBench(models);
+    }
+
+    if (options.trashCan) {
+      this.addTrashCan(models);
+    }
   }
 }
 

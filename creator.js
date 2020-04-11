@@ -95,6 +95,23 @@ class Creator extends Component {
     });
   }
 
+  toggleDecoration(dec) {
+    const { tile } = this.state;
+
+    this.setState(({ map }) => ({
+      map: map
+        .map((row, _y) => (
+          _y === tile.y
+            ? row
+              .map(
+                ([ t, rot, o ], _x) =>
+                  tile.x === _x ? [ t, rot, { ...o, [dec]: !o[dec] } ] : [ t, rot, o ]
+              )
+            : row
+        ))
+    }));
+  }
+
   updateHouse(type) {
     const { tile } = this.state;
 
@@ -105,7 +122,7 @@ class Creator extends Component {
             ? row
               .map(
                 ([ t, rot, o ], _x) =>
-                  tile.x === _x ? [ t, rot, { type } ] : [ t, rot, o ]
+                  tile.x === _x ? [ t, rot, { ...o, type } ] : [ t, rot, o ]
               )
             : row
         ))
@@ -273,6 +290,11 @@ class Creator extends Component {
           >
             <MenuButton label="Rotate Left" onClick={this.rotateLeft} />
             <MenuButton label="Rotate Right" onClick={this.rotateRight} />
+
+            <hr />
+
+            <MenuButton label="Decoration Trashcan" onClick={() => this.toggleDecoration('trashCan')} />
+            <MenuButton label="Decoration Bench" onClick={() => this.toggleDecoration('bench')} />
 
             {selectedTile && selectedTile[0] == 5 && (
               <Fragment>

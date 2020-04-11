@@ -26,7 +26,7 @@ class GridMap {
             const data = {
               x,
               y,
-              tile: new tile(rotation, { random: rd, models }, options)
+              tile: new tile(rotation, { random: rd, models }, options || {})
             };
 
             data.tile._x = x;

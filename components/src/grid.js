@@ -129,7 +129,7 @@ class GridMap {
         }
 
         const tileLaneSides = new Set(tile.entranceSides());
-        const tileLaneEnding = tile.getType() === TYPES.T_SECTION;
+        const tileLaneEnding = (tile.getType() === TYPES.T_SECTION || tile.getType() === TYPES.CROSS);
 
         if (tileLaneSides.has(0)) {
           assert(topConnect);
@@ -170,8 +170,8 @@ class GridMap {
             continue;
           }
 
-          if (tile.getType() === TYPES.T_SECTION) {
-            // So we neverthe less have to create two new lanes
+          if (tile.getType() === TYPES.T_SECTION || tile.getType() === TYPES.CROSS) {
+            // So we nevertheless have to create two new lanes
             const l1 = new Lane();
             const l2 = new Lane();
             
@@ -227,7 +227,7 @@ class GridMap {
           lanesOut.add(tile._lanes[side].outgoing);
         }
 
-        if (tile.getType() == TYPES.T_SECTION) {
+        if (tile.getType() == TYPES.T_SECTION || tile.getType() == TYPES.CROSS) {
           continue;
         }
 
@@ -284,7 +284,7 @@ class GridMap {
 
         const { tile: next } = this.getTileAt(nX, nY);
 
-        if (next.getType() === TYPES.T_SECTION) {
+        if (next.getType() === TYPES.T_SECTION || next.getType() === TYPES.CROSS) {
           from = rotate(end[0], 2);
           break;
         }
@@ -318,7 +318,7 @@ class GridMap {
 
         const { tile: next } = this.getTileAt(nX, nY);
 
-        if (next.getType() === TYPES.T_SECTION) {
+        if (next.getType() === TYPES.T_SECTION || next.getType() === TYPES.CROSS) {
           break;
         }
 

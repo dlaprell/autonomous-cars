@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { MeshLambertMaterial, DoubleSide } from 'three';
 
-import { rotate, normalizeRotation } from './utils';
+import { rotate, normalizeRotation, angle } from './utils';
 import { adaptTreeObject } from './tree';
+import { assert } from '../utils/assert';
 
 const DEBUG_TILES = false;
 const DEBUG_MOVEMENT = false;
@@ -12,8 +13,9 @@ const TYPES = {
   ROAD: 1,
   CURVE: 2,
   T_SECTION: 3,
-  TREE: 4,
-  HOUSE: 5
+  CROSS: 4,
+  TREE: 20,
+  HOUSE: 30
 };
 
 const TILE_SIZE = 16;
@@ -475,6 +477,55 @@ class TSectionTile extends Tile {
   }
 }
 
+class CrossTile extends Tile {
+  constructor(rotation, { models, drawBorders }) {
+    super(TYPES.CROSS, rotation, { drawBorders });
+
+    this.add(adaptStreetObject(models.streetCross));
+  }
+
+  entranceSides() {
+    return [ -1, 0, 1, 2 ]
+  }
+
+  exitSides() {
+    return this.entranceSides();
+  }
+
+  interpolerateMovement(from, to, distance) {
+    if (DEBUG_MOVEMENT) {
+      const en = this.entranceSides();
+      const ex = this.exitSides();
+
+      if (en.indexOf(from) === -1 || ex.indexOf(to) === -1) {
+        throw new Error("Movement with the supplied from / to is not possible");
+      }
+    }
+
+    const isCurve = ((from + to) % 2) != 0;
+
+    if (isCurve) {
+      const ang = angle(from, to);
+      assert(ang === 1 || ang === -1);
+
+      let rotation;
+      if (ang === 1) { // left turn
+        rotation = rotate(from, -1);
+      } else { // right turn
+        rotation = rotate(from, 2);
+      }
+      return interpolerateCurveMovement(
+        from,
+        to,
+        distance,
+        rotation
+      );
+    } else {
+      return interpolerateStraightMovement(from, to, distance, this._rotation);
+    }
+  }
+}
+
 const treeDis = [
   { type: 'Spreading', mean: 12 },
   { type: 'Pyramidal', mean: 4 },
@@ -570,7 +621,10 @@ const TILE_BY_TYPE = {
   [TYPES.ROAD]: RoadTile,
   [TYPES.CURVE]: CurveTile,
   [TYPES.T_SECTION]: TSectionTile,
+  [TYPES.CROSS]: CrossTile,
+
   [TYPES.TREE]: TreeTile,
+
   [TYPES.HOUSE]: HouseTile
 };
 

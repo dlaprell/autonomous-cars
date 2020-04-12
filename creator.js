@@ -12,9 +12,9 @@ import { rotate } from "./components/src/utils";
 
 const FILL_TILE = [ TYPES.PLAIN, 0, {} ];
 
-function MenuButton({ label, onClick }) {
+function MenuButton({ label, onClick, disabled }) {
   return (
-    <button type="button" onClick={onClick}>
+    <button type="button" onClick={onClick} disabled={disabled}>
       {label}
     </button>
   );
@@ -25,8 +25,9 @@ const types = {
   'road': { value: 1, name: 'Street' },
   'curve': { value: 2, name: 'Curve' },
   'tsection': { value: 3, name: 'T - Intersection' },
-  'tree': { value: 4, name: 'Forest' },
-  'house': { value: 5, name: 'House' }
+  'cross': { value: 4, name: 'Cross' },
+  'tree': { value: 20, name: 'Forest' },
+  'house': { value: 30, name: 'House' }
 }
 
 class Creator extends Component {
@@ -268,6 +269,7 @@ class Creator extends Component {
     } = this.state;
 
     const selectedTile = (menuOpen && tile) ? map[tile.y][tile.x] : null;
+    const disabledTileDecoration = (selectedTile && (selectedTile[0] === 2 || selectedTile[0] === 4));
 
     return (
       <Fragment>
@@ -293,8 +295,8 @@ class Creator extends Component {
 
             <hr />
 
-            <MenuButton label="Decoration Trashcan" onClick={() => this.toggleDecoration('trashCan')} />
-            <MenuButton label="Decoration Bench" onClick={() => this.toggleDecoration('bench')} />
+            <MenuButton label="Decoration Trashcan" onClick={() => this.toggleDecoration('trashCan')} disabled={disabledTileDecoration} />
+            <MenuButton label="Decoration Bench" onClick={() => this.toggleDecoration('bench')} disabled={disabledTileDecoration} />
 
             {selectedTile && selectedTile[0] == 5 && (
               <Fragment>

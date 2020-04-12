@@ -6,7 +6,7 @@ import { SimluationSceneElement } from './SimulationScene';
 import { Car } from './src/car';
 import { RandomMovement } from './src/movement';
 import { ModelContext } from './ModelManager';
-import { rotate, normalizeRotation, angle } from './src/utils';
+import { rotate, angle } from './src/utils';
 import { TYPES } from './src/grid_tiles';
 import { assert } from './utils/assert';
 
@@ -110,7 +110,7 @@ class TrafficManager extends SimluationSceneElement {
       let ahead;
       let completed;
 
-      if (curTile.getType() === TYPES.T_SECTION) {
+      if (curTile.getType() === TYPES.T_SECTION || curTile.getType() === TYPES.CROSS) {
         ahead = curTile.getTotalDistance(curDirs.from, curDirs.to) - tileDistance;
         completed = tileDistance;
 
@@ -131,7 +131,7 @@ class TrafficManager extends SimluationSceneElement {
 
         // So if the previous one is a t-section then we
         // ignore this here, since we are no longer in the section
-        if (preTile.getType() !== TYPES.T_SECTION) {
+        if (preTile.getType() !== TYPES.T_SECTION && preTile.getType() !== TYPES.CROSS) {
           const lane = curTile._lanes[curDirs.from].incoming;
           addToLane(lane, lane._totalDistance + tileDistance, vehicle);
         }
@@ -140,7 +140,7 @@ class TrafficManager extends SimluationSceneElement {
 
         const nextTile = mov.targetTile().tile;
 
-        if (nextTile.getType() === TYPES.T_SECTION) {
+        if (nextTile.getType() === TYPES.T_SECTION || nextTile.getType() === TYPES.CROSS) {
           const nextDirs = mov.getNextTileDirections();
           const nextStepDistance = nextTile.getTotalDistance(nextDirs.from, nextDirs.to);
           addToConflictZone(nextTile, vehicle, -ahead, nextStepDistance + ahead, nextDirs);
@@ -324,10 +324,14 @@ class TrafficManager extends SimluationSceneElement {
       const nextDir = mov.getNextTileDirections();
 
       const curTile = mov.currentTile().tile;
+      const nextTile = mov.targetTile().tile;
+
       const lim = limiter.has(vehicle) ? limiter.get(vehicle) : 1;
       let tileSpeedLimit = curTile.speedLimitation() * lim;
 
-      if (((from + to) % 2) !== 0) {
+      if (nextTile.getType() === TYPES.T_SECTION || nextTile.getType() === TYPES.CROSS) {
+        tileSpeedLimit = Math.min(tileSpeedLimit, 0.0075);
+      } else if (((from + to) % 2) !== 0) {
         tileSpeedLimit = Math.min(tileSpeedLimit, 0.008);
       } else if (((nextDir.from + nextDir.to) % 2) !== 0) {
         tileSpeedLimit = Math.min(tileSpeedLimit, 0.009);

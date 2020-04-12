@@ -40,6 +40,11 @@ class SimluationScene extends Component {
       e.update(time, delta, rest);
     }
 
+    if (!this._camera && rest.cameraWrapper) {
+      this._scene.add(rest.cameraWrapper);
+      // rest.cameraWrapper.rotation.x = Math.PI / 2;
+    }
+
     this._camera = rest.camera;
     rest.renderer.render(this._scene, rest.camera);
   }
@@ -59,7 +64,7 @@ class SimluationScene extends Component {
   }
   
   render() {
-    const { children, loop, creatorView } = this.props;
+    const { children, loop, creatorView, vr } = this.props;
 
     return (
       <SceneContext.Provider value={this}>
@@ -68,6 +73,7 @@ class SimluationScene extends Component {
         <SimulationRenderer
           creatorView={creatorView}
           loop={Boolean(loop)}
+          vr={vr}
           onUpdate={this.update.bind(this)}
         />
       </SceneContext.Provider>

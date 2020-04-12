@@ -1,11 +1,16 @@
 /** @jsx h */
 
-import { WebGLRenderer, PerspectiveCamera } from 'three';
+import { WebGLRenderer, PerspectiveCamera, Group } from 'three';
 import { h, Component } from 'preact';
+import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 
 class SimulationRenderer extends Component {
   constructor(...args) {
     super(...args);
+
+    const { vr } = this.props;
+    // Cannot be changed later on
+    this._vr = vr;
 
     this._totalTime = 0;
     this._lastTime = null;
@@ -16,13 +21,44 @@ class SimulationRenderer extends Component {
 
     this._renderer = new WebGLRenderer({ antialias: false /* , alpha: true */ });
     // this._renderer.shadowMap.enabled = true;
+    this._renderer.xr.enabled = vr;
 
     this._resizeHandler = () => {
       const width = this._ref.clientWidth;
       const height = this._ref.clientHeight;
-      this._renderer.setSize( width, height );
+      
+      this._renderer.setSize(width, height);
+
       this._camera.aspect = width / height; // aspect ratio
       this._camera.updateProjectionMatrix();
+    };
+
+    this._updateCameraPosition = (x, y, z) => {
+      const pos = (this._vr ? this._cameraWrapper : this._camera).position;
+      
+      if (x !== null) {
+        pos.x = x;
+      }
+      if (y !== null) {
+        pos.y = y;
+      }
+      if (x !== null) {
+        pos.z = z;
+      }
+    };
+
+    this._updateCameraRotation = (x, y, z) => {
+      const rot = (this._vr ? this._cameraWrapper : this._camera).rotation;
+      
+      if (x !== null) {
+        rot.x = x;
+      }
+      if (y !== null) {
+        rot.y = y;
+      }
+      if (x !== null) {
+        rot.z = z;
+      }
     };
 
     this._updateRef = (update) => {
@@ -48,7 +84,9 @@ class SimulationRenderer extends Component {
 
       const { loop } = this.props;
 
-      window.requestAnimationFrame(this._runUpdate);
+      if (!this._vr) {
+        window.requestAnimationFrame(this._runUpdate);
+      }
 
       if (this._lastTime === null) {
         this._lastTime = new Date();
@@ -70,7 +108,10 @@ class SimulationRenderer extends Component {
         try {
           onUpdate(this._totalTime, delta, {
             renderer: this._renderer,
-            camera: this._camera
+            camera: this._camera,
+            cameraWrapper: this._cameraWrapper,
+            updateCameraPosition: this._updateCameraPosition,
+            updateCameraRotation: this._updateCameraRotation
           });
         } catch (ex) {
           this._paused = true;
@@ -84,7 +125,12 @@ class SimulationRenderer extends Component {
     this._ref.appendChild(this._renderer.domElement);
     this._mounted = true;
 
-    window.requestAnimationFrame(this._runUpdate);
+    if (this._vr) {
+      this._ref.appendChild(VRButton.createButton(this._renderer));
+      this._renderer.setAnimationLoop(this._runUpdate);
+    } else {
+      window.requestAnimationFrame(this._runUpdate);
+    }
   }
 
   removeRenderer() {
@@ -98,8 +144,16 @@ class SimulationRenderer extends Component {
 
     const { creatorView } = this.props;
 
-    this._camera = new PerspectiveCamera(20, width / height, 1, creatorView ? 2500 : 750);
-    this._camera.position.set(0, 200, 3);
+    this._camera = new PerspectiveCamera(20, width / height, .1, creatorView ? 2500 : 750);
+
+    if (this._vr) {
+      this._cameraWrapper = new Group();
+      this._cameraWrapper.add(this._camera);
+    }
+    
+    this._camera.rotation.x = 0;
+    this._camera.rotation.y = 0;
+    this._updateCameraPosition(0, 200, 3);
 
     this._renderer.setSize(width, height);
 

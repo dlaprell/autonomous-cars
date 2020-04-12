@@ -99,7 +99,7 @@ class TrafficManager extends SimluationSceneElement {
     }
 
     for (const vehicle of this._managedObjects) {
-      vehicle.before = new Set();
+      vehicle.before = [];
       const mov = vehicle.movement();
 
       const curTile = mov.currentTile().tile;
@@ -160,7 +160,7 @@ class TrafficManager extends SimluationSceneElement {
         const { vehicle: befVehicle, distance: befDistance } = queue[i - 1];
         const { vehicle: curVehicle, distance: curDistance } = queue[i];
 
-        curVehicle.before.add({
+        curVehicle.before.push({
           delta: befDistance - curDistance,
           vehicle: befVehicle
         });
@@ -200,7 +200,7 @@ class TrafficManager extends SimluationSceneElement {
             const { vehicle: befVehicle, distance: befDistance } = sorted[i - 1];
             const { vehicle: curVehicle, distance: curDistance } = sorted[i];
 
-            curVehicle.before.add({
+            curVehicle.before.push({
               delta: befDistance - curDistance,
               vehicle: befVehicle
             });
@@ -208,8 +208,7 @@ class TrafficManager extends SimluationSceneElement {
         }
       }
 
-      const blockedByCenter = new Set();
-      const blockedByFront = new Set();
+      const blocked = [];
 
       for (const d of vehicles) {
         if (atDest[d.to].has(d)) {
@@ -228,7 +227,7 @@ class TrafficManager extends SimluationSceneElement {
           for (const c of inCenter) {
             if (c.from === d.from) {
               const delta = c.distance - d.distance;
-              d.vehicle.before.add({
+              d.vehicle.before.push({
                 vehicle: c.vehicle,
                 delta
               });
@@ -251,7 +250,8 @@ class TrafficManager extends SimluationSceneElement {
 
             // so this vehicle is at the front, but cannot currently drive
             // into the intersection -> make it stop just before the entrance
-            blockedByCenter.add(d);
+            blocked.push(d);
+            d.blockedByCenter = true;
             break;
           }
 
@@ -263,7 +263,8 @@ class TrafficManager extends SimluationSceneElement {
             // Check for:
             // - all from the right side
             if (front[rotate(d.from, -1)]) {
-              blockedByFront.add(d);
+              blocked.push(d);
+              d.blockedByFront = true;
               continue;
             }
           } else /* d.action === 1 */ { // left turn
@@ -272,13 +273,15 @@ class TrafficManager extends SimluationSceneElement {
             // - right: left, straight
             const st = front[rotate(d.from, 2)];
             if (st && st.angle !== 1) {
-              blockedByFront.add(d);
+              blocked.push(d);
+              d.blockedByFront = true;
               continue;
             }
 
             const ri = front[rotate(d.from, -1)];
             if (ri && ri.angle !== -1) {
-              blockedByFront.add(d);
+              blocked.push(d);
+              d.blockedByFront = true;
               continue;
             }
           }
@@ -287,8 +290,8 @@ class TrafficManager extends SimluationSceneElement {
         }
       }
 
-      for (const d of vehicles) {
-        if (blockedByFront.has(d) || blockedByCenter.has(d)) {
+      for (const d of blocked) {
+        if (d.blockedByFront || d.blockedByCenter) {
           if (d.distance < -3) {
             addLimiter(d.vehicle, 0.1);
           } else {
@@ -420,27 +423,32 @@ class MovingCar extends SimluationSceneElement {
     this.group().position.z = y;
     this.group().rotation.y = -angle;
 
-    const { following } = this.props;
+    const { following, vr } = this.props;
     if (!following) {
       return;
     }
 
-    const camera = rest.camera;
+    let camX = x;
+    const camY = vr ? -0.4 : 1.2;
+    let camZ = y;
 
-    camera.position.y = 1.1;
-    camera.position.x = x;
-    camera.position.z = y;
+    const offsetX = -0.25;
+    const offsetY = vr ? 0 : 0.75;
 
-    const offsetX = -0.225;
-    const offsetY = 1.4;
+    camX += offsetX * Math.cos(angle) - offsetY * Math.sin(angle);
+    camZ += offsetY * Math.cos(angle) + offsetX * Math.sin(angle);
 
-    camera.position.x += offsetX * Math.cos(angle) - offsetY * Math.sin(angle);
-    camera.position.z += offsetY * Math.cos(angle) + offsetX * Math.sin(angle);
+    rest.updateCameraPosition(camX, camY, camZ);
 
-    camera.rotation.y = -angle;
-    camera.rotation.x = 0;
-    camera.rotation.z = 0;
-    camera.rotateOnAxis({ x: 1, y: 0, z: 0 }, -1 * Math.PI * 0.02);
+    if (vr) {
+      rest.updateCameraRotation(null, -angle, null);
+    } else {
+      const camera = rest.camera;
+      camera.rotation.y = -angle;
+      camera.rotation.x = 0;
+      camera.rotation.z = 0;
+      camera.rotateOnAxis({ x: 1, y: 0, z: 0 }, -1 * Math.PI * 0.04);
+    }
   }
 
   render() {

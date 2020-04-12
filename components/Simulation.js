@@ -72,7 +72,9 @@ class Simulation extends Component {
       container,
       sceneRef,
       
-      creatorView
+      creatorView,
+
+      vr
     } = this.props;
 
     const {
@@ -96,12 +98,14 @@ class Simulation extends Component {
     return (
       <ModelManager models={models}>
         <SimluationScene
+          vr={Boolean(vr)}
+
           background={this._background}
           loop={loaded}
           ref={sceneRef}
           creatorView={creatorView}
         >
-          <OrbitControls enabled={withCamera} container={container} />
+          <OrbitControls enabled={withCamera && !vr} container={container} />
 
           <Wrapper key={this._grid.id()}>
             {withTraffic && (
@@ -111,7 +115,8 @@ class Simulation extends Component {
                     grid={this._grid}
                     random={this._random}
                     initial={initial}
-                    following={!withCamera && following}
+                    vr={vr}
+                    following={(!withCamera || vr) && following}
                   />
                 ))}
               </TrafficManager>

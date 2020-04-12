@@ -177,6 +177,7 @@ class Tile {
 
     this._group = new THREE.Group();
     this._group.receiveShadow = true;
+    this._group.matrixAutoUpdate = false;
 
     if (DEBUG_TILES || (baseOptions && baseOptions.drawBorders)) {
       const outlineShape = new THREE.Shape();

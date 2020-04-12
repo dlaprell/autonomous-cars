@@ -405,6 +405,9 @@ class GridMap {
       g.position.x += -1 * (this.size() / 2) + (x * TILE_SIZE);
       g.position.z += -1 * (this.size() / 2) + (y * TILE_SIZE);
 
+      // These tile groups are static and need to be updated manually
+      g.updateMatrix();
+
       this._group.add(g);
 
       if (x === 0 && y === 0 && false) {

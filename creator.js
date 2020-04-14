@@ -9,6 +9,7 @@ import { h, render, Component, Fragment, createRef } from 'preact';
 import { Simulation } from './components/Simulation';
 import { TYPES } from "./components/src/grid_tiles";
 import { rotate } from "./components/src/utils";
+import { RandomGen } from "./components/src/randomgen";
 
 const FILL_TILE = [ TYPES.PLAIN, 0, {} ];
 
@@ -36,6 +37,11 @@ class Creator extends Component {
 
     this._sceneRef = createRef(null);
 
+    this._random = new RandomGen(4213);
+
+    const startTile = [ ...FILL_TILE ];
+    startTile[2] = { ...startTile[2], seed: this.drainSeedValue() };
+
     this.state = {
       mainRef: null,
 
@@ -48,7 +54,7 @@ class Creator extends Component {
 
       size: 1,
       map: [
-        [ FILL_TILE ]
+        [ startTile ]
       ]
     };
 
@@ -63,6 +69,10 @@ class Creator extends Component {
     this.rotateRight = this.handleRotation.bind(this, 1);
 
     this.exportWorld = this.exportWorld.bind(this);
+  }
+
+  drainSeedValue() {
+    return this._random.integer(0, 100000);
   }
 
   updateMainRef(r) {
@@ -81,13 +91,25 @@ class Creator extends Component {
       const newMap = map
         .map(row => {
           if (row.length < newSize) {
-            return [ ...row, ...new Array(diff).fill(FILL_TILE) ];
+            return [
+              ...row,
+              ...new Array(diff)
+                .fill(FILL_TILE)
+                .map(([ t, r, o ]) => ([ t, r, { ...o, seed: this.drainSeedValue() } ]))
+            ];
           } else {
             return row.slice(0, newSize);
           }
         })
         .filter((r, idx) => idx < newSize)
-        .concat(new Array(Math.max(0, diff)).fill(new Array(newSize).fill(FILL_TILE) ));
+        .concat(
+          new Array(Math.max(0, diff))
+            .fill(
+              new Array(newSize)
+                .fill(FILL_TILE)
+                .map(([ t, r, o ]) => ([ t, r, { ...o, seed: this.drainSeedValue() } ]))
+            )
+        );
 
       return {
         map: newMap,

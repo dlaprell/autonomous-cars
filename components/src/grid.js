@@ -1,4 +1,4 @@
-import { Group, Mesh, VertexColors, MeshLambertMaterial } from 'three';
+import { Group, Mesh, VertexColors, MeshLambertMaterial, DoubleSide } from 'three';
 
 import { BufferGeometryUtils } from '../third-party/BufferGeometryUtils';
 import { assert } from '../utils/assert';
@@ -400,6 +400,7 @@ class GridMap {
 
   render() {
     const forestTiles = [];
+    const laneTiles = [];
 
     for (const { x, y, tile } of this._tileList) {
       tile.render();
@@ -414,23 +415,46 @@ class GridMap {
 
       if (tile.getType() === TYPES.FOREST) {
         forestTiles.push(tile);
+      } else if (tile.laneGeometry()) {
+        laneTiles.push(tile);
       }
     }
 
     // Now extract all the forest geometries and add them as one to the world
-    const forestGeometries = [];
-    for (const tile of forestTiles) {
-      const g = tile.getGroup();
-      g.updateWorldMatrix(true, false);
+    if (forestTiles.length > 0) {
+      const forestGeometries = [];
+      for (const tile of forestTiles) {
+        const g = tile.getGroup();
+        g.updateWorldMatrix(true, false);
 
-      const forestGeometry = tile.getForestGeometry();
-      forestGeometry.applyMatrix4(g.matrixWorld);
+        const forestGeometry = tile.getForestGeometry();
+        forestGeometry.applyMatrix4(g.matrixWorld);
 
-      forestGeometries.push(forestGeometry);
+        forestGeometries.push(forestGeometry);
+      }
+
+      const mergedForests = BufferGeometryUtils.mergeBufferGeometries(forestGeometries, false);
+      assert(mergedForests);
+      this._group.add(new Mesh(mergedForests, new MeshLambertMaterial({ vertexColors: VertexColors })));
     }
 
-    const mergedForests = BufferGeometryUtils.mergeBufferGeometries(forestGeometries, false);
-    this._group.add(new Mesh(mergedForests, new MeshLambertMaterial({ vertexColors: VertexColors })));
+    if (laneTiles.length > 0) {
+      const laneGeometries = [];
+
+      for (const tile of laneTiles) {
+        const g = tile.getGroup();
+        g.updateWorldMatrix(true, false);
+
+        const laneGeometry = tile.laneGeometry();
+        laneGeometry.applyMatrix4(g.matrixWorld);
+
+        laneGeometries.push(laneGeometry);
+      }
+
+      const mergedLanes = BufferGeometryUtils.mergeBufferGeometries(laneGeometries, false);
+      assert(mergedLanes);
+      this._group.add(new Mesh(mergedLanes, new MeshLambertMaterial({ vertexColors: VertexColors, side: DoubleSide })));
+    }
   }
 }
 

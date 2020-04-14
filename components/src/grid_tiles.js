@@ -147,6 +147,8 @@ const sideWalkMaterial = new MeshLambertMaterial({
 function adaptStreetObject(obj) {
   const o = obj.clone();
 
+  const objs = {};
+
   o.traverse((child) => {
     if (!child.isMesh) {
       return;
@@ -155,14 +157,17 @@ function adaptStreetObject(obj) {
     if (child.name.endsWith('Surrounding')) {
       child.material = surroundingMaterial;
       child.visible = false;
+      objs.surroundings = child;
     }
   
     if (child.name.endsWith('Street')) {
       child.material = streetMaterial;
+      objs.street = child;
     }
 
     if (child.name.endsWith('Sidewalk')) {
       child.material = sideWalkMaterial;
+      objs.sidewalk = child;
     }
   });
 
@@ -257,6 +262,10 @@ class Tile {
     this.add(bench);
   }
 
+  laneGeometry() {
+    return this._laneGeometry || null;
+  }
+
   getRotation() {
     return this._rotation;
   }
@@ -308,9 +317,28 @@ class RoadTile extends Tile {
   constructor(rotation, { models, drawBorders }, options) {
     super(TYPES.ROAD, rotation, { drawBorders });
 
-    const o = adaptStreetObject(models.streetStraight);
-    o.rotation.z += Math.PI / 2;
-    this.add(o);
+    const road = adaptStreetObject(models.streetStraight);
+    road.rotation.z += Math.PI / 2;
+    
+    let lane = null;
+    road.traverse(child => {
+      if (!child.isMesh) {
+        return;
+      }
+
+      if (child.name.endsWith('Street')) {
+        lane = child;
+      }
+    });
+
+    assert(lane);
+
+    lane.position.z += 0.01;
+
+    lane.updateWorldMatrix(true, false);
+    this._laneGeometry = lane.geometry.clone();
+    this._laneGeometry.applyMatrix4(lane.matrixWorld);
+    addColorToGeometry(this._laneGeometry, '#ff0000');
 
     if (options.bench) {
       this.addBench(models, true);
@@ -351,37 +379,29 @@ class CurveTile extends Tile {
   constructor(rotation, { models, drawBorders }) {
     super(TYPES.CURVE, rotation, { drawBorders });
 
-    this.add(adaptStreetObject(models.streetCurve));
-  }
+    const curve = adaptStreetObject(models.streetCurve);
+    
+    let lane = null;
+    curve.traverse(child => {
+      if (!child.isMesh) {
+        return;
+      }
 
-  _getOutlineGeometry(radiusOuter, radiusInner) {
-    const curvedShape = new THREE.Shape();
-  
-    const anchorX = TILE_SIZE / 2;
-    const anchorY = TILE_SIZE / 2;
-  
-    curvedShape.moveTo(anchorX - radiusOuter, anchorY);
-    curvedShape.lineTo(anchorX - radiusInner, anchorY);
-    curvedShape.absarc(
-      anchorX,
-      anchorY,
-      radiusInner,
-      -Math.PI,
-      -Math.PI / 2,
-      false
-    );
-    curvedShape.lineTo(anchorX, anchorY - radiusOuter);
-  
-    curvedShape.absarc(
-      anchorX,
-      anchorY,
-      radiusOuter,
-      -Math.PI / 2,
-      -Math.PI,
-      true
-    );
-  
-    return new THREE.ShapeGeometry(curvedShape);
+      if (child.name.endsWith('Street')) {
+        lane = child;
+      }
+    });
+
+    assert(lane);
+
+    lane.position.z += 0.01;
+
+    lane.updateWorldMatrix(true, false);
+    this._laneGeometry = lane.geometry.clone();
+    this._laneGeometry.applyMatrix4(lane.matrixWorld);
+    addColorToGeometry(this._laneGeometry, '#ff0000');
+
+    // this.add(curve);
   }
 
   entranceSides() {
@@ -418,7 +438,27 @@ class TSectionTile extends Tile {
   constructor(rotation, { models, drawBorders }, options) {
     super(TYPES.T_SECTION, rotation, { drawBorders });
 
-    this.add(adaptStreetObject(models.streetTCross));
+    const tcross = adaptStreetObject(models.streetTCross);
+    
+    let lane = null;
+    tcross.traverse(child => {
+      if (!child.isMesh) {
+        return;
+      }
+
+      if (child.name.endsWith('Street')) {
+        lane = child;
+      }
+    });
+
+    assert(lane);
+
+    lane.position.z += 0.01;
+
+    lane.updateWorldMatrix(true, false);
+    this._laneGeometry = lane.geometry.clone();
+    this._laneGeometry.applyMatrix4(lane.matrixWorld);
+    addColorToGeometry(this._laneGeometry, '#ff0000');
 
     if (options.bench) {
       this.addBench(models, true);
@@ -483,7 +523,27 @@ class CrossTile extends Tile {
   constructor(rotation, { models, drawBorders }) {
     super(TYPES.CROSS, rotation, { drawBorders });
 
-    this.add(adaptStreetObject(models.streetCross));
+    const cross = adaptStreetObject(models.streetCross);
+    
+    let lane = null;
+    cross.traverse(child => {
+      if (!child.isMesh) {
+        return;
+      }
+
+      if (child.name.endsWith('Street')) {
+        lane = child;
+      }
+    });
+
+    assert(lane);
+
+    lane.position.z += 0.01;
+
+    lane.updateWorldMatrix(true, false);
+    this._laneGeometry = lane.geometry.clone();
+    this._laneGeometry.applyMatrix4(lane.matrixWorld);
+    addColorToGeometry(this._laneGeometry, '#ff0000');
   }
 
   entranceSides() {
@@ -540,7 +600,7 @@ class ForestTile extends Tile {
   constructor(rotation, { random, models, drawBorders }, options) {
     super(TYPES.FOREST, rotation, { drawBorders });
 
-    const rnd = new RandomGen(options.seed || 13);
+    const rnd = new RandomGen(options.seed || random.integer(0, 100));
     const hasSideDecoration = options.bench && options.trashCan;
 
     const treeGeometries = [];
@@ -554,8 +614,8 @@ class ForestTile extends Tile {
       for (let i = 0; i < count; i++) {
         const t = models[`tree${type}`].clone();
 
-        const xOffset = random.integer(-7, 7);
-        const yOffset = random.integer(hasSideDecoration ? -4 : -7, 7);
+        const xOffset = rnd.integer(-7, 7);
+        const yOffset = rnd.integer(hasSideDecoration ? -4 : -7, 7);
 
         let trunk = null;
         let leaves = null;

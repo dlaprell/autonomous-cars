@@ -1,4 +1,7 @@
-import * as THREE from 'three';
+import { Group, Mesh, VertexColors, MeshLambertMaterial } from 'three';
+
+import { BufferGeometryUtils } from '../third-party/BufferGeometryUtils';
+import { assert } from '../utils/assert';
 
 import {
   TYPES,
@@ -6,10 +9,8 @@ import {
 
   TILE_SIZE
 } from './grid_tiles';
-import { TileDecorator, DECORATOR_TYPES } from './tile_decorators';
 import { rotate } from './utils';
 import { Lane } from './lane';
-import { assert } from '../utils/assert';
 
 let gridIdCounter = 0;
 
@@ -43,7 +44,7 @@ class GridMap {
       this._initLanes();
     }
 
-    this._group = new THREE.Group();
+    this._group = new Group();
   }
 
   id () {
@@ -398,6 +399,8 @@ class GridMap {
   }
 
   render() {
+    const forestTiles = [];
+
     for (const { x, y, tile } of this._tileList) {
       tile.render();
       const g = tile.getGroup();
@@ -407,20 +410,27 @@ class GridMap {
 
       // These tile groups are static and need to be updated manually
       g.updateMatrix();
-
       this._group.add(g);
 
-      if (x === 0 && y === 0 && false) {
-        const dec = new TileDecorator(tile, [
-          { type: DECORATOR_TYPES.PAVEMENT }
-        ]);
-        const g = dec.render();
-        g.position.x += -1 * (this.size() / 2) + (x * TILE_SIZE);
-        g.position.z += -1 * (this.size() / 2) + (y * TILE_SIZE);
-
-        this._group.add(g);
+      if (tile.getType() === TYPES.FOREST) {
+        forestTiles.push(tile);
       }
     }
+
+    // Now extract all the forest geometries and add them as one to the world
+    const forestGeometries = [];
+    for (const tile of forestTiles) {
+      const g = tile.getGroup();
+      g.updateWorldMatrix(true, false);
+
+      const forestGeometry = tile.getForestGeometry();
+      forestGeometry.applyMatrix4(g.matrixWorld);
+
+      forestGeometries.push(forestGeometry);
+    }
+
+    const mergedForests = BufferGeometryUtils.mergeBufferGeometries(forestGeometries, false);
+    this._group.add(new Mesh(mergedForests, new MeshLambertMaterial({ vertexColors: VertexColors })));
   }
 }
 

@@ -26,7 +26,7 @@ const types = {
   'curve': { value: 2, name: 'Curve' },
   'tsection': { value: 3, name: 'T - Intersection' },
   'cross': { value: 4, name: 'Cross' },
-  'tree': { value: 20, name: 'Forest' },
+  'forest': { value: 20, name: 'Forest' },
   'house': { value: 30, name: 'House' }
 }
 

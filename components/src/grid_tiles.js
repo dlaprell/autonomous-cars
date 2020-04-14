@@ -1,8 +1,9 @@
 import * as THREE from 'three';
-import { MeshLambertMaterial, DoubleSide } from 'three';
+import { MeshLambertMaterial, DoubleSide, Mesh } from 'three';
+import { BufferGeometryUtils } from '../third-party/BufferGeometryUtils'
 
 import { rotate, normalizeRotation, angle } from './utils';
-import { adaptTreeObject } from './tree';
+import { adaptTreeObject, leaveMaterial, trunkMaterial } from './tree';
 import { assert } from '../utils/assert';
 
 const DEBUG_TILES = false;
@@ -535,6 +536,28 @@ const treeDis = [
   { type: 'Branched', mean: 3 },
 ];
 
+const leaveColor = new THREE.Color('#7bd497');
+const trunkColor = new THREE.Color('#755022');
+
+function addColorToGeometry(geometry, color) {
+  // make an array to store colors for each vertex
+  const numVerts = geometry.getAttribute('position').count;
+  const itemSize = 3;  // r, g, b
+  const colors = new Uint8Array(itemSize * numVerts);
+
+  // get the colors as an array of values from 0 to 255
+  const rgb = color.toArray().map(v => v * 255);
+  
+  // copy the color into the colors array for each vertex
+  colors.forEach((_, idx) => {
+    colors[idx] = rgb[idx % 3];
+  });
+
+  const normalized = true;
+  const colorAttrib = new THREE.BufferAttribute(colors, itemSize, normalized);
+  geometry.setAttribute('color', colorAttrib);
+}
+
 class TreeTile extends Tile {
   constructor(rotation, { random, models, drawBorders }, options) {
     super(TYPES.TREE, rotation, { drawBorders });
@@ -542,19 +565,71 @@ class TreeTile extends Tile {
     const rnd = random.derive();
 
     const hasSideDecoration = options.bench && options.trashCan;
+
+    this._treeGeometries = [];
     
     for (const { type, mean } of treeDis) {
       const count = Math.round(rnd.normalDistribution(mean).value());
+      if (count <= 0) {
+        continue;
+      }
 
       for (let i = 0; i < count; i++) {
-        const t = adaptTreeObject(models[`tree${type}`]);
+        const t = models[`tree${type}`].clone();
   
-        t.position.x += random.integer(-7, 7);
-        t.position.y += random.integer(hasSideDecoration ? -4 : -7, 7);
+        const xOffset = random.integer(-7, 7);
+        const yOffset = random.integer(hasSideDecoration ? -4 : -7, 7);
   
-        this.add(t);
+        let trunk = null;
+        let leaves = null;
+
+        t.traverse(child => {
+          if (!child.isMesh) {
+            return;
+          }
+
+          if (child.name === 'trunk') {
+            trunk = child;
+          }
+
+          if (child.name === 'leaves') {
+            leaves = child;
+          }
+        });
+
+        assert(trunk && leaves);
+
+        const trunkGeometry = trunk.geometry.clone();
+        const leavesGeometry = leaves.geometry.clone();
+
+        // Some models have the color attribute set, but this prevents the
+        // geometries from being mergeable
+        trunkGeometry.deleteAttribute('color');
+        leavesGeometry.deleteAttribute('color');
+
+        t.position.x += xOffset;
+        t.position.y += yOffset;
+        t.rotation.x = -Math.PI / 2;
+
+        t.updateWorldMatrix(true, false);
+        trunkGeometry.applyMatrix4(t.matrixWorld);
+        leavesGeometry.applyMatrix4(t.matrixWorld);
+
+        addColorToGeometry(leavesGeometry, leaveColor);
+        addColorToGeometry(trunkGeometry, trunkColor);
+
+        this._treeGeometries.push(leavesGeometry, trunkGeometry);
       }
     }
+
+    const mergedGeometries = BufferGeometryUtils.mergeBufferGeometries(this._treeGeometries, false);
+    assert(mergedGeometries);
+
+    const material = new THREE.MeshLambertMaterial({
+      vertexColors: THREE.VertexColors
+    });
+
+    this.add(new Mesh(mergedGeometries, material));
 
     if (options.bench) {
       this.addBench(models);
@@ -563,6 +638,10 @@ class TreeTile extends Tile {
     if (options.trashCan) {
       this.addTrashCan(models);
     }
+  }
+
+  treeGeometries() {
+    return this._treeGeometries;
   }
 }
 

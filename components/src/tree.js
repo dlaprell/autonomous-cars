@@ -31,5 +31,8 @@ function adaptTreeObject(tree) {
 }
 
 export {
+  leaveMaterial,
+  trunkMaterial,
+
   adaptTreeObject
 };

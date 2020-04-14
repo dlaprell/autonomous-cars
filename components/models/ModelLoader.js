@@ -47,8 +47,6 @@ export default function loadModels({ onLoad, onProgress, onError }) {
     new GLTFLoader(manager)
       .load(`/objects/${path}`, (gltf) => {
         loadedModels[name] = gltf.scene;
-
-        
       }, null, err => console.error(err));
   }
 }

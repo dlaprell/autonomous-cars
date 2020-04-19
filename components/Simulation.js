@@ -62,7 +62,7 @@ class Simulation extends Component {
       }
     })
   }
-  
+
   render() {
     const {
       withCamera,
@@ -71,7 +71,7 @@ class Simulation extends Component {
       world,
       container,
       sceneRef,
-      
+
       creatorView,
 
       vr
@@ -110,11 +110,14 @@ class Simulation extends Component {
           <Wrapper key={this._grid.id()}>
             {withTraffic && (
               <TrafficManager>
-                {world.cars.map(({ initial, following, movement }) => (
+                {world.cars.map(({ following, movement, options }) => (
                   <MovingCar
                     grid={this._grid}
                     random={this._random}
-                    initial={initial}
+
+                    movement={movement}
+                    options={options || {}}
+
                     vr={vr}
                     following={(!withCamera || vr) && following}
                   />

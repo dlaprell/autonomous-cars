@@ -1350,75 +1350,128 @@
   "cars": [
     {
       "following": true,
-      "initial": [ 2, 2 ],
-      "movement": "random"
+      "movement": {
+        "type": "path",
+        "initial": [ 3, 2 ],
+        "path": [ 1, 1, 1, 2, 2, 2, 2, 2, -1, -1, -1, -1, 2, 2, 2 ]
+      }
     },
     {
       "following": false,
-      "initial": [ 5, 2 ],
-      "movement": "random"
+      "movement": {
+        "type": "random",
+        "initial": [ 2, 2 ],
+        "seed": 42
+      },
+      "options": {
+        "noDriver": true
+      }
     },
     {
       "following": false,
-      "initial": [ 6, 2 ],
-      "movement": "random"
+      "movement": {
+        "type": "random",
+        "initial": [ 5, 2 ],
+        "seed": 42
+      }
     },
     {
       "following": false,
-      "initial": [ 6, 2 ],
-      "movement": "random"
+      "movement": {
+        "type": "random",
+        "initial": [ 6, 2 ],
+        "seed": 42
+      }
+    },
+    {
+      "following": false,
+      "movement": {
+        "type": "random",
+        "initial": [ 6, 2 ],
+        "seed": 42
+      }
     }
   ],
   "cars2": [
     {
       "following": false,
-      "initial": [ 6, 5 ],
-      "movement": "random"
+      "movement": {
+        "type": "random",
+        "initial": [ 6, 5 ],
+        "seed": 42
+      }
     },
     {
       "following": false,
-      "initial": [ 6, 6 ],
-      "movement": "random"
+      "movement": {
+        "type": "random",
+        "initial": [ 6, 6 ],
+        "seed": 42
+      }
     },
     {
       "following": false,
-      "initial": [ 6, 7 ],
-      "movement": "random"
+      "movement": {
+        "type": "random",
+        "initial": [ 6, 7 ],
+        "seed": 42
+      }
     },
     {
       "following": false,
-      "initial": [ 3, 7 ],
-      "movement": "random"
+      "movement": {
+        "type": "random",
+        "initial": [ 3, 7 ],
+        "seed": 42
+      }
     },
     {
       "following": false,
-      "initial": [ 4, 7 ],
-      "movement": "random"
+      "movement": {
+        "type": "random",
+        "initial": [ 4, 7 ],
+        "seed": 42
+      }
     },
     {
       "following": false,
-      "initial": [ 5, 7 ],
-      "movement": "random"
+      "movement": {
+        "type": "random",
+        "initial": [ 5, 7 ],
+        "seed": 42
+      }
     },
     {
       "following": false,
-      "initial": [ 6, 7 ],
-      "movement": "random"
+      "movement": {
+        "type": "random",
+        "initial": [ 6, 7 ],
+        "seed": 42
+      }
     },
     {
       "following": false,
-      "initial": [ 3, 10 ],
-      "movement": "random"
+      "movement": {
+        "type": "random",
+        "initial": [ 3, 10 ],
+        "seed": 42
+      }
     },
     {
       "following": false,
-      "initial": [ 4, 10 ],
-      "movement": "random"
+      "movement": {
+        "type": "random",
+        "initial": [ 4, 10 ],
+        "seed": 42
+      }
     },
     {
       "following": false,
-      "initial": [ 5, 10 ],
-      "movement": "random"
+      "movement": {
+        "type": "random",
+        "initial": [ 5, 10 ],
+        "seed": 42
+      }
     }
   ]
 }

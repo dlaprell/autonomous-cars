@@ -4,11 +4,12 @@ import { Color } from 'three';
 import { SimluationSceneElement } from './SimulationScene';
 
 import { Car } from './src/car';
-import { RandomMovement } from './src/movement';
+import { RandomMovement, PathMovement } from './src/movement';
 import { ModelContext } from './ModelManager';
 import { rotate, angle } from './src/utils';
 import { TYPES } from './src/grid_tiles';
 import { assert } from './utils/assert';
+import { RandomGen } from './src/randomgen';
 
 const ACCELERATION = {
   MAX_BRAKE: -0.000009,
@@ -81,7 +82,7 @@ class TrafficManager extends SimluationSceneElement {
 
     function addToLane(lane, distance, vehicle) {
       let queue;
-      
+
       if (onLane.has(lane)) {
         queue = onLane.get(lane);
       } else {
@@ -375,40 +376,70 @@ const colors = [
 ];
 
 function adaptCar(car, color) {
-  car.traverse((child) => {
-    if (child.isMesh) {
-      if (child.name === 'Car_Model') {
-        child.material = child.material.clone();
-        child.material.color = new Color(color);
-      }
+  const objs = {};
 
-      if (child.name === 'Car_Windows') {
-        child.material.transparent = true;
-        child.material.opacity = 0.5;
-      }
+  car.traverse((child) => {
+    if (!child.isMesh) {
+      return;
+    }
+
+    if (child.name === 'Car_Model') {
+      child.material = child.material.clone();
+      child.material.color = new Color(color);
+
+      objs.car = child;
+    }
+
+    if (child.name === 'Car_Windows') {
+      child.material.transparent = true;
+      child.material.opacity = 0.6;
+
+      objs.windows = child;
+    }
+
+    if (child.name === 'Human_BaseMesh') {
+      objs.driver = child;
     }
   });
+
+  return objs;
 }
 
 class MovingCar extends SimluationSceneElement {
   constructor(...args) {
     super(...args);
 
-    const { grid, initial, random, manager } = this.props;
+    const { grid, manager, random, movement, options } = this.props;
 
-    const { tile } = grid.getTileAt(...initial);
-    assert(tile.entranceSides().length > 0);
+    let movImpl = null;
+    if (movement.type === 'random') {
+      movImpl = new RandomMovement(
+        grid,
+        movement.initial,
+        new RandomGen(movement.seed)
+      );
+    } else if (movement.type === 'path') {
+      movImpl = new PathMovement(
+        grid,
+        movement.initial,
+        movement.path
+      );
+    }
 
-    this._car = new Car(
-      new RandomMovement(grid, initial, random)
-    );
+    assert(movImpl && movImpl.currentTile().tile.entranceSides().length > 0);
+
+    this._car = new Car(movImpl);
 
     manager.push(this._car);
 
     this._carObject = this.props.models.carBaseHuman.clone();
 
     const color = colors[random.integer(0, colors.length - 1)];
-    adaptCar(this._carObject, color);
+    const { driver } = adaptCar(this._carObject, color);
+
+    if (options.noDriver) {
+      driver.visible = false;
+    }
 
     this._carObject.position.y += 0.2;
     this._carObject.rotation.y += -Math.PI / 2;

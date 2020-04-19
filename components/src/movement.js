@@ -1,48 +1,6 @@
 import { rotate } from './utils';
 import { assert } from '../utils/assert';
 
-class GridMovementPath {
-  constructor(initialTile, initialFrom, directions) {
-    this._initial = initialTile;
-    this._initialFrom = initialFrom;
-    this._directions = directions;
-  
-    this._current = {
-      tile: initialTile,
-
-      from: initialFrom,
-      to: this._directions[0]
-    };
-    this._currentIndex = 0;
-  }
-
-  current() {
-    return this._current;
-  }
-
-  next() {
-    this._currentIndex++;
-
-    const old = this._current;
-    this._current = {
-      from: rotate(old.to, 2),
-      tile: [
-        old.tile[0] + (old.to % 2),
-        old.tile[1] + ((old.to - 1) % 2)
-      ],
-      to: this._directions[this._currentIndex]
-    };
-  }
-
-  nextDirections() {
-    const to = this._directions[this._currentIndex + 1];
-    return {
-      from: rotate(this._current.to, 2),
-      to
-    };
-  }
-}
-
 class GridMovementBase {
   constructor(grid) {
     this._grid = grid;
@@ -114,15 +72,17 @@ class GridMovementBase {
   }
 
   getNextTileDirections() {
+    // Implement!
     return null;
   }
 
   getCurrentTileMovement() {
+    // Implement!
     return null;
   }
 
   useNextTile() {
-
+    // Implement!
   }
 
   update(timeDeltaMs) {
@@ -197,7 +157,7 @@ class RandomMovement extends GridMovementBase {
   constructor(grid, initialTile, random) {
     super(grid);
 
-    this._random = random.derive();
+    this._random = random;
 
     this._currentTile = initialTile;
     this._from = this.randomFrom(initialTile[0], initialTile[1]);
@@ -267,25 +227,53 @@ class RandomMovement extends GridMovementBase {
 }
 
 class PathMovement extends GridMovementBase {
-  constructor(grid, path) {
+  constructor(grid, initial, path) {
     super(grid);
 
+    let initialFrom = null;
+
+    this._initial = initial;
+    this._initialFrom = initialFrom;
     this._path = path;
+
+    this._current = {
+      tile: initial,
+
+      from: initialFrom,
+      to: path[0]
+    };
+
+    this._currentIndex = 0;
   }
 
   getCurrentTileMovement() {
-    return this._path.current();
+    return this._current;
   }
 
   getNextTileDirections() {
-    return this._path.nextDirections();
+    const to = this._path[this._currentIndex + 1];
+    return {
+      from: rotate(this._current.to, 2),
+      to
+    };
   }
 
   useNextTile() {
-    this._path.next();
+    this._currentIndex++;
+
+    const old = this._current;
+    this._current = {
+      from: rotate(old.to, 2),
+      tile: [
+        old.tile[0] + (old.to % 2),
+        old.tile[1] + ((old.to - 1) % 2)
+      ],
+      to: this._path[this._currentIndex]
+    };
   }
 }
 
+// This is the actual class that does the grid movement calculations
 class GridMovement {
   constructor(grid, path) {
     this._path = path;
@@ -373,7 +361,6 @@ class GridMovement {
 }
 
 export {
-  GridMovementPath,
   GridMovement,
 
   PathMovement,

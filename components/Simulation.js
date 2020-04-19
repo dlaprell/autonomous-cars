@@ -5,7 +5,7 @@ import { CubeTextureLoader } from 'three';
 
 import { initTiles } from './src/grid';
 
-import { SimluationScene } from './SimulationScene';
+import { SimulationScene } from './SimulationScene';
 import { Ground, GridRenderer } from './World';
 import { MovingCar, TrafficManager } from './Vehicles';
 import { OrbitControls } from './OrbitControls';
@@ -28,7 +28,8 @@ class Simulation extends Component {
 
     this.state = {
       loaded: false,
-      progress: 0
+      progress: 0,
+      stop: false
     };
 
     this._random = new RandomGen();
@@ -45,6 +46,8 @@ class Simulation extends Component {
         'clouds1_west.jpg',
         'clouds1_east.jpg'
       ]);
+
+    this.onUpdate = this.onUpdate.bind(this);
   }
 
   componentDidMount() {
@@ -63,6 +66,18 @@ class Simulation extends Component {
     })
   }
 
+  onUpdate(time) {
+    const { stopAfter, onStop } = this.props;
+
+    if (typeof stopAfter === 'number' && stopAfter > 0 && time >= stopAfter) {
+      this.setState({ stop: true });
+
+      if (onStop) {
+        onStop();
+      }
+    }
+  }
+
   render() {
     const {
       withCamera,
@@ -78,7 +93,8 @@ class Simulation extends Component {
 
     const {
       loaded,
-      models
+      models,
+      stop
     } = this.state;
 
     if (!loaded) {
@@ -96,13 +112,14 @@ class Simulation extends Component {
 
     return (
       <ModelManager models={models}>
-        <SimluationScene
+        <SimulationScene
           vr={Boolean(vr)}
 
           background={this._background}
-          loop={loaded}
+          loop={loaded && !stop}
           ref={sceneRef}
           creatorView={creatorView}
+          onUpdate={this.onUpdate}
         >
           <OrbitControls enabled={withCamera && !vr} container={container} />
 
@@ -126,7 +143,7 @@ class Simulation extends Component {
             <Ground grid={this._grid} />
             <GridRenderer grid={this._grid} />
           </Wrapper>
-        </SimluationScene>
+        </SimulationScene>
       </ModelManager>
     );
   }

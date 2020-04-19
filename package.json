@@ -5,6 +5,7 @@
   "author": "David Laprell <david@laprell.eu>; Simon Laprell <simon@laprell.eu>",
   "license": "MIT",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "parcel --no-autoinstall index.html creator.html"
   },

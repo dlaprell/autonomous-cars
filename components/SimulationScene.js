@@ -7,7 +7,7 @@ import { SimulationRenderer } from './SimulationRenderer';
 
 const SceneContext = createContext(null);
 
-class SimluationScene extends Component {
+class SimulationScene extends Component {
   constructor(...args) {
     super(...args);
 
@@ -21,7 +21,7 @@ class SimluationScene extends Component {
     spotLight.castShadow = true;
 
     this._scene.add(spotLight);
-    
+
     this._updateableElements = new Set();
 
     const {
@@ -33,20 +33,25 @@ class SimluationScene extends Component {
     }
 
     this._camera = null;
-  }
 
-  update(time, delta, rest) {
-    for (const e of this._updateableElements.values()) {
-      e.update(time, delta, rest);
-    }
+    this.handleUpdate = (time, delta, rest) => {
+      const { onUpdate } = this.props;
+      if (onUpdate) {
+        onUpdate(time, delta, rest);
+      }
 
-    if (!this._camera && rest.cameraWrapper) {
-      this._scene.add(rest.cameraWrapper);
-      // rest.cameraWrapper.rotation.x = Math.PI / 2;
-    }
+      for (const e of this._updateableElements.values()) {
+        e.update(time, delta, rest);
+      }
 
-    this._camera = rest.camera;
-    rest.renderer.render(this._scene, rest.camera);
+      if (!this._camera && rest.cameraWrapper) {
+        this._scene.add(rest.cameraWrapper);
+        // rest.cameraWrapper.rotation.x = Math.PI / 2;
+      }
+
+      this._camera = rest.camera;
+      rest.renderer.render(this._scene, rest.camera);
+    };
   }
 
   addElement(e) {
@@ -62,7 +67,7 @@ class SimluationScene extends Component {
 
     this._updateableElements.delete(e);
   }
-  
+
   render() {
     const { children, loop, creatorView, vr } = this.props;
 
@@ -74,7 +79,7 @@ class SimluationScene extends Component {
           creatorView={creatorView}
           loop={Boolean(loop)}
           vr={vr}
-          onUpdate={this.update.bind(this)}
+          onUpdate={this.handleUpdate}
         />
       </SceneContext.Provider>
     );
@@ -86,7 +91,7 @@ class SimluationSceneElement extends Component {
     super(...args);
 
     this._group = new Group();
-  
+
     this._assignedScene = null;
 
     this._updateAssignment = (scene) => {
@@ -128,6 +133,6 @@ class SimluationSceneElement extends Component {
 }
 
 export {
-  SimluationScene,
+  SimulationScene,
   SimluationSceneElement
 };

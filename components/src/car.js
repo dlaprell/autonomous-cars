@@ -32,7 +32,7 @@ class Car {
 
     this._emitter.emit('update', {
       target: this,
-      
+
       timeDeltaMs: timeDeltaMs,
 
       x,

@@ -161,7 +161,7 @@ class RandomMovement extends GridMovementBase {
 
     this._currentTile = initialTile;
     this._from = this.randomFrom(initialTile[0], initialTile[1]);
-    
+
     const to = this.randomTo(initialTile[0], initialTile[1], this._from);
     const next = this.randomTo(
       ...grid.getRelativeFrom(initialTile[0], initialTile[1], to),
@@ -214,7 +214,7 @@ class RandomMovement extends GridMovementBase {
     const [ reached, newDir ] = this._nextSteps;
 
     const nT = this.grid().getRelativeFrom(x, y, reached);
-    
+
     // Update tile to the next in line
     this._currentTile = nT;
     this._from = rotate(reached, 2);

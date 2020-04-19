@@ -3,7 +3,6 @@ import { Color } from 'three';
 
 import { SimluationSceneElement } from './SimulationScene';
 
-import { Car } from './src/car';
 import { RandomMovement, PathMovement } from './src/movement';
 import { ModelContext } from './ModelManager';
 import { rotate, angle } from './src/utils';
@@ -39,23 +38,11 @@ class TrafficManager extends SimluationSceneElement {
     this._managedObjects = [];
   }
 
-  update() {
+  update(_, delta, rest) {
     // So we want to check in every frame whether one car is approaching a t-section or
     // 4-four crossing ('conflict zones') and try to use the standard rules of traffic
     const onLane = new Map();
     const atConflictZone = new Map();
-
-    const acc = new Map();
-
-    function setAcc(vehicle, acc) {
-      if (!acc.has(vehicle)) {
-        acc.set(vehicle, lim);
-      } else {
-        const a = acc.get(vehicle);
-        acc.set(vehicle, Math.max(ACCELERATION.MAX_BRAKE, Math.min(a, lim)));
-      }
-    }
-
     const limiter = new Map();
 
     function addLimiter(vehicle, lim) {
@@ -351,6 +338,9 @@ class TrafficManager extends SimluationSceneElement {
       }
 
       mov.setAcceleration(acc);
+
+      // Now trigger the actual car update
+      vehicle.updatePosition(delta, rest);
     }
   }
 
@@ -415,26 +405,24 @@ class MovingCar extends SimluationSceneElement {
 
     const { grid, manager, random, movement, options, following } = this.props;
 
-    let movImpl = null;
+    this._movement = null;
     if (movement.type === 'random') {
-      movImpl = new RandomMovement(
+      this._movement = new RandomMovement(
         grid,
         movement.initial,
         new RandomGen(movement.seed)
       );
     } else if (movement.type === 'path') {
-      movImpl = new PathMovement(
+      this._movement = new PathMovement(
         grid,
         movement.initial,
         movement.path
       );
     }
 
-    assert(movImpl && movImpl.currentTile().tile.entranceSides().length > 0);
+    assert(this._movement && this._movement.currentTile().tile.entranceSides().length > 0);
 
-    this._car = new Car(movImpl);
-
-    manager.push(this._car);
+    manager.push(this);
 
     this._carObject = this.props.models.carBaseHuman.clone();
 
@@ -456,8 +444,16 @@ class MovingCar extends SimluationSceneElement {
     this.group().add(this._carObject);
   }
 
-  update(_, delta, rest) {
-    const { x, y, angle } = this._car.update(delta);
+  movement() {
+    return this._movement;
+  }
+
+  updatePosition(delta, rest) {
+    this._movement.update(delta);
+
+    const x = this._movement.getX();
+    const y = this._movement.getY();
+    const angle = this._movement.getAngle();
 
     this.group().position.x = x;
     this.group().position.z = y;

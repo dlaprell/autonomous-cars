@@ -19,9 +19,9 @@
   "dependencies": {
     "mersenne-twister": "^1.1.0",
     "mitt": "^1.2.0",
+    "parcel": "^2.0.0-alpha.3.2",
     "preact": "^10.4.0",
-    "three": "^0.114.0",
-    "three-controls": "^1.0.1"
+    "three": "^0.114.0"
   },
   "devDependencies": {
     "parcel-bundler": "^1.12.4",

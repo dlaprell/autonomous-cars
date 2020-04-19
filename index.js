@@ -9,10 +9,13 @@ function init() {
 
   render(
     <Simulation
-      withCamera={true}
+      container={root}
+      withCamera={window.location.href.indexOf('camera') !== -1}
       withTraffic
       world={world}
       vr={window.location.href.indexOf('vr') !== -1}
+      stopAfter={30000}
+      onStop={() => alert('Stopped')}
     />,
     root
   );

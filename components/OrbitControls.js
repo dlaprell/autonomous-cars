@@ -1,4 +1,4 @@
-import { OrbitControls as ThreeOrbitControls } from 'three-controls';
+import { OrbitControls as ThreeOrbitControls } from './third-party/OrbitControls';
 
 import { SimluationSceneElement } from './SimulationScene';
 
@@ -20,7 +20,7 @@ class OrbitControls extends SimluationSceneElement {
 
       this._controls = new ThreeOrbitControls(camera, container);
       this._element = container;
-      
+
       this._controls.minDistance = 1;
       this._controls.maxDistance = 1500; // 25;
     }

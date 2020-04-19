@@ -69,7 +69,7 @@ class Simulation extends Component {
   onUpdate(time) {
     const { stopAfter, onStop } = this.props;
 
-    if (typeof stopAfter === 'number' && stopAfter > 0 && time >= stopAfter) {
+    if (typeof stopAfter === 'number' && stopAfter > 0 && time >= stopAfter && !this.state.stop) {
       this.setState({ stop: true });
 
       if (onStop) {

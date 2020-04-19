@@ -1,5 +1,17 @@
-import * as THREE from 'three';
-import { MeshLambertMaterial, DoubleSide, Mesh } from 'three';
+import {
+  Mesh,
+  Group,
+
+  CircleGeometry,
+  ShapeGeometry,
+  BufferGeometry,
+  Shape,
+  Line,
+
+  MeshBasicMaterial,
+  LineBasicMaterial,
+  DoubleSide
+} from 'three';
 import { BufferGeometryUtils } from '../third-party/BufferGeometryUtils'
 
 import { rotate, normalizeRotation, angle, addColorToGeometry } from './utils';
@@ -65,7 +77,7 @@ function interpolerateCurveMovement(from, to, distance, rotation) {
     x = yRef;
     y = TILE_SIZE - xRef;
     angle -= (Math.PI / 2);
-  } else if (rotation === 1) {  
+  } else if (rotation === 1) {
     x = TILE_SIZE - yRef;
     y = xRef;
     angle += (Math.PI / 2)
@@ -100,7 +112,7 @@ function interpolerateStraightMovement(from, to, distance, rotation) {
 }
 
 function calculateCurveGeometry(radiusOuter, radiusInner) {
-  const curvedShape = new THREE.Shape();
+  const curvedShape = new Shape();
 
   const anchorX = TILE_SIZE / 2;
   const anchorY = TILE_SIZE / 2;
@@ -126,23 +138,8 @@ function calculateCurveGeometry(radiusOuter, radiusInner) {
     true
   );
 
-  return new THREE.ShapeGeometry(curvedShape);
+  return new ShapeGeometry(curvedShape);
 }
-
-const streetMaterial = new MeshLambertMaterial({
-  color: '#918e84',
-  side: DoubleSide
-});
-
-const surroundingMaterial = new MeshLambertMaterial({
-  color: '#88bd99',
-  side: DoubleSide
-});
-
-const sideWalkMaterial = new MeshLambertMaterial({
-  color: '#969492',
-  side: DoubleSide
-});
 
 function adaptStreetObject(obj) {
   const o = obj.clone();
@@ -155,18 +152,15 @@ function adaptStreetObject(obj) {
     }
 
     if (child.name.endsWith('Surrounding')) {
-      child.material = surroundingMaterial;
       child.visible = false;
       objs.surroundings = child;
     }
-  
+
     if (child.name.endsWith('Street')) {
-      child.material = streetMaterial;
       objs.street = child;
     }
 
     if (child.name.endsWith('Sidewalk')) {
-      child.material = sideWalkMaterial;
       objs.sidewalk = child;
     }
   });
@@ -184,30 +178,30 @@ class Tile {
     this._type = type;
     this._rotation = rotation;
 
-    this._group = new THREE.Group();
+    this._group = new Group();
     this._group.receiveShadow = true;
     this._group.matrixAutoUpdate = false;
 
     if (DEBUG_TILES || (baseOptions && baseOptions.drawBorders)) {
-      const outlineShape = new THREE.Shape();
-  
+      const outlineShape = new Shape();
+
       const anchorX = TILE_SIZE / 2;
       const anchorY = TILE_SIZE / 2;
-    
+
       outlineShape.moveTo(anchorX, anchorY);
       outlineShape.lineTo(anchorX, -anchorY);
       outlineShape.lineTo(-anchorX, -anchorY);
       outlineShape.lineTo(-anchorX, anchorY);
       outlineShape.lineTo(anchorY, anchorY);
 
-      const mesh = new THREE.Line(
-        new THREE.BufferGeometry().setFromPoints(outlineShape.getPoints()),
-        new THREE.LineBasicMaterial({ color: 0xFF0000 })
+      const mesh = new Line(
+        new BufferGeometry().setFromPoints(outlineShape.getPoints()),
+        new LineBasicMaterial({ color: 0xFF0000 })
       );
 
-      const circle = new THREE.Mesh(
-        new THREE.CircleGeometry(0.25),
-        new THREE.MeshBasicMaterial({ color: 0xFF0000, side: THREE.DoubleSide })
+      const circle = new Mesh(
+        new CircleGeometry(0.25),
+        new MeshBasicMaterial({ color: 0xFF0000, side: DoubleSide })
       );
 
       circle.position.y -= (TILE_SIZE / 2) - 1;
@@ -641,7 +635,7 @@ class HouseTile extends Tile {
   constructor(rotation, { models, drawBorders }, options) {
     super(TYPES.HOUSE, rotation, { drawBorders });
     const type = options.type || 'Simple';
-    
+
     const house = models[`architectureHouse${type}`].clone();
     house.rotation.x = Math.PI;
     if (type === 'Flat') {

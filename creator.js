@@ -36,8 +36,10 @@ class Creator extends Component {
     super(...args);
 
     this._sceneRef = createRef(null);
+    this._fileRef = createRef(null);
 
     this._random = new RandomGen(4213);
+
 
     const startTile = [ ...FILL_TILE ];
     startTile[2] = { ...startTile[2], seed: this.drainSeedValue() };
@@ -69,6 +71,8 @@ class Creator extends Component {
     this.rotateRight = this.handleRotation.bind(this, 1);
 
     this.exportWorld = this.exportWorld.bind(this);
+    this.importWorld = this.importWorld.bind(this);
+    this.handleWorldImportChange = this.handleWorldImportChange.bind(this);
   }
 
   drainSeedValue() {
@@ -270,6 +274,38 @@ class Creator extends Component {
     });
   }
 
+  importWorld() {
+    const e = this._fileRef.current;
+    if (!e) {
+      return;
+    }
+
+    e.click();
+  }
+
+  handleWorldImportChange(evt) {
+    if (!evt.target.files || evt.target.files.length !== 1) {
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = reader.result;
+      
+      try {
+        const { map, cars } = JSON.parse(text);
+        
+        this.setState({ map, cars });
+      } catch (ex) {
+        console.error(ex);
+        alert('File could not be read');
+      } finally {
+        evt.target.value = '';
+      }
+    };
+    reader.readAsText(evt.target.files[0]);
+  }
+
   exportWorld() {
     const world = {
       map: this.state.map
@@ -334,55 +370,71 @@ class Creator extends Component {
         </main>
         <div className="toolbar">
           <h4>Toolbar</h4>
+          
+          <div className="object-panel">
 
-          <div>
-            Size:
-            <input type="number" onInput={this.handleGridSizeChange} value={size} />
           </div>
 
-          <div>
-            Mode:
-            <fieldset>
-              <div>
-                <input type="radio" id="camera" name="mode" value="camera" onChange={this.handleModeChange} checked={mode === 'camera'} />
-                <label for="camera">Camera</label>
-              </div>
-              <div>
-                <input type="radio" id="tile" name="mode" value="tile" onChange={this.handleModeChange} checked={mode === 'tile'} />
-                <label for="tile">Tile</label>
-              </div>
-            </fieldset>
+          <div className="tools-panel">
+            <div>
+              Size:
+              <input type="number" onInput={this.handleGridSizeChange} value={size} />
+            </div>
+
+            <div>
+              Mode:
+              <fieldset>
+                <div>
+                  <input type="radio" id="camera" name="mode" value="camera" onChange={this.handleModeChange} checked={mode === 'camera'} />
+                  <label for="camera">Camera</label>
+                </div>
+                <div>
+                  <input type="radio" id="tile" name="mode" value="tile" onChange={this.handleModeChange} checked={mode === 'tile'} />
+                  <label for="tile">Tile</label>
+                </div>
+              </fieldset>
+            </div>
+
+            <hr />
+
+            <div>
+              Tile Type:
+
+              <fieldset>
+                {Object.entries(types)
+                  .map(([ id, { name } ]) => (
+                    <div>
+                      <input
+                        type="radio"
+                        id={id}
+                        name="tileType"
+                        value={id}
+                        disabled={mode !== 'tile'}
+                        onChange={this.handleTileTypeChange}
+                        checked={tileType === id}
+                      />
+                      <label for={id}>{name}</label>
+                    </div>
+                  ))}
+              </fieldset>
+            </div>
           </div>
 
-          <hr />
-
-          <div>
-            Tile Type:
-
-            <fieldset>
-              {Object.entries(types)
-                .map(([ id, { name } ]) => (
-                  <div>
-                    <input
-                      type="radio"
-                      id={id}
-                      name="tileType"
-                      value={id}
-                      disabled={mode !== 'tile'}
-                      onChange={this.handleTileTypeChange}
-                      checked={tileType === id}
-                    />
-                    <label for={id}>{name}</label>
-                  </div>
-                ))}
-            </fieldset>
+          <div className="import-export">
+            <input
+              type="file"
+              hidden
+              ref={this._fileRef}
+              onChange={this.handleWorldImportChange}
+              accept="application/json"
+            />
+            <button type="button" onClick={this.importWorld}>
+              Import World
+            </button>
+            <button type="button" onClick={this.exportWorld}>
+              Export World
+            </button>
           </div>
-
-          <hr />
-
-          <button type="button" onClick={this.exportWorld}>
-            Export World
-          </button>
         </div>
       </Fragment>
     );

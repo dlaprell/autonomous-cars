@@ -24,7 +24,32 @@
     .toolbar {
       flex: 0 0 auto;
       width: 360px;
+
+      display: flex;
+      flex-direction: column;
     }
+
+    .object-panel, .tools-panel {
+      flex: 1;
+      overflow-y: auto;
+
+      padding: 8px 0;
+    }
+
+    .import-export {
+      flex: 0 0 auto;
+
+      display: flex;
+      flex-direction: row;
+    }
+    
+    .import-export button {
+      flex: 1;
+
+      padding: 6px 0;
+    }
+
+    /*  */
 
     .menu {
       width: 180px;

@@ -1353,7 +1353,10 @@
       "movement": {
         "type": "path",
         "initial": [ 3, 2 ],
-        "path": [ 1, 1, 1, 2, 2, 2, 2, 2, -1, -1, -1, -1, 2, 2, 2 ]
+        "path": [ 1, 1, 1, 2, 2, 2, 2, 2, -1, -1, -1, -1, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1 ]
+      },
+      "options": {
+        "noDriver": true
       }
     },
     {
@@ -1387,7 +1390,7 @@
       "following": false,
       "movement": {
         "type": "random",
-        "initial": [ 6, 2 ],
+        "initial": [ 6, 3 ],
         "seed": 42
       }
     }

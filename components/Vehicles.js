@@ -400,6 +400,10 @@ function adaptCar(car, color) {
     if (child.name === 'Human_BaseMesh') {
       objs.driver = child;
     }
+
+    if (child.name === 'Car_Front_Seats') {
+      objs.frontSeats = child;
+    }
   });
 
   return objs;
@@ -409,7 +413,7 @@ class MovingCar extends SimluationSceneElement {
   constructor(...args) {
     super(...args);
 
-    const { grid, manager, random, movement, options } = this.props;
+    const { grid, manager, random, movement, options, following } = this.props;
 
     let movImpl = null;
     if (movement.type === 'random') {
@@ -435,10 +439,15 @@ class MovingCar extends SimluationSceneElement {
     this._carObject = this.props.models.carBaseHuman.clone();
 
     const color = colors[random.integer(0, colors.length - 1)];
-    const { driver } = adaptCar(this._carObject, color);
+    const { driver, frontSeats, windows } = adaptCar(this._carObject, color);
 
     if (options.noDriver) {
       driver.visible = false;
+    }
+
+    if (following) {
+      windows.visible = false;
+      frontSeats.visible = false;
     }
 
     this._carObject.position.y += 0.2;
@@ -460,11 +469,11 @@ class MovingCar extends SimluationSceneElement {
     }
 
     let camX = x;
-    const camY = vr ? -0.4 : 1.2;
+    const camY = vr ? -0.4 : 1.25;
     let camZ = y;
 
-    const offsetX = -0.25;
-    const offsetY = vr ? 0 : 0.75;
+    const offsetX = vr ? -0.25 : 0.3;
+    const offsetY = vr ? 0 : 0.3;
 
     camX += offsetX * Math.cos(angle) - offsetY * Math.sin(angle);
     camZ += offsetY * Math.cos(angle) + offsetX * Math.sin(angle);
@@ -478,7 +487,7 @@ class MovingCar extends SimluationSceneElement {
       camera.rotation.y = -angle;
       camera.rotation.x = 0;
       camera.rotation.z = 0;
-      camera.rotateOnAxis({ x: 1, y: 0, z: 0 }, -1 * Math.PI * 0.04);
+      camera.rotateOnAxis({ x: 1, y: 0, z: 0 }, -1 * Math.PI * 0.03);
     }
   }
 

@@ -442,6 +442,8 @@ class MovingCar extends SimluationSceneElement {
     this._carObject.rotation.y += -Math.PI / 2;
 
     this.group().add(this._carObject);
+
+    this._initialUpdate = true;
   }
 
   movement() {
@@ -450,6 +452,18 @@ class MovingCar extends SimluationSceneElement {
 
   updatePosition(delta, rest) {
     this._movement.update(delta);
+
+    if (this._initialUpdate) {
+      this._initialUpdate = false;
+
+      // Apply a start offset if there is one specified
+      const { startOffset } = this.props;
+
+      if (typeof startOffset !== 'undefined' && startOffset >= 0) {
+        assert(typeof startOffset === 'number');
+        this._movement.update(startOffset);
+      }
+    }
 
     const x = this._movement.getX();
     const y = this._movement.getY();

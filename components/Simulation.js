@@ -126,11 +126,12 @@ class Simulation extends Component {
           <Wrapper key={this._grid.id()}>
             {withTraffic && (
               <TrafficManager>
-                {world.cars.map(({ following, movement, options }) => (
+                {world.cars.map(({ following, movement, options, startOffset }) => (
                   <MovingCar
                     grid={this._grid}
                     random={this._random}
 
+                    startOffset={startOffset || 0}
                     movement={movement}
                     options={options || {}}
 

@@ -426,7 +426,7 @@ class MovingCar extends SimluationSceneElement {
 
     this._carObject = this.props.models.carBaseHuman.clone();
 
-    const color = colors[random.integer(0, colors.length - 1)];
+    const color =  options.color || colors[random.integer(0, colors.length - 1)];
     const { driver, frontSeats, windows } = adaptCar(this._carObject, color);
 
     if (options.noDriver) {

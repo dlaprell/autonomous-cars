@@ -12,7 +12,6 @@ function init() {
       withCamera={true}
       withTraffic
       world={world}
-      baseMap={world.map}
       vr={window.location.href.indexOf('vr') !== -1}
     />,
     root

@@ -67,7 +67,6 @@ class Simulation extends Component {
     const {
       withCamera,
       withTraffic,
-      baseMap,
       world,
       container,
       sceneRef,
@@ -86,7 +85,7 @@ class Simulation extends Component {
       return null;
     }
 
-    if (this._grid === null || this._gridMap !== baseMap) {
+    if (this._grid === null || this._gridMap !== world.map) {
       this._grid = initTiles(this._random, models, {
         withLanes: withTraffic,
         baseMap: world.map,

@@ -1,5 +1,6 @@
 import { rotate } from './utils';
 import { assert } from '../utils/assert';
+import { TYPES } from './grid_tiles';
 
 class GridMovementBase {
   constructor(grid) {
@@ -230,20 +231,29 @@ class PathMovement extends GridMovementBase {
   constructor(grid, initial, path) {
     super(grid);
 
-    let initialFrom = null;
+    assert(path && path.length > 0);
 
     this._initial = initial;
-    this._initialFrom = initialFrom;
-    this._path = path;
+    const initialTile = grid.getTileAt(...initial).tile;
+    assert(initialTile && initialTile.entranceSides().length > 0);
 
+    this._initialFrom = initialTile
+      .entranceSides()
+      .filter(s => s !== path[0])
+      [0];
+
+    this._path = path;
     this._current = {
       tile: initial,
 
-      from: initialFrom,
+      from: this._initialFrom,
       to: path[0]
     };
 
     this._currentIndex = 0;
+
+    const [ nextX, nextY ] = grid.getRelativeFrom(initial[0], initial[1], path[0]);
+    this._nextTile = grid.getTileAt(nextX, nextY).tile;
   }
 
   getCurrentTileMovement() {
@@ -251,25 +261,44 @@ class PathMovement extends GridMovementBase {
   }
 
   getNextTileDirections() {
-    const to = this._path[this._currentIndex + 1];
-    return {
-      from: rotate(this._current.to, 2),
-      to
-    };
+    const from = rotate(this._current.to, 2);
+
+    const to = (this._nextTile.getType() === TYPES.ROAD || this._nextTile.getType() === TYPES.CURVE)
+      ? this._nextTile.exitSides().filter(s => s !== from)[0]
+      : this._path[this._currentIndex + 1];
+
+    assert(from >= -1 && from <= 2);
+    assert(to >= -1 && to <= 2);
+
+    return { from, to };
   }
 
   useNextTile() {
-    this._currentIndex++;
+    const nextIsPredefined = this._nextTile.getType() === TYPES.ROAD || this._nextTile.getType() === TYPES.CURVE;
 
-    const old = this._current;
+    if (!nextIsPredefined) {
+      this._currentIndex++;
+    }
+
+    const curTile = this._current.tile;
+    const curTo = this._current.to;
+
+    const from = rotate(curTo, 2);
+    const to = nextIsPredefined
+      ? this._nextTile.exitSides().filter(s => s !== from)[0]
+      : this._path[this._currentIndex];
+
     this._current = {
-      from: rotate(old.to, 2),
-      tile: [
-        old.tile[0] + (old.to % 2),
-        old.tile[1] + ((old.to - 1) % 2)
-      ],
-      to: this._path[this._currentIndex]
+      tile: this._grid.getRelativeFrom(curTile[0], curTile[1], curTo),
+
+      from,
+      to
     };
+
+    const next = this._grid.getRelativeFrom(this._current.tile[0], this._current.tile[1], to);
+    this._nextTile = this._grid.getTileAt(...next).tile;
+
+    console.log(this._current, this._currentIndex, this._nextTile);
   }
 }
 

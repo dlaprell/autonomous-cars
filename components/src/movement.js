@@ -23,17 +23,18 @@ class GridMovementBase {
     return this._tileDistance;
   }
 
+  // Should be in the form of meter per second^2
   setAcceleration(acc) {
     assert(!isNaN(acc));
     this._acceleration = acc;
   }
 
   speed() {
-    return this._speed; // in m / ms
+    return this._speed; // in km / h
   }
 
-  scaledSpeed() {
-    return (this._speed * 1000 * 60 * 60) / 1000; // in km / h
+  _addSpeedM_S(speedInM_S) {
+    this._speed += (speedInM_S / 1000) * 60 * 60;
   }
 
   getX() {
@@ -87,10 +88,18 @@ class GridMovementBase {
   }
 
   update(timeDeltaMs) {
+    console.log(this._tileDistance, this._speed);
+
     const baseSpeed = this._speed;
 
-    const deltaDistance = baseSpeed * timeDeltaMs +
-      (0.5 * this._acceleration * Math.pow(timeDeltaMs, 2));
+    const timeDelta = timeDeltaMs / 1000.0;
+
+    // Meter per second in scaled form
+    const speedScaled = (baseSpeed * 1000) / (60 * 60);
+
+    // Meter
+    const deltaDistance = speedScaled * timeDelta +
+      (0.5 * this._acceleration * Math.pow(timeDelta, 2));
 
     const distance = this._tileDistance + deltaDistance;
 
@@ -120,25 +129,26 @@ class GridMovementBase {
       } else {
         // This one is a bit more complex since we have to account for the acceleration
         // during the movement
-        const o = Math.sqrt(Math.pow(baseSpeed, 2) + 2 * this._acceleration * deltaDistance);
+        const o = Math.sqrt(Math.pow(speedScaled, 2) + 2 * this._acceleration * deltaDistance);
         const res = [
-          (-baseSpeed + o) / this._acceleration,
-          (-baseSpeed - o) / this._acceleration
+          (-speedScaled + o) / this._acceleration,
+          (-speedScaled - o) / this._acceleration
         ];
 
         neededTime = Math.min(...res.filter(x => x >= 0));
 
-        this._speed += this._acceleration * (timeDeltaMs - neededTime);
+        this._addSpeedM_S(this._acceleration * (timeDelta - neededTime));
+
         if (this._speed < 0) {
           this._speed = 0;
         }
       }
 
-      this._internalTime += (timeDeltaMs - neededTime);
+      this._internalTime += (timeDelta - neededTime);
 
-      assert(neededTime * 0.95 < timeDeltaMs);
+      assert(neededTime * 0.95 < timeDelta);
 
-      this.update(neededTime);
+      this.update(neededTime / 1000);
     } else {
       const [ tileX, tileY ] = this._grid.getTileAnchorPosition(xTile, yTile);
 
@@ -146,7 +156,7 @@ class GridMovementBase {
       this._y = tileY + updatedPos.y;
       this._angle = updatedPos.angle;
 
-      this._speed += this._acceleration * timeDeltaMs;
+      this._addSpeedM_S(this._acceleration * timeDelta);
       this._tileDistance = distance;
       this._tileTime += timeDeltaMs;
       this._internalTime += timeDeltaMs;

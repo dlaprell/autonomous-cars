@@ -284,7 +284,7 @@ class Tile {
   }
 
   speedLimitation() {
-    return 0.01;
+    return 50;
   }
 
   entranceSides() {

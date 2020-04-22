@@ -11,12 +11,12 @@ import { assert } from './utils/assert';
 import { RandomGen } from './src/randomgen';
 
 const ACCELERATION = {
-  MAX_BRAKE: -0.000009,
+  MAX_BRAKE: -8,
 
-  SOFT_BRAKE: -0.0000075,
+  SOFT_BRAKE: -3,
 
-  MEDIUM_ACCEL: 0.0000015,
-  MAX_ACCEL: 0.000001
+  MEDIUM_ACCEL: 1.75,
+  MAX_ACCEL: 2.5
 };
 
 function laneDistanceUpTo(lane, tile) {
@@ -292,9 +292,7 @@ class TrafficManager extends SimluationSceneElement {
     for (const vehicle of this._managedObjects) {
       const mov = vehicle.movement();
 
-      const cur = mov.speed();
-
-      const ownSpeed = mov.scaledSpeed();
+      const ownSpeed = mov.speed();
 
       // So we want to check if we need to brake because in front of us
       // is another vehicle that we otherwise might drive into
@@ -321,18 +319,18 @@ class TrafficManager extends SimluationSceneElement {
       let tileSpeedLimit = curTile.speedLimitation() * lim;
 
       if (nextTile.getType() === TYPES.T_SECTION || nextTile.getType() === TYPES.CROSS) {
-        tileSpeedLimit = Math.min(tileSpeedLimit, 0.0075);
+        tileSpeedLimit = Math.min(tileSpeedLimit, 25);
       } else if (((from + to) % 2) !== 0) {
-        tileSpeedLimit = Math.min(tileSpeedLimit, 0.008);
+        tileSpeedLimit = Math.min(tileSpeedLimit, 20);
       } else if (((nextDir.from + nextDir.to) % 2) !== 0) {
-        tileSpeedLimit = Math.min(tileSpeedLimit, 0.009);
+        tileSpeedLimit = Math.min(tileSpeedLimit, 25);
       }
 
-      if (cur > tileSpeedLimit) {
+      if (ownSpeed > tileSpeedLimit) {
         acc = Math.min(acc, ACCELERATION.SOFT_BRAKE);
       }
 
-      if (cur < 0) {
+      if (ownSpeed < 0) {
         acc = 0;
         mov._speed = 0;
       }
@@ -421,6 +419,9 @@ class MovingCar extends SimluationSceneElement {
     }
 
     assert(this._movement && this._movement.currentTile().tile.entranceSides().length > 0);
+
+    const curTile = this._movement.currentTile().tile;
+    this._movement._speed = Math.min(options.initialSpeed || 0, curTile.speedLimitation());
 
     manager.push(this);
 

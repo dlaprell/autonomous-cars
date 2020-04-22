@@ -15,7 +15,6 @@ function init() {
       world={world}
       vr={window.location.href.indexOf('vr') !== -1}
       stopAfter={30000}
-      onStop={() => alert('Stopped')}
     />,
     root
   );

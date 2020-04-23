@@ -63,7 +63,10 @@ function interpolerateCurveMovement(from, to, distance, rotation) {
     ? (3.0 / 2.0 * Math.PI) + moveByDeg // from down
     : -1 * moveByDeg; // from right
 
-  const dirAngle = movAngle + (Math.PI / 2) * (rotFrom === 2 ? 1 : -1);
+  // during the curve progress, this value goes from 
+  const viewAmplifier = 1 - Math.pow(((amountMov / 0.125) - 1), 2);
+
+  const angleMultiplier = (rotFrom === 2 ? 1 : -1);
 
   const xRef = TILE_SIZE + (movRadius * Math.sin(movAngle));
   const yRef = TILE_SIZE - (movRadius * Math.cos(movAngle));
@@ -71,26 +74,32 @@ function interpolerateCurveMovement(from, to, distance, rotation) {
   // Now rotate the coordinates back
   let x = xRef;
   let y = yRef;
-  let angle = dirAngle;
+
+  let angle = movAngle + angleMultiplier * (Math.PI / 2);
+  let angleSmoothed = movAngle + angleMultiplier * (Math.PI / 2 + Math.PI / 8 * viewAmplifier);
 
   if (rotation === -1) {
     x = yRef;
     y = TILE_SIZE - xRef;
     angle -= (Math.PI / 2);
+    angleSmoothed -= (Math.PI / 2);
   } else if (rotation === 1) {
     x = TILE_SIZE - yRef;
     y = xRef;
-    angle += (Math.PI / 2)
+    angle += (Math.PI / 2);
+    angleSmoothed += (Math.PI / 2);
   } else if (rotation === 2) {
     x = TILE_SIZE - xRef;
     y = TILE_SIZE - yRef;
     angle += Math.PI;
+    angleSmoothed += Math.PI;
   }
 
   return {
     x,
     y,
     angle,
+    angleSmoothed,
     overshoot: 0
   };
 }
@@ -107,6 +116,7 @@ function interpolerateStraightMovement(from, to, distance, rotation) {
     x: isVert ? centerOfLane : pos,
     y: isVert ? pos : centerOfLane,
     angle: to * (Math.PI / 2),
+    angleSmoothed: to * (Math.PI / 2),
     overshoot: Math.max(0, distance - TILE_SIZE)
   };
 }

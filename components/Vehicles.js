@@ -427,7 +427,7 @@ class MovingCar extends SimluationSceneElement {
 
     this._carObject = this.props.models.carBaseHuman.clone();
 
-    const color =  options.color || colors[random.integer(0, colors.length - 1)];
+    const color = options.color || colors[random.integer(0, colors.length - 1)];
     const { driver, frontSeats, windows } = adaptCar(this._carObject, color);
 
     if (options.noDriver) {
@@ -469,6 +469,7 @@ class MovingCar extends SimluationSceneElement {
     const x = this._movement.getX();
     const y = this._movement.getY();
     const angle = this._movement.getAngle();
+    const sangle = this._movement.getSmoothedAngle();
 
     this.group().position.x = x;
     this.group().position.z = y;
@@ -483,7 +484,7 @@ class MovingCar extends SimluationSceneElement {
     const camY = vr ? -0.4 : 1.25;
     let camZ = y;
 
-    const offsetX = vr ? -0.25 : 0.3;
+    const offsetX = vr ? -0.25 : -0.3;
     const offsetY = vr ? 0 : 0.3;
 
     camX += offsetX * Math.cos(angle) - offsetY * Math.sin(angle);
@@ -495,7 +496,7 @@ class MovingCar extends SimluationSceneElement {
       rest.updateCameraRotation(null, -angle, null);
     } else {
       const camera = rest.camera;
-      camera.rotation.y = -angle;
+      camera.rotation.y = -sangle;
       camera.rotation.x = 0;
       camera.rotation.z = 0;
       camera.rotateOnAxis({ x: 1, y: 0, z: 0 }, -1 * Math.PI * 0.03);

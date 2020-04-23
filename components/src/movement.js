@@ -9,6 +9,7 @@ class GridMovementBase {
     this._x = 0;
     this._y = 0;
     this._angle = 0;
+    this._smoothedAngle = 0;
 
     this._speed = 0;
     this._acceleration = 0;
@@ -49,6 +50,10 @@ class GridMovementBase {
     return this._angle;
   }
 
+  getSmoothedAngle() {
+    return this._smoothedAngle;
+  }
+
   /** @returns Grid */
   grid() {
     return this._grid;
@@ -87,6 +92,47 @@ class GridMovementBase {
     // Implement!
   }
 
+  moveBy(amount) {
+    assert(!isNaN(amount));
+
+    do {
+      const {
+        from,
+        to,
+        tile: [ xTile, yTile ]
+      } = this.getCurrentTileMovement();
+
+      this._tileDistance += amount;
+      amount = 0;
+
+      assert(!isNaN(this._tileDistance));
+
+      const { tile } = this._grid.getTileAt(xTile, yTile);
+      const updatedPos = tile.interpolerateMovement(from, to, this._tileDistance);
+
+      if (updatedPos.overshoot > 0) {
+        // So we finished the current tile and have still some
+        // distance left. Update the current tile position and move
+        // on the next one further
+        amount = updatedPos.overshoot;
+        this.useNextTile();
+        this._tileTime = 0;
+        this._tileDistance = 0;
+        continue;
+      }
+
+      const [ tileX, tileY ] = this._grid.getTileAnchorPosition(xTile, yTile);
+
+      this._x = tileX + updatedPos.x;
+      this._y = tileY + updatedPos.y;
+
+      this._angle = updatedPos.angle;
+      this._smoothedAngle = updatedPos.angleSmoothed;
+
+      this._tileDistance += amount;
+    } while (amount > 0);
+  }
+
   update(timeDeltaMs) {
     const baseSpeed = this._speed;
 
@@ -99,66 +145,11 @@ class GridMovementBase {
     const deltaDistance = speedScaled * timeDelta +
       (0.5 * this._acceleration * Math.pow(timeDelta, 2));
 
-    const distance = this._tileDistance + deltaDistance;
+    this.moveBy(deltaDistance);
 
-    assert(!isNaN(distance));
-
-    const {
-      from,
-      to,
-      tile: [ xTile, yTile ]
-    } = this.getCurrentTileMovement();
-
-    const { tile } = this._grid.getTileAt(xTile, yTile);
-    const updatedPos = tile.interpolerateMovement(from, to, distance);
-
-    if (updatedPos.overshoot > 0) {
-      this.useNextTile();
-
-      this._tileTime = 0;
-      this._tileDistance = 0;
-
-      let neededTime = NaN;
-
-      if (this._acceleration == 0) {
-        // So there was no acceleration and we can use the basic speed and time
-        // equotations
-        neededTime = (deltaDistance / (1 / this._speed));
-      } else {
-        // This one is a bit more complex since we have to account for the acceleration
-        // during the movement
-        const o = Math.sqrt(Math.pow(speedScaled, 2) + 2 * this._acceleration * deltaDistance);
-        const res = [
-          (-speedScaled + o) / this._acceleration,
-          (-speedScaled - o) / this._acceleration
-        ];
-
-        neededTime = Math.min(...res.filter(x => x >= 0));
-
-        this._addSpeedM_S(this._acceleration * (timeDelta - neededTime));
-
-        if (this._speed < 0) {
-          this._speed = 0;
-        }
-      }
-
-      this._internalTime += (timeDelta - neededTime);
-
-      assert(neededTime * 0.95 < timeDelta);
-
-      this.update(neededTime / 1000);
-    } else {
-      const [ tileX, tileY ] = this._grid.getTileAnchorPosition(xTile, yTile);
-
-      this._x = tileX + updatedPos.x;
-      this._y = tileY + updatedPos.y;
-      this._angle = updatedPos.angle;
-
-      this._addSpeedM_S(this._acceleration * timeDelta);
-      this._tileDistance = distance;
-      this._tileTime += timeDeltaMs;
-      this._internalTime += timeDeltaMs;
-    }
+    this._addSpeedM_S(this._acceleration * timeDelta)
+    this._tileTime += timeDeltaMs;
+    this._internalTime += timeDeltaMs;
   }
 }
 
@@ -308,93 +299,7 @@ class PathMovement extends GridMovementBase {
   }
 }
 
-// This is the actual class that does the grid movement calculations
-class GridMovement {
-  constructor(grid, path) {
-    this._path = path;
-    this._grid = grid;
-
-    this._x = 0;
-    this._y = 0;
-    this._angle = 0;
-
-    this._speed = 0;
-    this._acceleration = 0;
-
-    this._internalTime = 0;
-    this._tileTime = 0;
-
-    this._tileDistance = 0;
-  }
-
-  setAcceleration(acc) {
-    this._acceleration = acc;
-  }
-
-  getX() {
-    return this._x;
-  }
-
-  getY() {
-    return this._y;
-  }
-
-  getAngle() {
-    return this._angle;
-  }
-
-  moveBy(amount) {
-    assert(!isNaN(amount));
-
-    do {
-      const {
-        from,
-        to,
-        tile: [ xTile, yTile ]
-      } = this._path.current();
-
-      this._tileDistance += amount;
-      assert(!isNaN(this._tileDistance));
-
-      const { tile } = this._grid.getTileAt(xTile, yTile);
-      const updatedPos = tile.interpolerateMovement(from, to, this._tileDistance);
-
-      if (updatedPos.overshoot > 0) {
-        // So we finished the current tile and have still some
-        // distance left. Update the current tile position and move
-        // on the next one further
-        amount = updatedPos.overshoot;
-        this._path.next();
-        this._tileTime = 0;
-        this._tileDistance = 0;
-        continue;
-      }
-
-      const [ tileX, tileY ] = this._grid.getTileAnchorPosition(xTile, yTile);
-
-      this._x = tileX + updatedPos.x;
-      this._y = tileY + updatedPos.y;
-      this._angle = updatedPos.angle;
-
-      this._tileDistance += amount;
-    } while (amount > 0);
-  }
-
-  update(timeDeltaMs) {
-    const deltaDistance = this._speed * timeDeltaMs +
-      (0.5 * this._acceleration * Math.pow(timeDeltaMs, 2));
-
-    this.moveBy(deltaDistance);
-
-    this._speed += this._acceleration * timeDeltaMs;
-    this._tileTime += timeDeltaMs;
-    this._internalTime += timeDeltaMs;
-  }
-}
-
 export {
-  GridMovement,
-
   PathMovement,
   RandomMovement
 };

@@ -88,8 +88,6 @@ class GridMovementBase {
   }
 
   update(timeDeltaMs) {
-    console.log(this._tileDistance, this._speed);
-
     const baseSpeed = this._speed;
 
     const timeDelta = timeDeltaMs / 1000.0;
@@ -307,8 +305,6 @@ class PathMovement extends GridMovementBase {
 
     const next = this._grid.getRelativeFrom(this._current.tile[0], this._current.tile[1], to);
     this._nextTile = this._grid.getTileAt(...next).tile;
-
-    console.log(this._current, this._currentIndex, this._nextTile);
   }
 }
 
@@ -347,55 +343,52 @@ class GridMovement {
     return this._angle;
   }
 
-  update(timeDeltaMs) {
-    const baseSpeed = this._speed;
+  moveBy(amount) {
+    assert(!isNaN(amount));
 
-    const deltaDistance = baseSpeed * timeDeltaMs +
-      (0.5 * this._acceleration * Math.pow(timeDeltaMs, 2));
+    do {
+      const {
+        from,
+        to,
+        tile: [ xTile, yTile ]
+      } = this._path.current();
 
-    const distance = this._tileDistance + deltaDistance;
+      this._tileDistance += amount;
+      assert(!isNaN(this._tileDistance));
 
-    assert(!isNaN(distance));
+      const { tile } = this._grid.getTileAt(xTile, yTile);
+      const updatedPos = tile.interpolerateMovement(from, to, this._tileDistance);
 
-    const {
-      from,
-      to,
-      tile: [ xTile, yTile ]
-    } = this._path.current();
+      if (updatedPos.overshoot > 0) {
+        // So we finished the current tile and have still some
+        // distance left. Update the current tile position and move
+        // on the next one further
+        amount = updatedPos.overshoot;
+        this._path.next();
+        this._tileTime = 0;
+        this._tileDistance = 0;
+        continue;
+      }
 
-    const { tile } = this._grid.getTileAt(xTile, yTile);
-    const updatedPos = tile.interpolerateMovement(from, to, distance);
-
-    if (updatedPos.overshoot > 0) {
-      this._path.next();
-      this._tileTime = 0;
-      this._tileDistance = 0;
-
-      const o = Math.sqrt(Math.pow(baseSpeed, 2) + 2 * this._acceleration * deltaDistance);
-      const res = [
-        (-baseSpeed + o) / this._acceleration,
-        (-baseSpeed - o) / this._acceleration
-      ];
-
-      const neededTime = Math.min(res.filter(x => x >= 0));
-
-      this._speed += this._acceleration * (timeDeltaMs - neededTime);
-
-      this._internalTime += (timeDeltaMs - neededTime);
-
-      this.update(neededTime);
-    } else {
       const [ tileX, tileY ] = this._grid.getTileAnchorPosition(xTile, yTile);
 
       this._x = tileX + updatedPos.x;
       this._y = tileY + updatedPos.y;
       this._angle = updatedPos.angle;
 
-      this._speed += this._acceleration * timeDeltaMs;
-      this._tileDistance = distance;
-      this._tileTime += timeDeltaMs;
-      this._internalTime += timeDeltaMs;
-    }
+      this._tileDistance += amount;
+    } while (amount > 0);
+  }
+
+  update(timeDeltaMs) {
+    const deltaDistance = this._speed * timeDeltaMs +
+      (0.5 * this._acceleration * Math.pow(timeDeltaMs, 2));
+
+    this.moveBy(deltaDistance);
+
+    this._speed += this._acceleration * timeDeltaMs;
+    this._tileTime += timeDeltaMs;
+    this._internalTime += timeDeltaMs;
   }
 }
 

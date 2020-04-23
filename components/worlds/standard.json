@@ -1352,14 +1352,18 @@
       "following": true,
       "movement": {
         "type": "path",
-        "initial": [ 3, 2 ],
+        "initial": [ 7, 7 ],
         "path": [ 1, 2, -1, 2 ]
       },
       "options": {
-        "noDriver": true
+        "noDriver": true,
+        "color": "#ff0000",
+        "initialSpeed": 15
       },
       "startOffset": 0
-    },
+    }
+  ],
+  "cars2": [
     {
       "following": false,
       "movement": {
@@ -1394,9 +1398,7 @@
         "initial": [ 6, 3 ],
         "seed": 42
       }
-    }
-  ],
-  "cars2": [
+    },
     {
       "following": false,
       "movement": {

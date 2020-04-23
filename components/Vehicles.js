@@ -13,7 +13,7 @@ import { RandomGen } from './src/randomgen';
 const ACCELERATION = {
   MAX_BRAKE: -8,
 
-  SOFT_BRAKE: -3,
+  SOFT_BRAKE: -5,
 
   MEDIUM_ACCEL: 1.75,
   MAX_ACCEL: 2.5
@@ -196,15 +196,39 @@ class TrafficManager extends SimluationSceneElement {
         }
       }
 
+      const last = { 0: null, '-1': null, 1: null, 2: null };
+      for (const [ side, sets ] of Object.entries(atDest)) {
+        const sorted = [ ...sets ].sort((a, b) => a.ahead - b.ahead);
+        if (sorted.length > 0) {
+          last[side] = sorted[sorted.length - 1];
+
+          for (let i = 1; i < sorted.length; i++) {
+            const { vehicle: befVehicle, distance: befDistance } = sorted[i - 1];
+            const { vehicle: curVehicle, distance: curDistance } = sorted[i];
+
+            curVehicle.before.push({
+              delta: befDistance - curDistance,
+              vehicle: befVehicle
+            });
+          }
+        }
+      }
+
       const blocked = [];
 
       for (const d of vehicles) {
         if (atDest[d.to].has(d)) {
           continue;
         } else if (inCenter.has(d)) {
-          if (atDest[d.to].size > 0) {
-            // TODO: make this vehicle just follow the other in front of it
-            addLimiter(d.vehicle, 0);
+          const lastAtDest = last[d.to];
+          if (lastAtDest !== null) {
+            // So we have to calculate the distance between both of these.
+            // While the `ahead` distance of both might not be perfect, it is
+            // the best one that can be easily calculated
+            d.vehicle.before.push({
+              vehicle: lastAtDest.vehicle,
+              delta: d.ahead - lastAtDest.ahead
+            });
           }
           continue;
         } else if (atBeginning[d.from].has(d)) {

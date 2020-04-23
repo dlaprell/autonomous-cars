@@ -356,7 +356,7 @@ class Creator extends Component {
             <MenuButton label="Decoration Trashcan" onClick={() => this.toggleDecoration('trashCan')} disabled={disabledTileDecoration} />
             <MenuButton label="Decoration Bench" onClick={() => this.toggleDecoration('bench')} disabled={disabledTileDecoration} />
 
-            {selectedTile && selectedTile[0] == 5 && (
+            {selectedTile && selectedTile[0] == types.house.value && (
               <Fragment>
                 <hr />
 

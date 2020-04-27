@@ -22,7 +22,8 @@ class SimulationScene extends Component {
 
     this._scene.add(spotLight);
 
-    this._updateableElements = new Set();
+    this._updateableTimeElements = new Set();
+    this._updateableVisualizationElements = new Set();
 
     const {
       background
@@ -34,19 +35,24 @@ class SimulationScene extends Component {
 
     this._camera = null;
 
-    this.handleUpdate = (time, delta, rest) => {
-      const { onUpdate } = this.props;
-      if (onUpdate) {
-        onUpdate(time, delta, rest);
+    this.handleTimeUpdate = (time, delta) => {
+      const { onTimeUpdate } = this.props;
+      if (onTimeUpdate) {
+        onTimeUpdate(time, delta);
       }
 
-      for (const e of this._updateableElements.values()) {
-        e.update(time, delta, rest);
+      for (const e of this._updateableTimeElements.values()) {
+        e.updateTime(time, delta);
+      }
+    };
+
+    this.handleVisualizationUpdate = (rest) => {
+      for (const e of this._updateableVisualizationElements.values()) {
+        e.updateVisualization(rest);
       }
 
       if (!this._camera && rest.cameraWrapper) {
         this._scene.add(rest.cameraWrapper);
-        // rest.cameraWrapper.rotation.x = Math.PI / 2;
       }
 
       this._camera = rest.camera;
@@ -57,15 +63,20 @@ class SimulationScene extends Component {
   addElement(e) {
     this._scene.add(e.group());
 
-    if (typeof e.update === 'function') {
-      this._updateableElements.add(e);
+    if (typeof e.updateVisualization === 'function') {
+      this._updateableVisualizationElements.add(e);
+    }
+
+    if (typeof e.updateTime === 'function') {
+      this._updateableTimeElements.add(e);
     }
   }
 
   removeElement(e) {
     this._scene.remove(e.group());
 
-    this._updateableElements.delete(e);
+    this._updateableVisualizationElements.delete(e);
+    this._updateableTimeElements.delete(e);
   }
 
   render() {
@@ -79,6 +90,10 @@ class SimulationScene extends Component {
           creatorView={creatorView}
           loop={Boolean(loop)}
           vr={vr}
+
+          onTimeUpdate={this.handleTimeUpdate}
+          onVisualizationUpdate={this.handleVisualizationUpdate}
+
           onUpdate={this.handleUpdate}
         />
       </SceneContext.Provider>
@@ -118,10 +133,6 @@ class SimluationSceneElement extends Component {
   group() {
     return this._group;
   }
-
-  // update(time, renderer, camera) {
-  //
-  // }
 
   render() {
     return (

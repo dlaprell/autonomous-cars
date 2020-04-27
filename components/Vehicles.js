@@ -369,7 +369,13 @@ class TrafficManager extends SimluationSceneElement {
     }
   }
 
-  update(_, delta, rest) {
+  updateVisualization(rest) {
+    for (const vehicle of this._managedObjects) {
+      vehicle.updateVisualization(rest);
+    }
+  }
+
+  updateTime(_, delta) {
     // So we want to update the position continuosly, but only calculate the acceleration
     // and movement patterns in a fixed pattern (e.g every 20ms)
     while (delta > 0) {
@@ -387,10 +393,6 @@ class TrafficManager extends SimluationSceneElement {
       }
 
       this._internalTime += updateDelta;
-    }
-
-    for (const vehicle of this._managedObjects) {
-      vehicle.updateVisualization(rest);
     }
   }
 

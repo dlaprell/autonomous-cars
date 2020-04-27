@@ -10,7 +10,7 @@ class OrbitControls extends SimluationSceneElement {
     this._element = null;
   }
 
-  update(t, d, { camera }) {
+  updateVisualization({ camera }) {
     const { enabled, container } = this.props;
 
     if (this._controls === null || this._element !== container) {

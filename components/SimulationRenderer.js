@@ -14,10 +14,12 @@ class SimulationRenderer extends Component {
 
     this._totalTime = 0;
     this._lastTime = null;
-  
+
     this._ref = null;
     this._mounted = false;
     this._paused = false;
+
+    this._initialRender = true;
 
     this._renderer = new WebGLRenderer({ antialias: false /* , alpha: true */ });
     // this._renderer.shadowMap.enabled = true;
@@ -26,7 +28,7 @@ class SimulationRenderer extends Component {
     this._resizeHandler = () => {
       const width = this._ref.clientWidth;
       const height = this._ref.clientHeight;
-      
+
       this._renderer.setSize(width, height);
 
       this._camera.aspect = width / height; // aspect ratio
@@ -35,7 +37,7 @@ class SimulationRenderer extends Component {
 
     this._updateCameraPosition = (x, y, z) => {
       const pos = (this._vr ? this._cameraWrapper : this._camera).position;
-      
+
       if (x !== null) {
         pos.x = x;
       }
@@ -49,7 +51,7 @@ class SimulationRenderer extends Component {
 
     this._updateCameraRotation = (x, y, z) => {
       const rot = (this._vr ? this._cameraWrapper : this._camera).rotation;
-      
+
       if (x !== null) {
         rot.x = x;
       }
@@ -66,12 +68,12 @@ class SimulationRenderer extends Component {
         this.removeRenderer();
         this._ref = update;
       }
-  
+
       if (update && (!this._mounted || this._ref !== update)) {
         if (this._ref !== update && this._mounted) {
           this.removeRenderer();
         }
-  
+
         this._ref = update;
         this.addRenderer();
       }
@@ -88,35 +90,45 @@ class SimulationRenderer extends Component {
         window.requestAnimationFrame(this._runUpdate);
       }
 
-      if (this._lastTime === null) {
-        this._lastTime = new Date();
+      const initial = this._initialRender;
+      if (this._initialRender) {
+        this._initialRender = false;
       }
+
+      const { onTimeUpdate, onVisualizationUpdate } = this.props;
 
       let delta = 0;
 
-      if (loop) {
-        const now = new Date();
+      if (!initial) {
+        // We only update the time, after the initial render
+        // since the first rendering may take much longer
 
-        delta = Math.min(100, Math.max(1, now - this._lastTime));
-        this._totalTime += delta;
+        if (this._lastTime === null) {
+          this._lastTime = new Date();
+        }
 
-        this._lastTime = now;
+        if (loop) {
+          const now = new Date();
+
+          delta = Math.min(100, now - this._lastTime);
+          this._totalTime += delta;
+
+          this._lastTime = now;
+        }
       }
 
-      const { onUpdate } = this.props;
-      if (onUpdate) {
-        try {
-          onUpdate(this._totalTime, delta, {
-            renderer: this._renderer,
-            camera: this._camera,
-            cameraWrapper: this._cameraWrapper,
-            updateCameraPosition: this._updateCameraPosition,
-            updateCameraRotation: this._updateCameraRotation
-          });
-        } catch (ex) {
-          this._paused = true;
-          throw ex;
-        }
+      if (onTimeUpdate) {
+        onTimeUpdate(this._totalTime, delta);
+      }
+
+      if (onVisualizationUpdate) {
+        onVisualizationUpdate({
+          renderer: this._renderer,
+          camera: this._camera,
+          cameraWrapper: this._cameraWrapper,
+          updateCameraPosition: this._updateCameraPosition,
+          updateCameraRotation: this._updateCameraRotation
+        });
       }
     };
   }
@@ -150,7 +162,7 @@ class SimulationRenderer extends Component {
       this._cameraWrapper = new Group();
       this._cameraWrapper.add(this._camera);
     }
-    
+
     this._camera.rotation.x = 0;
     this._camera.rotation.y = 0;
     this._updateCameraPosition(0, 200, 3);
@@ -163,7 +175,7 @@ class SimulationRenderer extends Component {
   componentWillUnmount() {
     window.removeEventListener('resize', this._resizeHandler);
   }
-  
+
   render() {
     return (
       <div

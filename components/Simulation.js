@@ -47,7 +47,7 @@ class Simulation extends Component {
         'clouds1_east.jpg'
       ]);
 
-    this.onUpdate = this.onUpdate.bind(this);
+    this.handleTimeUpdate = this.handleTimeUpdate.bind(this);
   }
 
   componentDidMount() {
@@ -66,7 +66,7 @@ class Simulation extends Component {
     })
   }
 
-  onUpdate(time) {
+  handleTimeUpdate(time) {
     const { stopAfter, onStop } = this.props;
 
     if (typeof stopAfter === 'number' && stopAfter > 0 && time >= stopAfter && !this.state.stop) {
@@ -119,7 +119,7 @@ class Simulation extends Component {
           loop={loaded && !stop}
           ref={sceneRef}
           creatorView={creatorView}
-          onUpdate={this.onUpdate}
+          onTimeUpdate={this.handleTimeUpdate}
         >
           <OrbitControls enabled={withCamera && !vr} container={container} />
 

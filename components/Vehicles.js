@@ -36,6 +36,8 @@ class TrafficManager extends SimluationSceneElement {
     super(...args);
 
     this._managedObjects = [];
+
+    this._internalTime = 0;
   }
 
   calculateAccelerations() {
@@ -368,12 +370,23 @@ class TrafficManager extends SimluationSceneElement {
   }
 
   update(_, delta, rest) {
-    // So we want to check in every frame whether one car is approaching a t-section or
-    // 4-four crossing ('conflict zones') and try to use the standard rules of traffic
-    this.calculateAccelerations();
+    // So we want to update the position continuosly, but only calculate the acceleration
+    // and movement patterns in a fixed pattern (e.g every 20ms)
+    while (delta > 0) {
+      const toNextAccUpdate = 20 - (this._internalTime % 20);
 
-    for (const vehicle of this._managedObjects) {
-      vehicle.updatePosition(delta);
+      if (toNextAccUpdate === 20) {
+        this.calculateAccelerations();
+      }
+
+      const updateDelta = Math.min(toNextAccUpdate, delta);
+      delta -= updateDelta;
+
+      for (const vehicle of this._managedObjects) {
+        vehicle.updatePosition(updateDelta);
+      }
+
+      this._internalTime += updateDelta;
     }
 
     for (const vehicle of this._managedObjects) {

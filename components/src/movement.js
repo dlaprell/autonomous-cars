@@ -6,6 +6,9 @@ class GridMovementBase {
   constructor(grid) {
     this._grid = grid;
 
+    this._baseTileX = 0;
+    this._baseTileY = 0;
+
     this._x = 0;
     this._y = 0;
     this._angle = 0;
@@ -102,6 +105,8 @@ class GridMovementBase {
         tile: [ xTile, yTile ]
       } = this.getCurrentTileMovement();
 
+      const isFirstMovementOnTile = this._tileDistance === 0;
+
       this._tileDistance += amount;
       amount = 0;
 
@@ -121,15 +126,17 @@ class GridMovementBase {
         continue;
       }
 
-      const [ tileX, tileY ] = this._grid.getTileAnchorPosition(xTile, yTile);
+      if (isFirstMovementOnTile) {
+        const [ tileX, tileY ] = this._grid.getTileAnchorPosition(xTile, yTile);
+        this._baseTileX = tileX;
+        this._baseTileY = tileY;
+      }
 
-      this._x = tileX + updatedPos.x;
-      this._y = tileY + updatedPos.y;
+      this._x = this._baseTileX + updatedPos.x;
+      this._y = this._baseTileY + updatedPos.y;
 
       this._angle = updatedPos.angle;
       this._smoothedAngle = updatedPos.angleSmoothed;
-
-      this._tileDistance += amount;
     } while (amount > 0);
   }
 
@@ -147,7 +154,8 @@ class GridMovementBase {
 
     this.moveBy(deltaDistance);
 
-    this._addSpeedM_S(this._acceleration * timeDelta)
+    // (m / s^2) * (s / 1000) * 60 * 60
+    this._speed += ((this._acceleration * timeDelta) / 1000) * 60 * 60;
     this._tileTime += timeDeltaMs;
     this._internalTime += timeDeltaMs;
   }

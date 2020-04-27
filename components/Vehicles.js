@@ -12,7 +12,7 @@ import { RandomGen } from './src/randomgen';
 
 const ACCELERATION = {
   MAX_BRAKE: -8,
-
+  MEDIUM_BRAKE: -6.5,
   SOFT_BRAKE: -5,
 
   MEDIUM_ACCEL: 1.75,
@@ -38,21 +38,16 @@ class TrafficManager extends SimluationSceneElement {
     this._managedObjects = [];
   }
 
-  update(_, delta, rest) {
+  calculateAccelerations() {
     // So we want to check in every frame whether one car is approaching a t-section or
     // 4-four crossing ('conflict zones') and try to use the standard rules of traffic
+
+    for (const vehicle of this._managedObjects) {
+      vehicle.haltIn = Number.MAX_SAFE_INTEGER;
+    }
+
     const onLane = new Map();
     const atConflictZone = new Map();
-    const limiter = new Map();
-
-    function addLimiter(vehicle, lim) {
-      if (!limiter.has(vehicle)) {
-        limiter.set(vehicle, lim);
-      } else {
-        const l = limiter.get(vehicle);
-        limiter.set(vehicle, Math.max(0, Math.min(l, lim)));
-      }
-    }
 
     function addToConflictZone(tile, vehicle, distance, ahead, { from, to }) {
       let set;
@@ -155,7 +150,7 @@ class TrafficManager extends SimluationSceneElement {
       }
     }
 
-    for (const [ tile, vehicles ] of atConflictZone.entries()) {
+    for (const vehicles of atConflictZone.values()) {
       if (vehicles.length <= 1) {
         continue;
       }
@@ -304,11 +299,9 @@ class TrafficManager extends SimluationSceneElement {
 
       for (const d of blocked) {
         if (d.blockedByFront || d.blockedByCenter) {
-          if (d.distance < -3) {
-            addLimiter(d.vehicle, 0.1);
-          } else {
-            addLimiter(d.vehicle, 0);
-          }
+          // distance = 2 is the halt line
+          const distanceToHaltLine = Math.max(0, 2 - d.distance);
+          d.vehicle.haltIn = Math.min(d.vehicle.haltIn, distanceToHaltLine);
         }
       }
     }
@@ -333,14 +326,25 @@ class TrafficManager extends SimluationSceneElement {
         }
       }
 
+      if (vehicle.haltIn < Number.MAX_SAFE_INTEGER) {
+        const brakingDistance = Math.pow(ownSpeed, 2) / (-2 * ACCELERATION.SOFT_BRAKE);
+
+        if (brakingDistance - 3 > vehicle.haltIn) {
+          acc = Math.min(acc, ACCELERATION.MAX_BRAKE);
+        } else if (brakingDistance > vehicle.haltIn) {
+          acc = Math.min(acc, ACCELERATION.MEDIUM_BRAKE);
+        } else if (brakingDistance + 1 > vehicle.haltIn) {
+          acc = Math.min(acc, ACCELERATION.SOFT_BRAKE);
+        }
+      }
+
       const { from, to } = mov.getCurrentTileMovement();
       const nextDir = mov.getNextTileDirections();
 
       const curTile = mov.currentTile().tile;
       const nextTile = mov.targetTile().tile;
 
-      const lim = limiter.has(vehicle) ? limiter.get(vehicle) : 1;
-      let tileSpeedLimit = curTile.speedLimitation() * lim;
+      let tileSpeedLimit = curTile.speedLimitation();
 
       if (nextTile.getType() === TYPES.T_SECTION || nextTile.getType() === TYPES.CROSS) {
         tileSpeedLimit = Math.min(tileSpeedLimit, 25);
@@ -360,9 +364,20 @@ class TrafficManager extends SimluationSceneElement {
       }
 
       mov.setAcceleration(acc);
+    }
+  }
 
-      // Now trigger the actual car update
-      vehicle.updatePosition(delta, rest);
+  update(_, delta, rest) {
+    // So we want to check in every frame whether one car is approaching a t-section or
+    // 4-four crossing ('conflict zones') and try to use the standard rules of traffic
+    this.calculateAccelerations();
+
+    for (const vehicle of this._managedObjects) {
+      vehicle.updatePosition(delta);
+    }
+
+    for (const vehicle of this._managedObjects) {
+      vehicle.updateVisualization(rest);
     }
   }
 
@@ -475,21 +490,7 @@ class MovingCar extends SimluationSceneElement {
     return this._movement;
   }
 
-  updatePosition(delta, rest) {
-    this._movement.update(delta);
-
-    if (this._initialUpdate) {
-      this._initialUpdate = false;
-
-      // Apply a start offset if there is one specified
-      const { startOffset } = this.props;
-
-      if (typeof startOffset !== 'undefined' && startOffset >= 0) {
-        assert(typeof startOffset === 'number');
-        this._movement.update(startOffset);
-      }
-    }
-
+  updateVisualization(rest) {
     const x = this._movement.getX();
     const y = this._movement.getY();
     const angle = this._movement.getAngle();
@@ -524,6 +525,22 @@ class MovingCar extends SimluationSceneElement {
       camera.rotation.x = 0;
       camera.rotation.z = 0;
       camera.rotateOnAxis({ x: 1, y: 0, z: 0 }, -1 * Math.PI * 0.03);
+    }
+  }
+
+  updatePosition(delta) {
+    this._movement.update(delta);
+
+    if (this._initialUpdate) {
+      this._initialUpdate = false;
+
+      // Apply a start offset if there is one specified
+      const { startOffset } = this.props;
+
+      if (typeof startOffset !== 'undefined' && startOffset >= 0) {
+        assert(typeof startOffset === 'number');
+        this._movement.update(startOffset);
+      }
     }
   }
 

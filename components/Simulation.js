@@ -79,6 +79,7 @@ class Simulation extends Component {
       sceneRef,
 
       creatorView,
+      highlightTile,
 
       vr
     } = this.props;
@@ -109,6 +110,8 @@ class Simulation extends Component {
 
       this._gridMap = world.map;
     }
+
+    this._grid.highlightTile(highlightTile || null);
 
     return (
       <ModelManager models={models}>

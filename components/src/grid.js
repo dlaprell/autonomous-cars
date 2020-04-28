@@ -1,4 +1,13 @@
-import { Group, Mesh, VertexColors, MeshLambertMaterial, DoubleSide } from 'three';
+import {
+  Group,
+  Mesh,
+  BoxBufferGeometry,
+  MeshBasicMaterial,
+  
+  VertexColors,
+  MeshLambertMaterial,
+  DoubleSide
+} from 'three';
 
 import { BufferGeometryUtils } from '../third-party/BufferGeometryUtils';
 import { assert } from '../utils/assert';
@@ -27,6 +36,16 @@ class GridMap {
     this._tileList = [];
     this._map = null;
     this._group = new Group();
+
+    this._highlightCube = new Mesh(
+      new BoxBufferGeometry(TILE_SIZE, TILE_SIZE, TILE_SIZE),
+      new MeshLambertMaterial({ color: 0x77BBFF })
+    );
+    this._highlightCube.material.transparent = true;
+    this._highlightCube.material.opacity = 0.3;
+    this._highlightCube.visible = false;
+    this._highlightCube.position.y += TILE_SIZE / 2;
+    this._group.add(this._highlightCube);
 
     this.updateBaseMap(baseMap);
 
@@ -524,6 +543,21 @@ class GridMap {
       lane._includedTilesDistances = tileDistance;
       lane._totalDistance = totalLaneDistance;
     }
+  }
+
+  highlightTile(tile) {
+    if (!tile) {
+      this._highlightCube.visible = false;
+      return;
+    }
+
+    this._highlightCube.visible = true;
+
+    const [ aX, aY ] = this.getTileAnchorPosition(tile.x, tile.y);
+    console.log(aX, aY);
+
+    this._highlightCube.position.x = aX + TILE_SIZE / 2;
+    this._highlightCube.position.z = aY + TILE_SIZE / 2;
   }
 
   getGroup() {

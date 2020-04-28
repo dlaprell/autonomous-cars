@@ -185,7 +185,7 @@ class Creator extends Component {
     const now = new Date().getTime();
     const distance = Math.sqrt(Math.pow(evt.x - x) + Math.pow(evt.y - y));
 
-    if (distance > 5 || now - time > 100) {
+    if (distance > 5 || now - time > 300) {
       return;
     }
 
@@ -245,7 +245,6 @@ class Creator extends Component {
     } = this.state;
 
     const selectedTile = tile ? map[tile.y][tile.x] : null;
-    console.log(map);
 
     return (
       <Fragment>
@@ -261,6 +260,7 @@ class Creator extends Component {
               creatorView
               world={{ map }}
               container={mainRef}
+              highlightTile={tile}
             />
           )}
         </main>

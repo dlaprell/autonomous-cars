@@ -267,6 +267,8 @@ class TileOptions extends Component {
 
         <div className="spacer" />
 
+        
+
         <style jsx>{`
           .spacer {
             height: 24px;

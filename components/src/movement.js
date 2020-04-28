@@ -37,8 +37,8 @@ class GridMovementBase {
     return this._speed; // in km / h
   }
 
-  _addSpeedM_S(speedInM_S) {
-    this._speed += (speedInM_S / 1000) * 60 * 60;
+  speedInMPerS() {
+    return (this._speed * 1000) / (60 * 60);
   }
 
   getX() {

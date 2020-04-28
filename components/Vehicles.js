@@ -301,8 +301,8 @@ class TrafficManager extends SimluationSceneElement {
 
       for (const d of blocked) {
         if (d.blockedByFront || d.blockedByCenter) {
-          // distance = 2 is the halt line
-          const distanceToHaltLine = Math.max(0, 2 - d.distance);
+          // distance = 1 is the halt line
+          const distanceToHaltLine = Math.max(0, 1 - d.distance);
           d.vehicle.haltIn = Math.min(d.vehicle.haltIn, distanceToHaltLine);
         }
       }
@@ -329,14 +329,15 @@ class TrafficManager extends SimluationSceneElement {
       }
 
       if (vehicle.haltIn < Number.MAX_SAFE_INTEGER) {
-        const brakingDistance = Math.pow(ownSpeed, 2) / (-2 * ACCELERATION.SOFT_BRAKE);
+        // Since the acceleration is in m/s^2 we have to convert the speed to m/s
+        const convSpeed = mov.speedInMPerS();
+
+        const brakingDistance = Math.pow(convSpeed, 2) / (-2 * ACCELERATION.MEDIUM_BRAKE);
 
         if (brakingDistance - 3 > vehicle.haltIn) {
           acc = Math.min(acc, ACCELERATION.MAX_BRAKE);
-        } else if (brakingDistance > vehicle.haltIn) {
-          acc = Math.min(acc, ACCELERATION.MEDIUM_BRAKE);
         } else if (brakingDistance + 1 > vehicle.haltIn) {
-          acc = Math.min(acc, ACCELERATION.SOFT_BRAKE);
+          acc = Math.min(acc, ACCELERATION.MEDIUM_BRAKE);
         }
       }
 

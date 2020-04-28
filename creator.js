@@ -66,7 +66,7 @@ class Creator extends Component {
     this.handleTileTypeChange = this.handleTileTypeChange.bind(this);
     this.handleMouseDown = this.handleMouseDown.bind(this);
     this.handleContextMenu = this.handleContextMenu.bind(this);
-    
+
     this.rotateLeft = this.handleRotation.bind(this, -1);
     this.rotateRight = this.handleRotation.bind(this, 1);
 
@@ -287,14 +287,14 @@ class Creator extends Component {
     if (!evt.target.files || evt.target.files.length !== 1) {
       return;
     }
-    
+
     const reader = new FileReader();
     reader.onload = () => {
       const text = reader.result;
-      
+
       try {
         const { map, cars } = JSON.parse(text);
-        
+
         this.setState({ map, cars });
       } catch (ex) {
         console.error(ex);
@@ -342,6 +342,7 @@ class Creator extends Component {
               withCamera={mode === 'camera'}
               world={{ map }}
               container={mainRef}
+              creatorView
             />
           )}
           <div
@@ -370,7 +371,7 @@ class Creator extends Component {
         </main>
         <div className="toolbar">
           <h4>Toolbar</h4>
-          
+
           <div className="object-panel">
 
           </div>

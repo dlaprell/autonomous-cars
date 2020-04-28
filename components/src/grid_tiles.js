@@ -63,7 +63,7 @@ function interpolerateCurveMovement(from, to, distance, rotation) {
     ? (3.0 / 2.0 * Math.PI) + moveByDeg // from down
     : -1 * moveByDeg; // from right
 
-  // during the curve progress, this value goes from 
+  // during the curve progress, this value goes from
   const viewAmplifier = 1 - Math.pow(((amountMov / 0.125) - 1), 2);
 
   const angleMultiplier = (rotFrom === 2 ? 1 : -1);
@@ -623,7 +623,7 @@ const treeDis = [
 ];
 
 class ForestTile extends Tile {
-  constructor(rotation, { random, models, drawBorders }, options) {
+  constructor(rotation, { models, drawBorders }, options) {
     super(TYPES.FOREST, rotation, { drawBorders });
 
     const rnd = new RandomGen(options.seed || 13);

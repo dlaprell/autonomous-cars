@@ -12,45 +12,237 @@ import {
 import { rotate, addColorToGeometry } from './utils';
 import { Lane } from './lane';
 
-let gridIdCounter = 0;
+const sideWalkMaterial = new MeshLambertMaterial({ vertexColors: VertexColors, side: DoubleSide });
+const laneMaterial = new MeshLambertMaterial({ vertexColors: VertexColors, side: DoubleSide });
+const sideWalkColor = '#7d3c00';
+const laneColor = '#918e84';
 
 class GridMap {
-  constructor(rd, models, { withLanes, baseMap, creatorMode }) {
-    this._id = ++gridIdCounter;
+  constructor(models, { withLanes, baseMap, creatorView }) {
+    this._creatorView = creatorView;
+    this._models = models;
 
-    this._creatorMode = creatorMode;
+    this._generation = 1;
 
     this._tileList = [];
-    this._map = baseMap
+    this._map = null;
+    this._group = new Group();
+
+    this.updateBaseMap(baseMap);
+
+    if (withLanes && !creatorView) {
+      this._initLanes();
+    }
+  }
+
+  updateBaseMap(baseMap) {
+    const curGeneration = this._generation++;
+
+    // assert(this._creatorView);
+    const tileList = [];
+    const updatedMap = baseMap
       .map(
         (row, y) => row.map(
-          ([ type, rotation, options ], x) => {
-            const tile = TILE_BY_TYPE[type];
+          (originalData, x) => {
             const data = {
               x,
               y,
-              tile: new tile(rotation, { random: rd, models }, options || {})
+
+              generation: curGeneration,
+
+              originalData
             };
-
-            data.tile._x = x;
-            data.tile._y = y;
-
-            this._tileList.push(data);
 
             return data;
           }
         )
       );
 
-    if (withLanes && !creatorMode) {
-      this._initLanes();
+    // Now diff the updatedMap against the current map
+    for (let y = 0; y < updatedMap.length; y++) {
+      this.updateRow(updatedMap[y], y);
     }
 
-    this._group = new Group();
+    // It is also possible, that the new map is smaller than the old one
+    if (this._map && this._map.length > updatedMap.length) {
+      for (let y = updatedMap.length; y < this._map.length; y++) {
+        this.updateRow([], y);
+      }
+    }
+
+    const forestTiles = [];
+    const laneTiles = [];
+
+    // Collect all updated tiles
+    for (let y = 0; y < updatedMap.length; y++) {
+      for (let x = 0; x < updatedMap.length; x++) {
+        tileList.push(updatedMap[y][x]);
+
+        const data = updatedMap[y][x];
+        if (data.tile.getType() === TYPES.FOREST) {
+          forestTiles.push(data);
+        } else if (data.tile.laneGeometry()) {
+          laneTiles.push(data);
+        }
+      }
+    }
+
+    // there are two basic modes that we have to support:
+    // 1) merging all forest / lane geometries across all tiles
+    // 2) Rendering them only to their own tile
+    if (!this._creatorView) { // Mode 1
+      // Note: in this mode, we can use the geometries in a one time fashion
+
+      if (forestTiles.length > 0) {
+        const forestGeometries = [];
+
+        for (const { tile } of forestTiles) {
+          const g = tile.getGroup();
+          g.updateWorldMatrix(true, false);
+
+          const forestGeometry = tile.getForestGeometry();
+          forestGeometry.applyMatrix4(g.matrixWorld);
+
+          forestGeometries.push(forestGeometry);
+        }
+
+        const mergedForests = BufferGeometryUtils.mergeBufferGeometries(forestGeometries, false);
+        assert(mergedForests);
+        this._group.add(new Mesh(mergedForests, new MeshLambertMaterial({ vertexColors: VertexColors })));
+      }
+
+      if (laneTiles.length > 0) {
+        const laneGeometries = [];
+        const sidewalkGeometries = [];
+
+        for (const { tile } of laneTiles) {
+          const g = tile.getGroup();
+          g.updateWorldMatrix(true, false);
+
+          const laneGeometry = tile.laneGeometry();
+          laneGeometry.applyMatrix4(g.matrixWorld);
+
+          const sidewalkGeometry = tile.sideWalkGeometry();
+
+          laneGeometries.push(laneGeometry);
+          if (sidewalkGeometry) {
+            sidewalkGeometry.applyMatrix4(g.matrixWorld);
+            sidewalkGeometries.push(sidewalkGeometry);
+          }
+        }
+
+        const mergedLanes = BufferGeometryUtils.mergeBufferGeometries(laneGeometries, false);
+        assert(mergedLanes);
+        addColorToGeometry(mergedLanes, laneColor);
+        this._group.add(new Mesh(mergedLanes, laneMaterial));
+
+        const mergedSidewalks = BufferGeometryUtils.mergeBufferGeometries(sidewalkGeometries, false);
+        assert(mergedSidewalks);
+        addColorToGeometry(mergedSidewalks, sideWalkColor);
+        this._group.add(new Mesh(mergedSidewalks, sideWalkMaterial));
+      }
+    } else { // Mode 2
+      for (const { tile, generation } of forestTiles) {
+        if (generation !== curGeneration) {
+          continue;
+        }
+
+        const g = tile.getGroup();
+        const forestGeometry = tile.getForestGeometry();
+        g.add(new Mesh(forestGeometry, new MeshLambertMaterial({ vertexColors: VertexColors })));
+      }
+
+      for (const { tile, generation } of laneTiles) {
+        if (generation !== curGeneration) {
+          continue;
+        }
+
+        const g = tile.getGroup();
+        const laneGeometry = tile.laneGeometry();
+        addColorToGeometry(laneGeometry, laneColor);
+        g.add(new Mesh(laneGeometry, laneMaterial));
+
+        const sidewalkGeometry = tile.sideWalkGeometry();
+        if (sidewalkGeometry) {
+          addColorToGeometry(sidewalkGeometry, sideWalkColor);
+          g.add(new Mesh(sidewalkGeometry, sideWalkMaterial));
+        }
+      }
+    }
+
+    if (this._map && this._map.length !== updatedMap.length) {
+      // So we need to reposition *every* tile so that they are correctly aligned
+      // again
+
+      const gridSize = updatedMap.length * TILE_SIZE;
+
+      for (const { x, y, tile } of tileList) {
+        const g = tile.getGroup();
+
+        g.position.x = -1 * (gridSize / 2) + (x * TILE_SIZE) + TILE_SIZE / 2;
+        g.position.z = -1 * (gridSize / 2) + (y * TILE_SIZE) + TILE_SIZE / 2;
+
+        // These tile groups are static and need to be updated manually
+        g.updateMatrix();
+      }
+    }
+
+    this._map = updatedMap;
+    this._tileList = tileList;
   }
 
-  id () {
-    return this._id;
+  updateRow(row, y) {
+    const oldRowExists = Boolean(this._map && this._map[y]);
+    const length = oldRowExists ? Math.max(this._map[y].length, row.length) : row.length;
+
+    for (let x = 0; x < length; x++) {
+      const cur = oldRowExists ? this._map[y][x] : null;
+      const upd = row[x] || null;
+
+      if (cur && upd && cur.originalData === upd.originalData) {
+        // We override the newly generated one since this one
+        // is more up to date
+        row[x] = cur;
+        continue;
+      }
+
+      if (cur) {
+        this.removeTile(cur);
+      }
+
+      if (upd) {
+        const [ type, rotation, options ] = upd.originalData;
+        const tile = TILE_BY_TYPE[type];
+
+        upd.tile = new tile(
+          rotation,
+          { models: this._models, drawBorders: this._creatorView },
+          options || {}
+        );
+
+        upd.tile._x = x;
+        upd.tile._y = y;
+
+        // Now add the new tile to the grid
+        this.addTile(upd, row.length * TILE_SIZE);
+      }
+    }
+  }
+
+  addTile({ x, y, tile }, gridSize) {
+    tile.render();
+    const g = tile.getGroup();
+
+    g.position.x = -1 * (gridSize / 2) + (x * TILE_SIZE) + TILE_SIZE / 2;
+    g.position.z = -1 * (gridSize / 2) + (y * TILE_SIZE) + TILE_SIZE / 2;
+
+    // These tile groups are static and need to be updated manually
+    g.updateMatrix();
+    this._group.add(g);
+  }
+
+  removeTile({ x, y, tile }) {
+    this._group.remove(tile.getGroup());
   }
 
   _initLanes() {
@@ -399,84 +591,8 @@ class GridMap {
 
     return [ tX, tY ];
   }
-
-  render() {
-    const forestTiles = [];
-    const laneTiles = [];
-
-    for (const { x, y, tile } of this._tileList) {
-      tile.render();
-      const g = tile.getGroup();
-
-      g.position.x = -1 * (this.size() / 2) + (x * TILE_SIZE) + TILE_SIZE / 2;
-      g.position.z = -1 * (this.size() / 2) + (y * TILE_SIZE) + TILE_SIZE / 2;
-
-      // These tile groups are static and need to be updated manually
-      g.updateMatrix();
-      this._group.add(g);
-
-      if (tile.getType() === TYPES.FOREST) {
-        forestTiles.push(tile);
-      } else if (tile.laneGeometry()) {
-        laneTiles.push(tile);
-      }
-    }
-
-    // Now extract all the forest geometries and add them as one to the world
-    if (forestTiles.length > 0) {
-      const forestGeometries = [];
-      for (const tile of forestTiles) {
-        const g = tile.getGroup();
-        g.updateWorldMatrix(true, false);
-
-        const forestGeometry = tile.getForestGeometry();
-        forestGeometry.applyMatrix4(g.matrixWorld);
-
-        forestGeometries.push(forestGeometry);
-      }
-
-      const mergedForests = BufferGeometryUtils.mergeBufferGeometries(forestGeometries, false);
-      assert(mergedForests);
-      this._group.add(new Mesh(mergedForests, new MeshLambertMaterial({ vertexColors: VertexColors })));
-    }
-
-    if (laneTiles.length > 0) {
-      const laneGeometries = [];
-      const sidewalkGeometries = [];
-
-      for (const tile of laneTiles) {
-        const g = tile.getGroup();
-        g.updateWorldMatrix(true, false);
-
-        const laneGeometry = tile.laneGeometry();
-        laneGeometry.applyMatrix4(g.matrixWorld);
-
-        const sidewalkGeometry = tile.sideWalkGeometry();
-
-        laneGeometries.push(laneGeometry);
-        if (sidewalkGeometry) {
-          sidewalkGeometry.applyMatrix4(g.matrixWorld);
-          sidewalkGeometries.push(sidewalkGeometry);
-        }
-      }
-
-      const mergedLanes = BufferGeometryUtils.mergeBufferGeometries(laneGeometries, false);
-      assert(mergedLanes);
-      addColorToGeometry(mergedLanes, '#918e84');
-      this._group.add(new Mesh(mergedLanes, new MeshLambertMaterial({ vertexColors: VertexColors, side: DoubleSide })));
-
-      const mergedSidewalks = BufferGeometryUtils.mergeBufferGeometries(sidewalkGeometries, false);
-      assert(mergedSidewalks);
-      addColorToGeometry(mergedSidewalks, '#7d3c00');
-      this._group.add(new Mesh(mergedSidewalks, new MeshLambertMaterial({ vertexColors: VertexColors, side: DoubleSide })));
-    }
-  }
-}
-
-function initTiles(rd, models, options) {
-  return new GridMap(rd, models, options);
 }
 
 export {
-  initTiles
+  GridMap
 };

@@ -1,9 +1,9 @@
 /** @jsx h */
 
-import { h, Component, Fragment } from 'preact';
+import { h, Component } from 'preact';
 import { CubeTextureLoader } from 'three';
 
-import { initTiles } from './src/grid';
+import { GridMap } from './src/grid';
 
 import { SimulationScene } from './SimulationScene';
 import { Ground, GridRenderer } from './World';
@@ -13,14 +13,6 @@ import { RandomGen } from './src/randomgen';
 
 import { ModelManager } from './ModelManager';
 import loadModels from './models/ModelLoader';
-
-function Wrapper({ children }) {
-  return (
-    <Fragment>
-      {children}
-    </Fragment>
-  );
-}
 
 class Simulation extends Component {
   constructor(...args) {
@@ -102,11 +94,19 @@ class Simulation extends Component {
     }
 
     if (this._grid === null || this._gridMap !== world.map) {
-      this._grid = initTiles(this._random, models, {
-        withLanes: withTraffic,
-        baseMap: world.map,
-        drawBorders: creatorView
-      });
+      if (this._grid) {
+        this._grid.updateBaseMap(world.map);
+      } else {
+        this._grid = new GridMap(
+          models,
+          {
+            withLanes: withTraffic && !creatorView,
+            baseMap: world.map,
+            creatorView
+          }
+        );
+      }
+
       this._gridMap = world.map;
     }
 
@@ -123,7 +123,6 @@ class Simulation extends Component {
         >
           <OrbitControls enabled={withCamera && !vr} container={container} />
 
-          <Wrapper key={this._grid.id()}>
             {withTraffic && (
               <TrafficManager>
                 {world.cars.map(({ following, movement, options, startOffset }) => (
@@ -141,9 +140,9 @@ class Simulation extends Component {
                 ))}
               </TrafficManager>
             )}
+
             <Ground grid={this._grid} />
             <GridRenderer grid={this._grid} />
-          </Wrapper>
         </SimulationScene>
       </ModelManager>
     );

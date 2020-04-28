@@ -8,28 +8,10 @@ import { Raycaster, Vector2 } from 'three';
 import { h, render, Component, Fragment, createRef } from 'preact';
 import { Simulation } from './components/Simulation';
 import { TYPES } from "./components/src/grid_tiles";
-import { rotate } from "./components/src/utils";
 import { RandomGen } from "./components/src/randomgen";
+import { TileOptions } from "./creator/TileOptions";
 
 const FILL_TILE = [ TYPES.PLAIN, 0, {} ];
-
-function MenuButton({ label, onClick, disabled }) {
-  return (
-    <button type="button" onClick={onClick} disabled={disabled}>
-      {label}
-    </button>
-  );
-}
-
-const types = {
-  'plain': { value: 0, name: 'Grass' },
-  'road': { value: 1, name: 'Street' },
-  'curve': { value: 2, name: 'Curve' },
-  'tsection': { value: 3, name: 'T - Intersection' },
-  'cross': { value: 4, name: 'Cross' },
-  'forest': { value: 20, name: 'Forest' },
-  'house': { value: 30, name: 'House' }
-}
 
 class Creator extends Component {
   constructor(...args) {
@@ -39,7 +21,6 @@ class Creator extends Component {
     this._fileRef = createRef(null);
 
     this._random = new RandomGen(4213);
-
 
     const startTile = [ ...FILL_TILE ];
     startTile[2] = { ...startTile[2], seed: this.drainSeedValue() };
@@ -60,15 +41,13 @@ class Creator extends Component {
       ]
     };
 
+    this._mouseDown = null;
+
     this.handleGridSizeChange = this.handleGridSizeChange.bind(this);
     this.updateMainRef = this.updateMainRef.bind(this);
-    this.handleModeChange = this.handleModeChange.bind(this);
-    this.handleTileTypeChange = this.handleTileTypeChange.bind(this);
     this.handleMouseDown = this.handleMouseDown.bind(this);
-    this.handleContextMenu = this.handleContextMenu.bind(this);
-
-    this.rotateLeft = this.handleRotation.bind(this, -1);
-    this.rotateRight = this.handleRotation.bind(this, 1);
+    this.handleMouseUp = this.handleMouseUp.bind(this);
+    this.handleTileChange = this.handleTileChange.bind(this);
 
     this.exportWorld = this.exportWorld.bind(this);
     this.importWorld = this.importWorld.bind(this);
@@ -122,96 +101,22 @@ class Creator extends Component {
     });
   }
 
-  toggleDecoration(dec) {
-    const { tile } = this.state;
-
-    this.setState(({ map }) => ({
-      map: map
-        .map((row, _y) => (
-          _y === tile.y
-            ? row
-              .map(
-                ([ t, rot, o ], _x) =>
-                  tile.x === _x ? [ t, rot, { ...o, [dec]: !o[dec] } ] : [ t, rot, o ]
-              )
-            : row
-        ))
-    }));
+  handleTileChange(tileUpdated) {
+    this.setState(
+      ({ map, tile: selectedTile }) => ({
+        map: map
+          .map((row, y) => (
+            y === selectedTile.y
+              ? row
+                .map((t, x) => selectedTile.x === x ? tileUpdated : t)
+              : row
+          ))
+      })
+    );
   }
 
-  updateHouse(type) {
-    const { tile } = this.state;
-
-    this.setState(({ map }) => ({
-      map: map
-        .map((row, _y) => (
-          _y === tile.y
-            ? row
-              .map(
-                ([ t, rot, o ], _x) =>
-                  tile.x === _x ? [ t, rot, { ...o, type } ] : [ t, rot, o ]
-              )
-            : row
-        ))
-    }));
-  }
-
-  handleRotation(by) {
-    const { tile } = this.state;
-
-    this.setState(({ map }) => ({
-      map: map
-        .map((row, _y) => (
-          _y === tile.y
-            ? row
-              .map(
-                ([ t, rot, o ], _x) =>
-                  tile.x === _x ? [ t, rotate(rot, by), o ] : [ t, rot, o ]
-              )
-            : row
-        ))
-    }));
-  }
-
-  handleTileClicked(x, y, left, mouse) {
-    if (!left) {
-      this.setState({
-        menuOpen: true,
-        tile: { x, y },
-        menuPosition: mouse
-      });
-      return;
-    }
-
-    const type = this.state.tileType;
-    const { value } = types[type];
-
-    this.setState(({ map }) => ({
-      map: map
-        .map((row, _y) => (
-          _y === y
-            ? row
-              .map(
-                ([ t, rot, o ], _x) =>
-                  x === _x
-                    ? [ value, rot, o ] : [ t, rot, o ]
-              )
-            : row
-        ))
-    }));
-  }
-
-  handleContextMenu(evt) {
-    const { mode } = this.state;
-
-    if (mode === 'tile') {
-      evt.preventDefault();
-      return false;
-    }
-  }
-
-  handleMouseDown(evt) {
-    const { mode, menuOpen } = this.state;
+  handleClick(evt) {
+    const { menuOpen } = this.state;
 
     if (menuOpen) {
       if (!evt.target.parentElement.classList.contains('menu')) {
@@ -221,16 +126,6 @@ class Creator extends Component {
       }
       return;
     }
-
-    if (mode !== 'tile') {
-      return;
-    }
-
-    if (evt.button != 0 && evt.button != 2) {
-      return;
-    }
-
-    const left = evt.button == 0;
 
     const { _scene, _camera } = this._sceneRef.current;
 
@@ -250,7 +145,9 @@ class Creator extends Component {
       while (it) {
         if (it.calculateTilePosition) {
           const [ x, y ] = it.calculateTilePosition(point.x, point.z);
-          this.handleTileClicked(x, y, left, { x: evt.x, y: evt.y });
+          this.setState({
+            tile: { x, y }
+          });
           return;
         }
 
@@ -262,16 +159,37 @@ class Creator extends Component {
     }
   }
 
-  handleModeChange(evt) {
-    this.setState({
-      mode: evt.target.value
-    });
+  handleMouseDown(evt) {
+    if (evt.button != 0) {
+      return;
+    }
+
+    this._mouseDown = {
+      x: evt.x,
+      y: evt.y,
+      time: new Date().getTime()
+    };
   }
 
-  handleTileTypeChange(evt) {
-    this.setState({
-      tileType: evt.target.value
-    });
+  handleMouseUp(evt) {
+    if (evt.button != 0) {
+      return;
+    }
+
+    if (!this._mouseDown) {
+      return;
+    }
+
+    const { time, x, y } = this._mouseDown;
+
+    const now = new Date().getTime();
+    const distance = Math.sqrt(Math.pow(evt.x - x) + Math.pow(evt.y - y));
+
+    if (distance > 5 || now - time > 100) {
+      return;
+    }
+
+    this.handleClick(evt);
   }
 
   importWorld() {
@@ -323,101 +241,45 @@ class Creator extends Component {
 
   render() {
     const {
-      map, mainRef, mode, size, tileType, menuOpen, menuPosition, tile
+      map, mainRef, size, tile
     } = this.state;
 
-    const selectedTile = (menuOpen && tile) ? map[tile.y][tile.x] : null;
-    const disabledTileDecoration = (selectedTile && (selectedTile[0] === 2 || selectedTile[0] === 4));
+    const selectedTile = tile ? map[tile.y][tile.x] : null;
+    console.log(map);
 
     return (
       <Fragment>
         <main
           ref={this.updateMainRef}
           onMouseDown={mainRef ? this.handleMouseDown : null}
-          onContextMenuCapture={this.handleContextMenu}
+          onMouseUp={mainRef ? this.handleMouseUp : null}
         >
           {mainRef && (
             <Simulation
               sceneRef={this._sceneRef}
-              withCamera={mode === 'camera'}
+              withCamera
+              creatorView
               world={{ map }}
               container={mainRef}
-              creatorView
             />
           )}
-          <div
-            className="menu"
-            style={menuOpen ? { transform: `translate(${menuPosition.x}px, ${menuPosition.y}px)` } : { display: 'none' }}
-          >
-            <MenuButton label="Rotate Left" onClick={this.rotateLeft} />
-            <MenuButton label="Rotate Right" onClick={this.rotateRight} />
-
-            <hr />
-
-            <MenuButton label="Decoration Trashcan" onClick={() => this.toggleDecoration('trashCan')} disabled={disabledTileDecoration} />
-            <MenuButton label="Decoration Bench" onClick={() => this.toggleDecoration('bench')} disabled={disabledTileDecoration} />
-
-            {selectedTile && selectedTile[0] == types.house.value && (
-              <Fragment>
-                <hr />
-
-                <MenuButton label="House Standard" onClick={() => this.updateHouse('Simple')} />
-                <MenuButton label="House Flat" onClick={() => this.updateHouse('Flat')} />
-                <MenuButton label="House Double" onClick={() => this.updateHouse('Double')} />
-                <MenuButton label="House Bungalow" onClick={() => this.updateHouse('Bungalow')} />
-              </Fragment>
-            )}
-          </div>
         </main>
         <div className="toolbar">
           <h4>Toolbar</h4>
 
           <div className="object-panel">
-
+            {selectedTile && (
+              <TileOptions
+                onChange={this.handleTileChange}
+                tile={selectedTile}
+              />
+            )}
           </div>
 
           <div className="tools-panel">
             <div>
               Size:
               <input type="number" onInput={this.handleGridSizeChange} value={size} />
-            </div>
-
-            <div>
-              Mode:
-              <fieldset>
-                <div>
-                  <input type="radio" id="camera" name="mode" value="camera" onChange={this.handleModeChange} checked={mode === 'camera'} />
-                  <label for="camera">Camera</label>
-                </div>
-                <div>
-                  <input type="radio" id="tile" name="mode" value="tile" onChange={this.handleModeChange} checked={mode === 'tile'} />
-                  <label for="tile">Tile</label>
-                </div>
-              </fieldset>
-            </div>
-
-            <hr />
-
-            <div>
-              Tile Type:
-
-              <fieldset>
-                {Object.entries(types)
-                  .map(([ id, { name } ]) => (
-                    <div>
-                      <input
-                        type="radio"
-                        id={id}
-                        name="tileType"
-                        value={id}
-                        disabled={mode !== 'tile'}
-                        onChange={this.handleTileTypeChange}
-                        checked={tileType === id}
-                      />
-                      <label for={id}>{name}</label>
-                    </div>
-                  ))}
-              </fieldset>
             </div>
           </div>
 

@@ -269,6 +269,45 @@ class Tile {
     this.add(bench);
   }
 
+  addSign(models, type, side, options) {
+    const sign = models.sign.clone();
+
+    sign.traverse(child => {
+      if (!child.isMesh || child.name === 'Poller') {
+        return;
+      }
+
+      if (type === 'PriorityRoad' && child.name !== 'Vorfahrtsstra\u00dfe') {
+        child.visible = false;
+      }
+
+      if (type === 'Stop' && child.name !== 'Stoppschild') {
+        child.visible = false;
+      }
+
+      if (type === 'Yield' && child.name !== 'VorfahrtAchten') {
+        child.visible = false;
+      }
+
+      if (type === 'PriorityAtNext' && child.name !== 'Achtung') {
+        child.visible = false;
+      }
+    });
+
+    sign.rotation.z = -1 * (Math.PI / 2) * side;
+    sign.rotation.x += Math.PI;
+
+    if (side === 0 || side === 2) {
+      sign.position.x = (side === 0) ? -5 : 5;
+      sign.position.y = (side === 0 ? -7.5 : 7.5);
+    } else {
+      sign.position.x = (side === -1) ? -7.5 : 7.5;
+      sign.position.y = (side === -1 ? 5 : -5);
+    }
+
+    this.add(sign);
+  }
+
   laneGeometry() {
     return this._laneGeometry || null;
   }
@@ -316,8 +355,6 @@ class Tile {
   }
 
   render() {
-    this._group.position.x += (TILE_SIZE / 2);
-    this._group.position.z += (TILE_SIZE / 2);
     this._group.position.y = 0.01;
     this._group.rotation.z = this._rotation * (Math.PI / 2);
     this._group.rotation.x = Math.PI / 2;
@@ -346,6 +383,12 @@ class RoadTile extends Tile {
 
     if (options.trashCan) {
       this.addTrashCan(models, true);
+    }
+
+    if (options.signs) {
+      for (const { type, position, rotation, options: signOptions } of options.signs) {
+        this.addSign(models, type, position, rotation || 0, signOptions || {});
+      }
     }
   }
 
@@ -376,7 +419,7 @@ class RoadTile extends Tile {
 }
 
 class CurveTile extends Tile {
-  constructor(rotation, { models, drawBorders }) {
+  constructor(rotation, { models, drawBorders }, options) {
     super(TYPES.CURVE, rotation, { drawBorders });
 
     const { street, sidewalk } = adaptStreetObject(models.streetCurve);
@@ -389,6 +432,12 @@ class CurveTile extends Tile {
 
     this._sideWalkGeometry = sidewalk.geometry.clone();
     this._sideWalkGeometry.applyMatrix4(sidewalk.matrixWorld);
+
+    if (options.signs) {
+      for (const { type, side, options: signOptions } of options.signs) {
+        this.addSign(models, type, side, signOptions || {});
+      }
+    }
   }
 
   entranceSides() {
@@ -443,6 +492,12 @@ class TSectionTile extends Tile {
     if (options.trashCan) {
       this.addTrashCan(models, true);
     }
+
+    if (options.signs) {
+      for (const { type, position, rotation, options: signOptions } of options.signs) {
+        this.addSign(models, type, position, rotation || 0, signOptions || {});
+      }
+    }
   }
 
   entranceSides() {
@@ -496,8 +551,8 @@ class TSectionTile extends Tile {
 }
 
 class CrossTile extends Tile {
-  constructor(rotation, { models, drawBorders }) {
-    super(TYPES.CROSS, rotation, { drawBorders });
+  constructor(rotation, { models, drawBorders }, options) {
+    super(TYPES.CROSS, rotation, { drawBorders }, options);
 
     const { street, sidewalk } = adaptStreetObject(models.streetCross);
 
@@ -509,6 +564,12 @@ class CrossTile extends Tile {
 
     this._sideWalkGeometry = sidewalk.geometry.clone();
     this._sideWalkGeometry.applyMatrix4(sidewalk.matrixWorld);
+
+    if (options.signs) {
+      for (const { type, position, rotation, options: signOptions } of options.signs) {
+        this.addSign(models, type, position, rotation || 0, signOptions || {});
+      }
+    }
   }
 
   entranceSides() {

@@ -15,8 +15,10 @@ import { Lane } from './lane';
 let gridIdCounter = 0;
 
 class GridMap {
-  constructor(rd, models, { withLanes, baseMap }) {
+  constructor(rd, models, { withLanes, baseMap, creatorMode }) {
     this._id = ++gridIdCounter;
+
+    this._creatorMode = creatorMode;
 
     this._tileList = [];
     this._map = baseMap
@@ -40,7 +42,7 @@ class GridMap {
         )
       );
 
-    if (withLanes) {
+    if (withLanes && !creatorMode) {
       this._initLanes();
     }
 
@@ -84,7 +86,7 @@ class GridMap {
             // So one special rotation is the 0 rotation that will have to create two new lanes
             const l1 = new Lane();
             const l2 = new Lane();
-            
+
             tile._ownLanes.push(l1, l2);
 
             tile._lanes['1'] = {
@@ -175,7 +177,7 @@ class GridMap {
             // So we nevertheless have to create two new lanes
             const l1 = new Lane();
             const l2 = new Lane();
-            
+
             l1._adjacentTiles.add(tile);
             l2._adjacentTiles.add(tile);
 
@@ -185,7 +187,7 @@ class GridMap {
             };
           } else if (tile.getType() === TYPES.ROAD || tile.getType() === TYPES.CURVE) {
             let connecting = null;
-            
+
             if (tile.getType() === TYPES.ROAD) {
               connecting = side === 1 ? leftConnect : topConnect;
             } else {
@@ -406,8 +408,8 @@ class GridMap {
       tile.render();
       const g = tile.getGroup();
 
-      g.position.x += -1 * (this.size() / 2) + (x * TILE_SIZE);
-      g.position.z += -1 * (this.size() / 2) + (y * TILE_SIZE);
+      g.position.x = -1 * (this.size() / 2) + (x * TILE_SIZE) + TILE_SIZE / 2;
+      g.position.z = -1 * (this.size() / 2) + (y * TILE_SIZE) + TILE_SIZE / 2;
 
       // These tile groups are static and need to be updated manually
       g.updateMatrix();

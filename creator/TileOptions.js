@@ -202,7 +202,7 @@ class TileOptions extends Component {
 
         <CheckBoxOption
           label="Trashcan"
-          value={options.trashCan}
+          value={Boolean(options.trashCan)}
           checkedText="Show"
           disabled={disDecorations}
           name="trashCan"
@@ -211,7 +211,7 @@ class TileOptions extends Component {
 
         <CheckBoxOption
           label="Bench"
-          value={options.bench}
+          value={Boolean(options.bench)}
           checkedText="Show"
           disabled={disDecorations}
           name="bench"

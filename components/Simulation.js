@@ -81,6 +81,8 @@ class Simulation extends Component {
       creatorView,
       highlightTile,
 
+      timeProvider,
+
       vr
     } = this.props;
 
@@ -118,13 +120,15 @@ class Simulation extends Component {
         <SimulationScene
           vr={Boolean(vr)}
 
+          timeProvider={timeProvider || null}
+
           background={this._background}
           loop={loaded && !stop}
           ref={sceneRef}
           creatorView={creatorView}
           onTimeUpdate={this.handleTimeUpdate}
         >
-          <OrbitControls enabled={withCamera && !vr} container={container} />
+          <OrbitControls enabled={Boolean(withCamera && !vr)} container={container} />
 
             {withTraffic && (
               <TrafficManager>
@@ -138,7 +142,7 @@ class Simulation extends Component {
                     options={options || {}}
 
                     vr={vr}
-                    following={(!withCamera || vr) && following}
+                    following={Boolean((!withCamera || vr) && following)}
                   />
                 ))}
               </TrafficManager>

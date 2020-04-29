@@ -7032,6 +7032,11 @@ tr46@^1.0.1:
   dependencies:
     punycode "^2.1.0"
 
+ts-whammy@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/ts-whammy/-/ts-whammy-1.0.4.tgz#dfdac7d4e19d51e5a434587eaebd832a304b4ce9"
+  integrity sha512-7PKQfjhTob5GygTObWbTY2FriDoXrgeUDz4R0weOy0LEA1Xu/l8GCHgTL7DQqTie7PKxdWzaf1GQ3RLS6X+hRw==
+
 tslib@^1.9.0:
   version "1.11.1"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.11.1.tgz#eb15d128827fbee2841549e171f45ed338ac7e35"

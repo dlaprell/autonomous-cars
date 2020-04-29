@@ -7,7 +7,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "parcel --no-autoinstall index.html creator.html"
+    "dev": "parcel --no-autoinstall index.html creator.html survey.html recorder.html"
   },
   "browserslist": {
     "development": "last 1 chrome versions, last 1 firefox versions, last 1 edge versions, not ie > 0, not op_mini all"
@@ -22,7 +22,8 @@
     "parcel": "^2.0.0-alpha.3.2",
     "preact": "^10.4.0",
     "styled-jsx": "^3.2.5",
-    "three": "^0.114.0"
+    "three": "^0.114.0",
+    "ts-whammy": "^1.0.4"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",

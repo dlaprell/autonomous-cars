@@ -1,29 +1,37 @@
 /** @jsx h */
+// @ts-check
 
 import { WebGLRenderer, PerspectiveCamera, Group } from 'three';
 import { h, Component } from 'preact';
 import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 
+import { assert } from './utils/assert';
+import { WebXrProvider, RafTimeProvider, TimeProvider } from './TimeProvider';
+
 class SimulationRenderer extends Component {
   constructor(...args) {
     super(...args);
 
-    const { vr } = this.props;
+    const { vr, timeProvider, scene } = this.props;
     // Cannot be changed later on
     this._vr = vr;
 
-    this._totalTime = 0;
-    this._lastTime = null;
-
     this._ref = null;
     this._mounted = false;
-    this._paused = false;
 
-    this._initialRender = true;
+    assert(scene);
+    /** @type {THREE.Scene} */
+    this._scene = scene;
 
     this._renderer = new WebGLRenderer({ antialias: false /* , alpha: true */ });
     // this._renderer.shadowMap.enabled = true;
     this._renderer.xr.enabled = vr;
+
+    const { creatorView } = this.props;
+    this._camera = new PerspectiveCamera(20, 1, .1, creatorView ? 2500 : 750);
+
+    /** @type {THREE.Group?} */
+    this._cameraWrapper = null;
 
     this._resizeHandler = () => {
       const width = this._ref.clientWidth;
@@ -79,93 +87,102 @@ class SimulationRenderer extends Component {
       }
     }
 
-    this._runUpdate = () => {
-      if (!this._mounted || this._paused) {
+    this._context = {
+      renderer: this._renderer,
+      camera: this._camera,
+
+      /** @type {HTMLCanvasElement?} */
+      canvas: null,
+
+      updateCameraPosition: this._updateCameraPosition,
+      updateCameraRotation: this._updateCameraRotation
+    };
+
+    this._runUpdate = ({ total, delta }) => {
+      if (!this._mounted) {
+        console.warn("Not mounted - not rendering anything");
         return;
-      }
-
-      const { loop } = this.props;
-
-      if (!this._vr) {
-        window.requestAnimationFrame(this._runUpdate);
-      }
-
-      const initial = this._initialRender;
-      if (this._initialRender) {
-        this._initialRender = false;
       }
 
       const { onTimeUpdate, onVisualizationUpdate } = this.props;
 
-      let delta = 0;
-
-      if (!initial) {
-        // We only update the time, after the initial render
-        // since the first rendering may take much longer
-
-        if (this._lastTime === null) {
-          this._lastTime = new Date();
-        }
-
-        if (loop) {
-          const now = new Date();
-
-          delta = Math.min(100, now - this._lastTime);
-          this._totalTime += delta;
-
-          this._lastTime = now;
-        }
-      }
-
       if (onTimeUpdate) {
-        onTimeUpdate(this._totalTime, delta);
+        onTimeUpdate(total, delta);
       }
 
       if (onVisualizationUpdate) {
-        onVisualizationUpdate({
-          renderer: this._renderer,
-          camera: this._camera,
-          cameraWrapper: this._cameraWrapper,
-          updateCameraPosition: this._updateCameraPosition,
-          updateCameraRotation: this._updateCameraRotation
-        });
+        onVisualizationUpdate(this._context);
       }
+
+      this._renderer.render(this.props.scene, this._camera);
     };
+
+    /** @type {TimeProvider} */
+    this._provider = timeProvider;
+    if (!this._provider) {
+      if (vr) {
+        this._provider = new WebXrProvider(this._context);
+      } else {
+        this._provider = new RafTimeProvider(this._context);
+      }
+    } else {
+      this._provider.setContext(this._context);
+    }
+
+    this._provider.registerOnFrame(this._runUpdate);
+  }
+
+  startProvider() {
+    // this._runUpdate({ total: 0, delta: 0 });
+    this._renderer.render(this.props.scene, this._camera);
+    this._provider.start();
   }
 
   addRenderer() {
     this._ref.appendChild(this._renderer.domElement);
     this._mounted = true;
 
+    this._context.canvas = this._renderer.domElement;
+
     if (this._vr) {
       this._ref.appendChild(VRButton.createButton(this._renderer));
-      this._renderer.setAnimationLoop(this._runUpdate);
-    } else {
-      window.requestAnimationFrame(this._runUpdate);
+
+      /** @type {WebXrProvider} */
+      const prov = (/** @type {WebXrProvider} */ this._provider);
+      this._renderer.setAnimationLoop(prov.getXrCallback());
+    }
+
+    if (this.props.loop) {
+      this.startProvider();
     }
   }
 
   removeRenderer() {
     this._renderer.domElement.remove();
     this._mounted = false;
+
+    this._provider.stop();
   }
 
   componentDidMount() {
     const width = this._ref.clientWidth;
     const height = this._ref.clientHeight;
 
-    const { creatorView } = this.props;
-
-    this._camera = new PerspectiveCamera(20, width / height, .1, creatorView ? 2500 : 750);
+    this._camera.aspect = width / height; // aspect ratio
 
     if (this._vr) {
-      this._cameraWrapper = new Group();
-      this._cameraWrapper.add(this._camera);
+      const cameraWrapper = new Group();
+      cameraWrapper.add(this._camera);
+
+      this._cameraWrapper = cameraWrapper;
+      this._scene.add(cameraWrapper);
     }
 
     this._camera.rotation.x = 0;
     this._camera.rotation.y = 0;
     this._updateCameraPosition(0, 200, 3);
+
+    this._camera.updateProjectionMatrix();
 
     this._renderer.setSize(width, height);
 
@@ -174,6 +191,19 @@ class SimulationRenderer extends Component {
 
   componentWillUnmount() {
     window.removeEventListener('resize', this._resizeHandler);
+    this._provider.stop();
+  }
+
+  componentDidUpdate() {
+    const { loop } = this.props;
+
+    if (this._provider.looping() !== loop && this._mounted) {
+      if (!loop) {
+        this._provider.stop();
+      } else if (this._mounted) {
+        this.startProvider();
+      }
+    }
   }
 
   render() {

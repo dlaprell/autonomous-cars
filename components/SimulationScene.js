@@ -33,8 +33,6 @@ class SimulationScene extends Component {
       this._scene.background = background;
     }
 
-    this._camera = null;
-
     this.handleTimeUpdate = (time, delta) => {
       const { onTimeUpdate } = this.props;
       if (onTimeUpdate) {
@@ -50,13 +48,6 @@ class SimulationScene extends Component {
       for (const e of this._updateableVisualizationElements.values()) {
         e.updateVisualization(rest);
       }
-
-      if (!this._camera && rest.cameraWrapper) {
-        this._scene.add(rest.cameraWrapper);
-      }
-
-      this._camera = rest.camera;
-      rest.renderer.render(this._scene, rest.camera);
     };
   }
 
@@ -80,7 +71,7 @@ class SimulationScene extends Component {
   }
 
   render() {
-    const { children, loop, creatorView, vr } = this.props;
+    const { children, loop, creatorView, vr, timeProvider } = this.props;
 
     return (
       <SceneContext.Provider value={this}>
@@ -90,6 +81,8 @@ class SimulationScene extends Component {
           creatorView={creatorView}
           loop={Boolean(loop)}
           vr={vr}
+          scene={this._scene}
+          timeProvider={timeProvider}
 
           onTimeUpdate={this.handleTimeUpdate}
           onVisualizationUpdate={this.handleVisualizationUpdate}

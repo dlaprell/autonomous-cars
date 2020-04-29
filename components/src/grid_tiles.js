@@ -386,8 +386,8 @@ class RoadTile extends Tile {
     }
 
     if (options.signs) {
-      for (const { type, position, rotation, options: signOptions } of options.signs) {
-        this.addSign(models, type, position, rotation || 0, signOptions || {});
+      for (const { type, side, options: signOptions } of options.signs) {
+        this.addSign(models, type, side, signOptions || {});
       }
     }
   }
@@ -494,8 +494,8 @@ class TSectionTile extends Tile {
     }
 
     if (options.signs) {
-      for (const { type, position, rotation, options: signOptions } of options.signs) {
-        this.addSign(models, type, position, rotation || 0, signOptions || {});
+      for (const { type, side, options: signOptions } of options.signs) {
+        this.addSign(models, type, side, signOptions || {});
       }
     }
   }
@@ -566,8 +566,8 @@ class CrossTile extends Tile {
     this._sideWalkGeometry.applyMatrix4(sidewalk.matrixWorld);
 
     if (options.signs) {
-      for (const { type, position, rotation, options: signOptions } of options.signs) {
-        this.addSign(models, type, position, rotation || 0, signOptions || {});
+      for (const { type, side, options: signOptions } of options.signs) {
+        this.addSign(models, type, side, signOptions || {});
       }
     }
   }

@@ -3,7 +3,7 @@ import {
   Mesh,
   BoxBufferGeometry,
   MeshBasicMaterial,
-  
+
   VertexColors,
   MeshLambertMaterial,
   DoubleSide
@@ -42,7 +42,7 @@ class GridMap {
       new MeshLambertMaterial({ color: 0x77BBFF })
     );
     this._highlightCube.material.transparent = true;
-    this._highlightCube.material.opacity = 0.3;
+    this._highlightCube.material.opacity = 0.5;
     this._highlightCube.visible = false;
     this._highlightCube.position.y += TILE_SIZE / 2;
     this._group.add(this._highlightCube);
@@ -554,7 +554,6 @@ class GridMap {
     this._highlightCube.visible = true;
 
     const [ aX, aY ] = this.getTileAnchorPosition(tile.x, tile.y);
-    console.log(aX, aY);
 
     this._highlightCube.position.x = aX + TILE_SIZE / 2;
     this._highlightCube.position.z = aY + TILE_SIZE / 2;

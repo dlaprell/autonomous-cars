@@ -1,6 +1,8 @@
 /** @jsx h */
 import { h, Component } from 'preact';
+
 import { rotate } from '../components/src/utils';
+import { Option, SelectOption, CheckBoxOption } from './UiComponents';
 
 const types = {
   'plain': { value: 0, name: 'Grass' },
@@ -17,85 +19,7 @@ const typesByValue = Object
     Object
       .values(types)
       .map(a => [ a.value, a ])
-  )
-
-function Option({ label, children }) {
-  return (
-    <div className="option">
-      <label className="label">
-        {label}
-      </label>
-      <div className="content">
-        {children}
-      </div>
-
-      <style jsx>{`
-        .option {
-          display: flex;
-          flex-direction: row;
-          overflow-x: hidden;
-
-          padding: 6px 12px;
-        }
-
-        .label {
-          width: 120px;
-          flex: 0 0 auto;
-        }
-
-        .content {
-          flex: 1;
-        }
-
-        .content > :global(input), .content > :global(select) {
-          width: 100%;
-        }
-      `}</style>
-    </div>
   );
-}
-
-function SelectOption({ label, name, disabled, choices, value, onChange }) {
-  return (
-    <Option label={label}>
-      <select
-        disabled={Boolean(disabled) || !onChange}
-        value={value}
-        onChange={onChange}
-        name={name}
-      >
-        {choices.map(({ value, name }) => (
-          <option key={value} value={value}>
-            {name || value}
-          </option>
-        ))}
-      </select>
-    </Option>
-  );
-}
-
-function CheckBoxOption({ label, name, disabled, checkedText, value, onChange }) {
-  return (
-    <Option label={label}>
-      <label>
-        <input
-          disabled={Boolean(disabled) || !onChange}
-          type="checkbox"
-          checked={value}
-          onChange={onChange}
-          name={name}
-        />
-        {checkedText}
-      </label>
-
-      <style jsx>{`
-        input {
-          margin-right: 5px;
-        }
-      `}</style>
-    </Option>
-  );
-}
 
 class RotationOption extends Component {
   constructor(...args) {
@@ -270,7 +194,7 @@ class TileOptions extends Component {
         />
 
         <RotationOption
-          rotation={tile[1]}
+          rotation={rotation}
           onChange={this.handleRotationChange}
         />
 

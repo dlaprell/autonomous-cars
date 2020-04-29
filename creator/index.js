@@ -6,10 +6,11 @@ import "preact/debug";
 import { Raycaster, Vector2 } from 'three';
 
 import { h, render, Component, Fragment, createRef } from 'preact';
-import { Simulation } from './components/Simulation';
-import { TYPES } from "./components/src/grid_tiles";
-import { RandomGen } from "./components/src/randomgen";
-import { TileOptions } from "./creator/TileOptions";
+import { Simulation } from '../components/Simulation';
+import { TYPES } from "../components/src/grid_tiles";
+import { RandomGen } from "../components/src/randomgen";
+import { TileOptions } from "./TileOptions";
+import { Option } from "./UiComponents";
 
 const FILL_TILE = [ TYPES.PLAIN, 0, {} ];
 
@@ -28,12 +29,7 @@ class Creator extends Component {
     this.state = {
       mainRef: null,
 
-      menuOpen: false,
       tile: null,
-      menuPosition: null,
-
-      mode: 'camera',
-      tileType: 'plain',
 
       size: 1,
       map: [
@@ -116,17 +112,6 @@ class Creator extends Component {
   }
 
   handleClick(evt) {
-    const { menuOpen } = this.state;
-
-    if (menuOpen) {
-      if (!evt.target.parentElement.classList.contains('menu')) {
-        this.setState({
-          menuOpen: false
-        });
-      }
-      return;
-    }
-
     const { _scene, _camera } = this._sceneRef.current;
 
     const { mainRef } = this.state;
@@ -213,7 +198,7 @@ class Creator extends Component {
       try {
         const { map, cars } = JSON.parse(text);
 
-        this.setState({ map, cars });
+        this.setState({ map, cars, tile: null });
       } catch (ex) {
         console.error(ex);
         alert('File could not be read');
@@ -265,21 +250,36 @@ class Creator extends Component {
           )}
         </main>
         <div className="toolbar">
-          <h4>Toolbar</h4>
-
           <div className="object-panel">
-            {selectedTile && (
-              <TileOptions
-                onChange={this.handleTileChange}
-                tile={selectedTile}
-              />
-            )}
-          </div>
-
-          <div className="tools-panel">
             <div>
-              Size:
-              <input type="number" onInput={this.handleGridSizeChange} value={size} />
+              <Option>
+                <h4>Grid</h4>
+              </Option>
+
+              <Option
+                label="Grid Size"
+              >
+                <input type="number" onInput={this.handleGridSizeChange} value={size} />
+              </Option>
+            </div>
+
+            <hr />
+
+            <div>
+              <Option>
+                {selectedTile && (
+                  <h4>
+                    Tile: x = {tile.x}, y = {tile.y}
+                  </h4>
+                )}
+              </Option>
+
+              {selectedTile && (
+                <TileOptions
+                  onChange={this.handleTileChange}
+                  tile={selectedTile}
+                />
+              )}
             </div>
           </div>
 

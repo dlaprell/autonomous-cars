@@ -5,7 +5,7 @@
       margin: 0;
       padding: 0;
     }
-    
+
     body {
       width: 100vw;
       height: 100vh;
@@ -19,6 +19,10 @@
     main {
       flex: 1;
       position: relative;
+    }
+
+    hr {
+      margin: 24px;
     }
 
     .toolbar {
@@ -42,45 +46,15 @@
       display: flex;
       flex-direction: row;
     }
-    
+
     .import-export button {
       flex: 1;
 
       padding: 6px 0;
     }
-
-    /*  */
-
-    .menu {
-      width: 180px;
-      max-height: 400px;
-      box-shadow: 0px 4px 10px -3px rgba(0, 0, 0, 0.5);
-
-      position: absolute;
-      left: 0;
-      top: 0;
-
-      background-color: #fff;
-      padding: 4px 0;
-    }
-
-    .menu button {
-      display: block;
-      width: 100%;
-      padding: 4px 16px;
-      background-color: transparent;
-      border: 0;
-
-      font-size: 1rem;
-      text-align: left;
-    }
-
-    .menu button:focus, .menu button:hover {
-      background-color: #bbbbbb;
-    }
   </style>
 </head>
 <body>
-  <script src="./creator.js"></script>
+  <script src="./creator/index.js"></script>
 </body>
 </html>

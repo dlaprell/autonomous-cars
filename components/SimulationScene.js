@@ -5,8 +5,8 @@ import { h, Component, createContext } from 'preact';
 
 import { SimulationRenderer } from './SimulationRenderer';
 
-const SHADOW_MAP_WIDTH = 8192;
-const SHADOW_MAP_HEIGHT = 8192;
+const SHADOW_MAP_WIDTH = 4096;
+const SHADOW_MAP_HEIGHT = 2048;
 
 const SceneContext = createContext(null);
 

@@ -530,7 +530,7 @@ class MovingCar extends SimluationSceneElement {
     }
 
     let camX = x;
-    const camY = vr ? -0.4 : 1.25;
+    const camY = vr ? -0.4 : 1.35;
     let camZ = y;
 
     const offsetX = vr ? -0.25 : -0.3;
@@ -548,7 +548,7 @@ class MovingCar extends SimluationSceneElement {
       camera.rotation.y = -sangle;
       camera.rotation.x = 0;
       camera.rotation.z = 0;
-      camera.rotateOnAxis({ x: 1, y: 0, z: 0 }, -1 * Math.PI * 0.03);
+      camera.rotateOnAxis({ x: 1, y: 0, z: 0 }, -1 * Math.PI * 0.015);
     }
   }
 

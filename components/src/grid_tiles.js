@@ -398,6 +398,7 @@ class RoadTile extends Tile {
     sidewalk.updateWorldMatrix(true, false);
 
     this._laneGeometry = street.geometry.clone();
+    this._laneGeometry.scale(-1, 1, 1);
     this._laneGeometry.applyMatrix4(street.matrixWorld);
 
     this._sideWalkGeometry = sidewalk.geometry.clone();
@@ -454,6 +455,7 @@ class CurveTile extends Tile {
     sidewalk.updateWorldMatrix(true, false);
 
     this._laneGeometry = street.geometry.clone();
+    this._laneGeometry.scale(1, 1, -1);
     this._laneGeometry.applyMatrix4(street.matrixWorld);
 
     this._sideWalkGeometry = sidewalk.geometry.clone();
@@ -506,6 +508,7 @@ class TSectionTile extends Tile {
     sidewalk.updateWorldMatrix(true, false);
 
     this._laneGeometry = street.geometry.clone();
+    this._laneGeometry.scale(-1, 1, 1);
     this._laneGeometry.applyMatrix4(street.matrixWorld);
 
     this._sideWalkGeometry = sidewalk.geometry.clone();
@@ -586,6 +589,7 @@ class CrossTile extends Tile {
     sidewalk.updateWorldMatrix(true, false);
 
     this._laneGeometry = street.geometry.clone();
+    this._laneGeometry.scale(-1, 1, 1);
     this._laneGeometry.applyMatrix4(street.matrixWorld);
 
     this._sideWalkGeometry = sidewalk.geometry.clone();

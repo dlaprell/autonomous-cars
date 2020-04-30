@@ -1,7 +1,7 @@
 /** @jsx h */
 // @ts-check
 
-import { WebGLRenderer, PerspectiveCamera, Group } from 'three';
+import { WebGLRenderer, PerspectiveCamera, Group, PCFSoftShadowMap } from 'three';
 import { h, Component } from 'preact';
 import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 
@@ -12,7 +12,7 @@ class SimulationRenderer extends Component {
   constructor(...args) {
     super(...args);
 
-    const { vr, timeProvider, scene } = this.props;
+    const { vr, timeProvider, scene, renderOptions } = this.props;
     // Cannot be changed later on
     this._vr = vr;
 
@@ -23,12 +23,21 @@ class SimulationRenderer extends Component {
     /** @type {THREE.Scene} */
     this._scene = scene;
 
-    this._renderer = new WebGLRenderer({ antialias: false /* , alpha: true */ });
-    // this._renderer.shadowMap.enabled = true;
+    this._renderer = new WebGLRenderer({
+      antialias: Boolean(renderOptions.antialias)
+    });
+
+    if (renderOptions.shadow) {
+      this._renderer.shadowMap.enabled = true;
+      this._renderer.shadowMap.type = PCFSoftShadowMap;
+      this._renderer.shadowMapDebug = process.env.NODE_ENV !== 'production';
+    }
+
     this._renderer.xr.enabled = vr;
 
     const { creatorView } = this.props;
-    this._camera = new PerspectiveCamera(20, 1, .1, creatorView ? 2500 : 750);
+    this._camera = new PerspectiveCamera(20, 1, .1, creatorView ? 2500 : 750 );
+    this._scene._camera = this._camera;
 
     /** @type {THREE.Group?} */
     this._cameraWrapper = null;

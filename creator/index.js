@@ -112,8 +112,7 @@ class Creator extends Component {
   }
 
   handleClick(evt) {
-    const { _scene, _camera } = this._sceneRef.current;
-
+    const { _scene } = this._sceneRef.current;
     const { mainRef } = this.state;
 
     const raycaster = new Raycaster();
@@ -122,7 +121,7 @@ class Creator extends Component {
 	    -(evt.y / mainRef.clientHeight) * 2 + 1
     );
 
-    raycaster.setFromCamera(mouse, _camera);
+    raycaster.setFromCamera(mouse, _scene._camera);
     const intersects = raycaster.intersectObjects(_scene.children, true);
 
     for (const { object, point } of intersects) {
@@ -246,6 +245,10 @@ class Creator extends Component {
               world={{ map }}
               container={mainRef}
               highlightTile={tile}
+              renderOptions={{
+                antialias: true,
+                shadow: true
+              }}
             />
           )}
         </main>

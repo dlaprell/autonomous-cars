@@ -1,9 +1,12 @@
 /** @jsx h */
 
-import { Scene, Group, AmbientLight, PointLight } from 'three';
+import { Scene, Group, AmbientLight, PointLight, DirectionalLight, SpotLight, CameraHelper } from 'three';
 import { h, Component, createContext } from 'preact';
 
 import { SimulationRenderer } from './SimulationRenderer';
+
+const SHADOW_MAP_WIDTH = 8192;
+const SHADOW_MAP_HEIGHT = 8192;
 
 const SceneContext = createContext(null);
 
@@ -13,13 +16,21 @@ class SimulationScene extends Component {
 
     this._scene = new Scene();
 
-    var ambientLight = new AmbientLight(0xA0A0A0, 0.5); // soft white light
+    const ambientLight = new AmbientLight(0xA0A0A0, 0.5); // soft white light
     this._scene.add(ambientLight);
 
-    var spotLight = new PointLight( 0xffffff, 0.6);
-    spotLight.position.set(-150, 500, 200);
-    spotLight.castShadow = true;
+    const spotLight = new SpotLight(0xCCCCCC, 0.6);
+    spotLight.position.set(-250, 300, 250);
 
+    spotLight.castShadow = true;
+    spotLight.shadow.camera.near = 100;
+    spotLight.shadow.camera.far = 700;
+    spotLight.shadow.bias = 0.001;
+    spotLight.shadow.mapSize.width = SHADOW_MAP_WIDTH;
+    spotLight.shadow.mapSize.height = SHADOW_MAP_HEIGHT;
+
+    // const spotLightHelper = new CameraHelper(spotLight.shadow.camera);
+    // this._scene.add(spotLightHelper);
     this._scene.add(spotLight);
 
     this._updateableTimeElements = new Set();
@@ -71,7 +82,7 @@ class SimulationScene extends Component {
   }
 
   render() {
-    const { children, loop, creatorView, vr, timeProvider } = this.props;
+    const { children, loop, creatorView, vr, timeProvider, renderOptions } = this.props;
 
     return (
       <SceneContext.Provider value={this}>
@@ -84,10 +95,10 @@ class SimulationScene extends Component {
           scene={this._scene}
           timeProvider={timeProvider}
 
+          renderOptions={renderOptions}
+
           onTimeUpdate={this.handleTimeUpdate}
           onVisualizationUpdate={this.handleVisualizationUpdate}
-
-          onUpdate={this.handleUpdate}
         />
       </SceneContext.Provider>
     );

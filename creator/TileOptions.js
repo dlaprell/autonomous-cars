@@ -155,14 +155,14 @@ class TileOptions extends Component {
           onChange([
             tile[0],
             tile[1],
-            { ...(tile[3] || {}), signs }
+            { ...(tile[2] || {}), signs }
           ]);
         } else {
           onChange([
             tile[0],
             tile[1],
             {
-              ...(tile[3] || {}),
+              ...(tile[2] || {}),
               signs: [ ...signs, { type: value, side: side } ]
             }
           ]);

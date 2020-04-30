@@ -164,14 +164,17 @@ function adaptStreetObject(obj) {
     if (child.name.endsWith('Surrounding')) {
       child.visible = false;
       objs.surroundings = child;
+      child.receiveShadow = true;
     }
 
     if (child.name.endsWith('Street')) {
       objs.street = child;
+      child.receiveShadow = true;
     }
 
     if (child.name.endsWith('Sidewalk')) {
       objs.sidewalk = child;
+      child.receiveShadow = true;
     }
   });
 
@@ -189,7 +192,7 @@ class Tile {
     this._rotation = rotation;
 
     this._group = new Group();
-    this._group.receiveShadow = true;
+    // this._group.receiveShadow = true;
     this._group.matrixAutoUpdate = false;
 
     if (DEBUG_TILES || (baseOptions && baseOptions.drawBorders)) {
@@ -249,31 +252,52 @@ class Tile {
       bench.position.x += 3;
     }
 
+    bench.castShadow = true;
+    bench.traverse(child => {
+      if (child.isMesh) {
+        child.castShadow = true;
+      }
+    });
+
     this.add(bench);
   }
 
   addTrashCan(models, inner = false) {
-    const bench = models.streetDecorationTrashcan.clone();
-    bench.rotation.x = Math.PI;
+    const trashcan = models.streetDecorationTrashcan.clone();
+
+    trashcan.rotation.x = Math.PI;
 
     if (inner) {
-      bench.position.x -= 6;
-      bench.position.y -= 3;
+      trashcan.position.x -= 6;
+      trashcan.position.y -= 3;
     } else {
-      bench.rotation.z = Math.PI / 2;
+      trashcan.rotation.z = Math.PI / 2;
 
-      bench.position.y -= 6;
-      bench.position.x -= 3;
+      trashcan.position.y -= 6;
+      trashcan.position.x -= 3;
     }
 
-    this.add(bench);
+    trashcan.castShadow = true;
+    trashcan.traverse(child => {
+      if (child.isMesh) {
+        child.castShadow = true;
+      }
+    });
+
+    this.add(trashcan);
   }
 
   addSign(models, type, side, options) {
     const sign = models.sign.clone();
 
     sign.traverse(child => {
-      if (!child.isMesh || child.name === 'Poller') {
+      if (!child.isMesh) {
+        return;
+      }
+
+      child.castShadow = true;
+
+      if (child.name === 'Poller') {
         return;
       }
 
@@ -293,6 +317,8 @@ class Tile {
         child.visible = false;
       }
     });
+
+    sign.castShadow = true;
 
     sign.rotation.z = -1 * (Math.PI / 2) * side;
     sign.rotation.x += Math.PI;
@@ -722,11 +748,19 @@ class HouseTile extends Tile {
     house.position.z += 0.25;
 
     house.traverse(child => {
-      if (child.isMesh && child.name.indexOf('Surrounding') !== -1) {
+      if (!child.isMesh) {
+        return;
+      }
+
+      if (child.name.indexOf('Surrounding') !== -1) {
         child.visible = false;
+      } else {
+        child.castShadow = true;
       }
     });
 
+    house.castShadow = true;
+    house.receiveShadow = true;
     this.add(house);
 
     if (options.bench) {

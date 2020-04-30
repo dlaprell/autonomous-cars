@@ -6,7 +6,9 @@ import {
 
   VertexColors,
   MeshLambertMaterial,
-  DoubleSide
+  DoubleSide,
+  FrontSide,
+  BackSide
 } from 'three';
 
 import { BufferGeometryUtils } from '../third-party/BufferGeometryUtils';
@@ -21,10 +23,16 @@ import {
 import { rotate, addColorToGeometry } from './utils';
 import { Lane } from './lane';
 
-const sideWalkMaterial = new MeshLambertMaterial({ vertexColors: VertexColors, side: DoubleSide });
-const laneMaterial = new MeshLambertMaterial({ vertexColors: VertexColors, side: DoubleSide });
+const sideWalkMaterial = new MeshLambertMaterial({
+  vertexColors: VertexColors,
+  side: DoubleSide
+});
+const laneMaterial = new MeshLambertMaterial({
+  vertexColors: VertexColors,
+  side: DoubleSide
+});
 const sideWalkColor = '#7d3c00';
-const laneColor = '#918e84';
+const laneColor = '#999999';
 
 class GridMap {
   constructor(models, { withLanes, baseMap, creatorView }) {
@@ -36,6 +44,7 @@ class GridMap {
     this._tileList = [];
     this._map = null;
     this._group = new Group();
+    // this._group.receiveShadow = true;
 
     this._highlightCube = new Mesh(
       new BoxBufferGeometry(TILE_SIZE, TILE_SIZE, TILE_SIZE),
@@ -127,7 +136,10 @@ class GridMap {
 
         const mergedForests = BufferGeometryUtils.mergeBufferGeometries(forestGeometries, false);
         assert(mergedForests);
-        this._group.add(new Mesh(mergedForests, new MeshLambertMaterial({ vertexColors: VertexColors })));
+        const forests = new Mesh(mergedForests, new MeshLambertMaterial({ vertexColors: VertexColors }));
+        forests.castShadow = true;
+        forests.frustumCulled = false;
+        this._group.add(forests);
       }
 
       if (laneTiles.length > 0) {
@@ -153,12 +165,18 @@ class GridMap {
         const mergedLanes = BufferGeometryUtils.mergeBufferGeometries(laneGeometries, false);
         assert(mergedLanes);
         addColorToGeometry(mergedLanes, laneColor);
-        this._group.add(new Mesh(mergedLanes, laneMaterial));
+        const lanes = new Mesh(mergedLanes, laneMaterial);
+        lanes.receiveShadow = true;
+        lanes.frustumCulled = false;
+        this._group.add(lanes);
 
         const mergedSidewalks = BufferGeometryUtils.mergeBufferGeometries(sidewalkGeometries, false);
         assert(mergedSidewalks);
         addColorToGeometry(mergedSidewalks, sideWalkColor);
-        this._group.add(new Mesh(mergedSidewalks, sideWalkMaterial));
+        const sideWalks = new Mesh(mergedSidewalks, sideWalkMaterial);
+        sideWalks.receiveShadow = true;
+        sideWalks.frustumCulled = false;
+        this._group.add(sideWalks);
       }
     } else { // Mode 2
       for (const { tile, generation } of forestTiles) {
@@ -168,7 +186,9 @@ class GridMap {
 
         const g = tile.getGroup();
         const forestGeometry = tile.getForestGeometry();
-        g.add(new Mesh(forestGeometry, new MeshLambertMaterial({ vertexColors: VertexColors })));
+        const forestMesh = new Mesh(forestGeometry, new MeshLambertMaterial({ vertexColors: VertexColors }));
+        forestMesh.castShadow = true;
+        g.add(forestMesh);
       }
 
       for (const { tile, generation } of laneTiles) {
@@ -179,12 +199,16 @@ class GridMap {
         const g = tile.getGroup();
         const laneGeometry = tile.laneGeometry();
         addColorToGeometry(laneGeometry, laneColor);
-        g.add(new Mesh(laneGeometry, laneMaterial));
+        const laneMesh = new Mesh(laneGeometry, laneMaterial);
+        laneMesh.receiveShadow = true;
+        g.add(laneMesh);
 
         const sidewalkGeometry = tile.sideWalkGeometry();
         if (sidewalkGeometry) {
           addColorToGeometry(sidewalkGeometry, sideWalkColor);
-          g.add(new Mesh(sidewalkGeometry, sideWalkMaterial));
+          const sidewalkMesh = new Mesh(sidewalkGeometry, sideWalkMaterial);
+          sidewalkMesh.receiveShadow = true;
+          g.add(sidewalkMesh);
         }
       }
     }

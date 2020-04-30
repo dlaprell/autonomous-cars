@@ -14,6 +14,13 @@ import { RandomGen } from './src/randomgen';
 import { ModelManager } from './ModelManager';
 import loadModels from './models/ModelLoader';
 
+import cloudsNorthPath from 'url:../static/images/clouds1/clouds1_north.jpg';
+import cloudsSouthPath from 'url:../static/images/clouds1/clouds1_south.jpg';
+import cloudsUpPath from 'url:../static/images/clouds1/clouds1_up.jpg';
+import cloudsDownPath from 'url:../static/images/clouds1/clouds1_down.jpg';
+import cloudsWestPath from 'url:../static/images/clouds1/clouds1_west.jpg';
+import cloudsEastPath from 'url:../static/images/clouds1/clouds1_east.jpg';
+
 class Simulation extends Component {
   constructor(...args) {
     super(...args);
@@ -29,14 +36,13 @@ class Simulation extends Component {
     this._grid = null;
 
     this._background = new CubeTextureLoader()
-      .setPath('/images/clouds1/')
       .load([
-        'clouds1_north.jpg',
-        'clouds1_south.jpg',
-        'clouds1_up.jpg',
-        'clouds1_down.jpg',
-        'clouds1_west.jpg',
-        'clouds1_east.jpg'
+        cloudsNorthPath,
+        cloudsSouthPath,
+        cloudsUpPath,
+        cloudsDownPath,
+        cloudsWestPath,
+        cloudsEastPath
       ]);
 
     this.handleTimeUpdate = this.handleTimeUpdate.bind(this);
@@ -80,6 +86,7 @@ class Simulation extends Component {
 
       creatorView,
       highlightTile,
+      renderOptions,
 
       timeProvider,
 
@@ -115,6 +122,8 @@ class Simulation extends Component {
 
     this._grid.highlightTile(highlightTile || null);
 
+    const orbitControls = Boolean(withCamera && !vr);
+
     return (
       <ModelManager models={models}>
         <SimulationScene
@@ -127,29 +136,33 @@ class Simulation extends Component {
           ref={sceneRef}
           creatorView={creatorView}
           onTimeUpdate={this.handleTimeUpdate}
+
+          renderOptions={renderOptions || {}}
         >
-          <OrbitControls enabled={Boolean(withCamera && !vr)} container={container} />
+          {orbitControls && (
+            <OrbitControls enabled={orbitControls} container={container} />
+          )}
 
-            {withTraffic && (
-              <TrafficManager>
-                {world.cars.map(({ following, movement, options, startOffset }) => (
-                  <MovingCar
-                    grid={this._grid}
-                    random={this._random}
+          {withTraffic && (
+            <TrafficManager>
+              {world.cars.map(({ following, movement, options, startOffset }) => (
+                <MovingCar
+                  grid={this._grid}
+                  random={this._random}
 
-                    startOffset={startOffset || 0}
-                    movement={movement}
-                    options={options || {}}
+                  startOffset={startOffset || 0}
+                  movement={movement}
+                  options={options || {}}
 
-                    vr={vr}
-                    following={Boolean((!withCamera || vr) && following)}
-                  />
-                ))}
-              </TrafficManager>
-            )}
+                  vr={vr}
+                  following={Boolean((!withCamera || vr) && following)}
+                />
+              ))}
+            </TrafficManager>
+          )}
 
-            <Ground grid={this._grid} />
-            <GridRenderer grid={this._grid} />
+          <Ground grid={this._grid} />
+          <GridRenderer grid={this._grid} />
         </SimulationScene>
       </ModelManager>
     );

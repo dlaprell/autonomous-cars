@@ -14,6 +14,10 @@ function init() {
       withTraffic
       world={world}
       vr={window.location.href.indexOf('vr') !== -1}
+      renderOptions={{
+        antialias: window.location.href.indexOf('antialias') !== -1,
+        shadow: window.location.href.indexOf('shadow') !== -1
+      }}
       stopAfter={30000}
     />,
     root

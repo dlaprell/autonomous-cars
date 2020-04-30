@@ -2,6 +2,8 @@ import { TextureLoader, RepeatWrapping, MeshLambertMaterial, Mesh, DoubleSide, P
 
 import { SimluationSceneElement } from './SimulationScene';
 
+import imageGrassUrl from 'url:../static/images/grass.png';
+
 class GridRenderer extends SimluationSceneElement {
   constructor(...args) {
     super(...args);
@@ -15,7 +17,8 @@ class Ground extends SimluationSceneElement {
   constructor(...args) {
     super(...args);
 
-    const grassTexture = new TextureLoader().load('/images/grass.png');
+    const grassTexture = new TextureLoader()
+      .load(imageGrassUrl);
 
     grassTexture.wrapS = RepeatWrapping;
     grassTexture.wrapT = RepeatWrapping;
@@ -42,12 +45,18 @@ class Ground extends SimluationSceneElement {
         this._grassMaterial
       );
 
+      groundMesh.castShadow = false;
+      groundMesh.receiveShadow = true;
+      groundMesh.frustumCulled = false;
+
       groundMesh.calculateTilePosition = (x, y) => {
         return grid.computeTileFromPosition(x, y);
       }
 
       groundMesh.rotation.x = Math.PI / 2;
       this.group().add(groundMesh);
+
+      groundMesh.position.y -= 0.1;
 
       this._curMesh = groundMesh;
       this._curGridSize = grid.size();

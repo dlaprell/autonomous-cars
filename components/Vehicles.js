@@ -426,11 +426,17 @@ function adaptCar(car, color) {
       return;
     }
 
+    if (child.name.startsWith('Car_Wheel')) {
+      child.castShadow = true;
+    }
+
     if (child.name === 'Car_Model') {
       child.material = child.material.clone();
       child.material.color = new Color(color);
 
       objs.car = child;
+
+      child.castShadow = true;
     }
 
     if (child.name === 'Car_Windows') {
@@ -494,8 +500,10 @@ class MovingCar extends SimluationSceneElement {
       frontSeats.visible = false;
     }
 
-    this._carObject.position.y += 0.2;
+    this._carObject.position.y += 0.275;
     this._carObject.rotation.y += -Math.PI / 2;
+
+    this._carObject.castShadow = true;
 
     this.group().add(this._carObject);
 

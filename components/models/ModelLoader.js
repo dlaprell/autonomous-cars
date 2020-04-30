@@ -1,38 +1,57 @@
 import { LoadingManager } from 'three'
 import { GLTFLoader } from '../third-party/GLTFLoader.js';
 
+import treeBranchedUrl from 'url:../../static/objects/tree/branched.gltf';
+import treeOpenUrl from 'url:../../static/objects/tree/open.gltf';
+import treePyramidalUrl from 'url:../../static/objects/tree/pyramidal.gltf';
+import treeRoundUrl from 'url:../../static/objects/tree/round.gltf';
+import treeSpreadingUrl from 'url:../../static/objects/tree/spreading.gltf';
+
+import streetCurveUrl from 'url:../../static/objects/street/curve.gltf';
+import streetStraightUrl from 'url:../../static/objects/street/straight.gltf';
+import streetTCrossUrl from 'url:../../static/objects/street/t_cross.gltf';
+import streetCrossUrl from 'url:../../static/objects/street/cross.gltf';
+
+import streetDecorationTrashcanUrl from 'url:../../static/objects/street/trashcan.gltf';
+import streetDecorationBenchUrl from 'url:../../static/objects/street/bench.gltf';
+
+import carBaseHumanUrl from 'url:../../static/objects/car/base_human_3.gltf';
+
+import architectureHouseSimpleUrl from 'url:../../static/objects/architecture/house_simple.gltf';
+import architectureHouseBungalowUrl from 'url:../../static/objects/architecture/house_bungalow.gltf';
+import architectureHouseFlatUrl from 'url:../../static/objects/architecture/house_flat.gltf';
+import architectureHouseDoubleUrl from 'url:../../static/objects/architecture/house_double.gltf';
+
+import signUrl from 'url:../../static/objects/sign/signs.gltf';
+
 const MODELS = {
-  treeBranched: 'tree/branched.gltf',
-  treeOpen: 'tree/open.gltf',
-  treePyramidal: 'tree/pyramidal.gltf',
-  treeRound: 'tree/round.gltf',
-  treeSpreading: 'tree/spreading.gltf',
+  treeBranched: treeBranchedUrl,
+  treeOpen: treeOpenUrl,
+  treePyramidal: treePyramidalUrl,
+  treeRound: treeRoundUrl,
+  treeSpreading: treeSpreadingUrl,
 
-  streetCurve: 'street/curve.gltf',
-  streetStraight: 'street/straight.gltf',
-  streetTCross: 'street/t_cross.gltf',
-  streetCross: 'street/cross.gltf',
+  streetCurve: streetCurveUrl,
+  streetStraight: streetStraightUrl,
+  streetTCross: streetTCrossUrl,
+  streetCross: streetCrossUrl,
 
-  streetDecorationTrashcan: 'street/trashcan.gltf',
-  streetDecorationBench: 'street/bench.gltf',
+  streetDecorationTrashcan: streetDecorationTrashcanUrl,
+  streetDecorationBench: streetDecorationBenchUrl,
 
-  carPurple: 'car/purple.gltf',
-  carTuerkis: 'car/tuerkis.gltf',
-  carBase: 'car/base.gltf',
-  carBaseMaterial: 'car/base_material.gltf',
-  carBaseHuman: 'car/base_human_3.gltf',
+  carBaseHuman: carBaseHumanUrl,
 
-  architectureHouseSimple: 'architecture/house_simple.gltf',
-  architectureHouseBungalow: 'architecture/house_bungalow.gltf',
-  architectureHouseFlat: 'architecture/house_flat.gltf',
-  architectureHouseDouble: 'architecture/house_double.gltf',
+  architectureHouseSimple: architectureHouseSimpleUrl,
+  architectureHouseBungalow: architectureHouseBungalowUrl,
+  architectureHouseFlat: architectureHouseFlatUrl,
+  architectureHouseDouble: architectureHouseDoubleUrl,
 
-  sign: 'sign/signs.gltf'
+  sign: signUrl
 };
 
 export default function loadModels({ onLoad, onProgress, onError }) {
   const loadedModels = {};
-  
+
   const manager = new LoadingManager(
     function handleOnLoad() {
       onLoad(loadedModels);
@@ -45,7 +64,7 @@ export default function loadModels({ onLoad, onProgress, onError }) {
     loadedModels[name] = null;
 
     new GLTFLoader(manager)
-      .load(`/objects/${path}`, (gltf) => {
+      .load(path, (gltf) => {
         loadedModels[name] = gltf.scene;
       }, null, err => console.error(err));
   }

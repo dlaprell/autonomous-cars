@@ -1,8 +1,8 @@
 import { OrbitControls as ThreeOrbitControls } from './third-party/OrbitControls';
 
-import { SimluationSceneElement } from './SimulationScene';
+import { SimulationSceneElement } from './SimulationScene';
 
-class OrbitControls extends SimluationSceneElement {
+class OrbitControls extends SimulationSceneElement {
   constructor(...args) {
     super(...args);
 

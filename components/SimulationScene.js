@@ -105,7 +105,7 @@ class SimulationScene extends Component {
   }
 }
 
-class SimluationSceneElement extends Component {
+class SimulationSceneElement extends Component {
   constructor(...args) {
     super(...args);
 
@@ -149,5 +149,5 @@ class SimluationSceneElement extends Component {
 
 export {
   SimulationScene,
-  SimluationSceneElement
+  SimulationSceneElement
 };

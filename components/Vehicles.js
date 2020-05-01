@@ -1,7 +1,7 @@
 import { h, createContext } from 'preact';
 import { Color } from 'three';
 
-import { SimluationSceneElement } from './SimulationScene';
+import { SimulationSceneElement } from './SimulationScene';
 
 import { RandomMovement, PathMovement } from './src/movement';
 import { ModelContext } from './ModelManager';
@@ -31,7 +31,7 @@ function laneDistanceUpTo(lane, tile) {
 
 const TrafficContext = createContext(null);
 
-class TrafficManager extends SimluationSceneElement {
+class TrafficManager extends SimulationSceneElement {
   constructor(...args) {
     super(...args);
 
@@ -458,7 +458,7 @@ function adaptCar(car, color) {
   return objs;
 }
 
-class MovingCar extends SimluationSceneElement {
+class MovingCar extends SimulationSceneElement {
   constructor(...args) {
     super(...args);
 

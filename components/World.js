@@ -1,10 +1,10 @@
 import { TextureLoader, RepeatWrapping, MeshLambertMaterial, Mesh, DoubleSide, FrontSide, PlaneGeometry, BackSide } from 'three';
 
-import { SimluationSceneElement } from './SimulationScene';
+import { SimulationSceneElement } from './SimulationScene';
 
 import imageGrassUrl from 'url:../static/images/grass.png';
 
-class GridRenderer extends SimluationSceneElement {
+class GridRenderer extends SimulationSceneElement {
   constructor(...args) {
     super(...args);
 
@@ -13,7 +13,7 @@ class GridRenderer extends SimluationSceneElement {
   }
 }
 
-class Ground extends SimluationSceneElement {
+class Ground extends SimulationSceneElement {
   constructor(...args) {
     super(...args);
 

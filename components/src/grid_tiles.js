@@ -186,6 +186,43 @@ function adaptStreetObject(obj) {
   return objs;
 }
 
+function adaptAccessoires(obj) {
+  const o = obj.clone();
+
+  const objs = {};
+
+  o.traverse((child) => {
+    if (!child.isMesh && !child.isGroup) {
+      return;
+    }
+
+    child.castShadow = true;
+
+    if (child.name === 'Bank') {
+      objs.bench = child;
+    }
+
+    if (child.name === 'Bank_target') {
+      objs.benchTarget = child;
+    }
+
+    if (child.name === 'Trashcan') {
+      objs.trashcan = child;
+    }
+
+    if (child.name === 'Trashcan_target') {
+      objs.trashcanTarget = child;
+    }
+  });
+
+  o.rotation.x -= Math.PI;
+  o.castShadow = true;
+
+  objs.full = o;
+
+  return objs;
+}
+
 class Tile {
   constructor(type, rotation, baseOptions) {
     this._type = type;
@@ -235,56 +272,58 @@ class Tile {
     };
   }
 
-  addBench(models, inner = false) {
-    const bench = models.streetDecorationBench.clone();
+  addBench(models, options = {}, inner = false) {
+    const { bench, benchTarget } = adaptAccessoires(models.accessoires);
+    const obj = options.target ? benchTarget : bench;
 
-    bench.rotation.x = Math.PI;
+    obj.rotation.x = Math.PI;
 
     if (inner) {
-      bench.rotation.z = Math.PI;
+      obj.rotation.z = Math.PI;
 
-      bench.position.x -= 6;
-      bench.position.y += 3;
+      obj.position.x -= 6;
+      obj.position.y += 3;
     } else {
-      bench.rotation.z = -Math.PI / 2;
+      obj.rotation.z = -Math.PI / 2;
 
-      bench.position.y -= 6;
-      bench.position.x += 3;
+      obj.position.y -= 6;
+      obj.position.x += 3;
     }
 
-    bench.castShadow = true;
-    bench.traverse(child => {
+    obj.castShadow = true;
+    obj.traverse(child => {
       if (child.isMesh) {
         child.castShadow = true;
       }
     });
 
-    this.add(bench);
+    this.add(obj);
   }
 
-  addTrashCan(models, inner = false) {
-    const trashcan = models.streetDecorationTrashcan.clone();
+  addTrashCan(models, options = {}, inner = false) {
+    const { trashcan, trashcanTarget } = adaptAccessoires(models.accessoires);
+    const obj = options.target ? trashcanTarget : trashcan;
 
-    trashcan.rotation.x = Math.PI;
+    obj.rotation.x = Math.PI;
 
     if (inner) {
-      trashcan.position.x -= 6;
-      trashcan.position.y -= 3;
+      obj.position.x -= 6;
+      obj.position.y -= 3;
     } else {
-      trashcan.rotation.z = Math.PI / 2;
+      obj.rotation.z = Math.PI / 2;
 
-      trashcan.position.y -= 6;
-      trashcan.position.x -= 3;
+      obj.position.y -= 6;
+      obj.position.x -= 3;
     }
 
-    trashcan.castShadow = true;
-    trashcan.traverse(child => {
+    obj.castShadow = true;
+    obj.traverse(child => {
       if (child.isMesh) {
         child.castShadow = true;
       }
     });
 
-    this.add(trashcan);
+    this.add(obj);
   }
 
   addSign(models, type, side, options) {
@@ -409,11 +448,11 @@ class RoadTile extends Tile {
     this._sideWalkGeometry.applyMatrix4(sidewalk.matrixWorld);
 
     if (options.bench) {
-      this.addBench(models, true);
+      this.addBench(models, options.bench, true);
     }
 
     if (options.trashCan) {
-      this.addTrashCan(models, true);
+      this.addTrashCan(models, options.trashCan, true);
     }
 
     if (options.signs) {
@@ -519,11 +558,11 @@ class TSectionTile extends Tile {
     this._sideWalkGeometry.applyMatrix4(sidewalk.matrixWorld);
 
     if (options.bench) {
-      this.addBench(models, true);
+      this.addBench(models, options.bench, true);
     }
 
     if (options.trashCan) {
-      this.addTrashCan(models, true);
+      this.addTrashCan(models, options.trashCan, true);
     }
 
     if (options.signs) {
@@ -723,11 +762,11 @@ class ForestTile extends Tile {
     assert(this._forestGeometries);
 
     if (options.bench) {
-      this.addBench(models);
+      this.addBench(models, options.bench);
     }
 
     if (options.trashCan) {
-      this.addTrashCan(models);
+      this.addTrashCan(models, options.trashCan);
     }
   }
 
@@ -772,11 +811,11 @@ class HouseTile extends Tile {
     this.add(house);
 
     if (options.bench) {
-      this.addBench(models);
+      this.addBench(models, options.bench);
     }
 
     if (options.trashCan) {
-      this.addTrashCan(models);
+      this.addTrashCan(models, options.trashCan);
     }
   }
 }
@@ -786,11 +825,11 @@ class PlainTile extends Tile {
     super(TYPES.PLAIN, rotation, { drawBorders });
 
     if (options.bench) {
-      this.addBench(models);
+      this.addBench(models, options.bench);
     }
 
     if (options.trashCan) {
-      this.addTrashCan(models);
+      this.addTrashCan(models, options.trashCan);
     }
   }
 }

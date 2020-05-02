@@ -11,9 +11,7 @@ import streetCurveUrl from 'url:../../static/objects/street/curve.gltf';
 import streetStraightUrl from 'url:../../static/objects/street/straight.gltf';
 import streetTCrossUrl from 'url:../../static/objects/street/t_cross.gltf';
 import streetCrossUrl from 'url:../../static/objects/street/cross.gltf';
-
-import streetDecorationTrashcanUrl from 'url:../../static/objects/street/trashcan.gltf';
-import streetDecorationBenchUrl from 'url:../../static/objects/street/bench.gltf';
+import accessoiresUrl from 'url:../../static/objects/street/accessoires.gltf';
 
 import carBaseHumanUrl from 'url:../../static/objects/car/base_human_3.gltf';
 
@@ -36,8 +34,7 @@ const MODELS = {
   streetTCross: streetTCrossUrl,
   streetCross: streetCrossUrl,
 
-  streetDecorationTrashcan: streetDecorationTrashcanUrl,
-  streetDecorationBench: streetDecorationBenchUrl,
+  accessoires: accessoiresUrl,
 
   carBaseHuman: carBaseHumanUrl,
 

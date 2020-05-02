@@ -122,21 +122,37 @@ class TileOptions extends Component {
     this.handleOptionChange = evt => {
       const { type, checked, value, name } = evt.target;
 
+      const { tile, onChange } = this.props;
+      const oldOptions = tile[2] || {};
+
       let realValue = type === 'checkbox' ? checked : value;
 
       if (type === 'number') {
         realValue = Number(realValue);
       }
 
-      const { tile, onChange } = this.props;
+      const newOption = {};
+      if (name.indexOf('.') !== -1) {
+        const [ base, prop ] = name.split('.');
+
+        newOption[base] = typeof oldOptions[base] === 'object'
+          ? { ...oldOptions[base] } : {};
+
+        newOption[base][prop] = realValue;
+      } else if (typeof realValue === 'string') {
+        newOption[name] = realValue;
+      } else {
+        newOption[name] = realValue ? {} : null;
+      }
+
       if (onChange) {
         onChange([
           tile[0],
           tile[1],
-          { ...(tile[2] || {}), [name]: realValue }
+          { ...oldOptions, ...newOption }
         ]);
       }
-    }
+    };
 
     this.handleSignChange = evt => {
       const { name, value } = evt.target;
@@ -210,6 +226,15 @@ class TileOptions extends Component {
         />
 
         <CheckBoxOption
+          label=""
+          value={Boolean(options.trashCan && options.trashCan.target)}
+          checkedText="Target"
+          disabled={disDecorations || !options.trashCan}
+          name="trashCan.target"
+          onChange={this.handleOptionChange}
+        />
+
+        <CheckBoxOption
           label="Bench"
           value={Boolean(options.bench)}
           checkedText="Show"
@@ -218,9 +243,18 @@ class TileOptions extends Component {
           onChange={this.handleOptionChange}
         />
 
+        <CheckBoxOption
+          label=""
+          value={Boolean(options.bench && options.bench.target)}
+          checkedText="Target"
+          disabled={disDecorations || !options.bench}
+          name="bench.target"
+          onChange={this.handleOptionChange}
+        />
+
         <SelectOption
           label="House Type"
-          name="houseType"
+          name="type"
           value={options.type || 'Simple'}
           disabled={type !== types.house.value}
           choices={[

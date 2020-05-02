@@ -7,13 +7,14 @@ import treePyramidalUrl from 'url:../../static/objects/tree/pyramidal.gltf';
 import treeRoundUrl from 'url:../../static/objects/tree/round.gltf';
 import treeSpreadingUrl from 'url:../../static/objects/tree/spreading.gltf';
 
+import plainUrl from 'url:../../static/objects/street/plain.gltf';
 import streetCurveUrl from 'url:../../static/objects/street/curve.gltf';
 import streetStraightUrl from 'url:../../static/objects/street/straight.gltf';
 import streetTCrossUrl from 'url:../../static/objects/street/t_cross.gltf';
 import streetCrossUrl from 'url:../../static/objects/street/cross.gltf';
 import accessoiresUrl from 'url:../../static/objects/street/accessoires.gltf';
 
-import carBaseHumanUrl from 'url:../../static/objects/car/base_human_3.gltf';
+import carUrl from 'url:../../static/objects/new/Car_combined.gltf';
 
 import architectureHouseSimpleUrl from 'url:../../static/objects/architecture/house_simple.gltf';
 import architectureHouseBungalowUrl from 'url:../../static/objects/architecture/house_bungalow.gltf';
@@ -29,6 +30,7 @@ const MODELS = {
   treeRound: treeRoundUrl,
   treeSpreading: treeSpreadingUrl,
 
+  streetPlain: plainUrl,
   streetCurve: streetCurveUrl,
   streetStraight: streetStraightUrl,
   streetTCross: streetTCrossUrl,
@@ -36,7 +38,7 @@ const MODELS = {
 
   accessoires: accessoiresUrl,
 
-  carBaseHuman: carBaseHumanUrl,
+  car: carUrl,
 
   architectureHouseSimple: architectureHouseSimpleUrl,
   architectureHouseBungalow: architectureHouseBungalowUrl,

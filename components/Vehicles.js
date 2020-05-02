@@ -422,7 +422,7 @@ function adaptCar(car, color) {
   const objs = {};
 
   car.traverse((child) => {
-    if (!child.isMesh) {
+    if (!child.isMesh && !child.isGroup) {
       return;
     }
 
@@ -431,12 +431,19 @@ function adaptCar(car, color) {
     }
 
     if (child.name === 'Car_Model') {
-      child.material = child.material.clone();
-      child.material.color = new Color(color);
+      let car = child;
 
-      objs.car = child;
+      if (child.isGroup) {
+        car = child.children
+          .find(c => c.isMesh && c.material.name.indexOf('Auto_Farbe.002') !== -1);
+      }
 
-      child.castShadow = true;
+      car.material = car.material.clone();
+      car.material.color = new Color(color);
+
+      objs.car = car;
+
+      car.castShadow = true;
     }
 
     if (child.name === 'Car_Windows') {
@@ -448,6 +455,10 @@ function adaptCar(car, color) {
 
     if (child.name === 'Human_BaseMesh') {
       objs.driver = child;
+    }
+
+    if (child.name === 'Human_BaseMesh_NoHead') {
+      objs.driverHeadless = child;
     }
 
     if (child.name === 'Car_Front_Seats') {
@@ -486,13 +497,20 @@ class MovingCar extends SimulationSceneElement {
 
     manager.push(this);
 
-    this._carObject = this.props.models.carBaseHuman.clone();
+    this._carObject = this.props.models.car.clone();
 
     const color = options.color || colors[random.integer(0, colors.length - 1)];
-    const { driver, frontSeats, windows } = adaptCar(this._carObject, color);
+    const { driver, driverHeadless, frontSeats, windows } = adaptCar(this._carObject, color);
 
     if (options.noDriver) {
       driver.visible = false;
+      driverHeadless.visible = false;
+    }
+
+    if (options.noHead) {
+      driver.visible = false;
+    } else {
+      driverHeadless.visible = false;
     }
 
     if (following) {

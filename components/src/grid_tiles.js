@@ -297,6 +297,9 @@ class Tile {
       }
     });
 
+    obj.updateWorldMatrix(true, false);
+    obj.matrixAutoUpdate = false;
+
     this.add(obj);
   }
 
@@ -322,6 +325,9 @@ class Tile {
         child.castShadow = true;
       }
     });
+
+    obj.updateWorldMatrix(true, false);
+    obj.matrixAutoUpdate = false;
 
     this.add(obj);
   }
@@ -373,6 +379,9 @@ class Tile {
       sign.position.x = (side === -1) ? -7.5 : 7.5;
       sign.position.y = (side === -1 ? 5 : -5);
     }
+
+    sign.updateWorldMatrix(true, false);
+    sign.matrixAutoUpdate = false;
 
     this.add(sign);
   }
@@ -808,6 +817,10 @@ class HouseTile extends Tile {
 
     house.castShadow = true;
     house.receiveShadow = true;
+
+    house.updateWorldMatrix(true, false);
+    house.matrixAutoUpdate = false;
+
     this.add(house);
 
     if (options.bench) {

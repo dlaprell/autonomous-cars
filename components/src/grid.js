@@ -139,6 +139,8 @@ class GridMap {
         const forests = new Mesh(mergedForests, new MeshLambertMaterial({ vertexColors: VertexColors }));
         forests.castShadow = true;
         forests.frustumCulled = false;
+        forests.updateWorldMatrix(true, false);
+        forests.matrixAutoUpdate = false;
         this._group.add(forests);
       }
 
@@ -168,6 +170,8 @@ class GridMap {
         const lanes = new Mesh(mergedLanes, laneMaterial);
         lanes.receiveShadow = true;
         lanes.frustumCulled = false;
+        lanes.updateWorldMatrix(true, false);
+        lanes.matrixAutoUpdate = false;
         this._group.add(lanes);
 
         const mergedSidewalks = BufferGeometryUtils.mergeBufferGeometries(sidewalkGeometries, false);
@@ -176,6 +180,8 @@ class GridMap {
         const sideWalks = new Mesh(mergedSidewalks, sideWalkMaterial);
         sideWalks.receiveShadow = true;
         sideWalks.frustumCulled = false;
+        sideWalks.updateWorldMatrix(true, false);
+        sideWalks.matrixAutoUpdate = false;
         this._group.add(sideWalks);
       }
     } else { // Mode 2

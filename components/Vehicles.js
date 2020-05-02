@@ -436,6 +436,15 @@ function adaptCar(car, color) {
       if (child.isGroup) {
         car = child.children
           .find(c => c.isMesh && c.material.name.indexOf('Auto_Farbe.002') !== -1);
+
+        objs.windows2 = child.children
+          .find(c => c.isMesh && c !== car);
+        if (objs.windows2) {
+          objs.windows2.material = objs.windows2.material.clone();
+
+          objs.windows2.material.transparent = true;
+          objs.windows2.material.opacity = 0.6;
+        }
       }
 
       car.material = car.material.clone();
@@ -500,7 +509,7 @@ class MovingCar extends SimulationSceneElement {
     this._carObject = this.props.models.car.clone();
 
     const color = options.color || colors[random.integer(0, colors.length - 1)];
-    const { driver, driverHeadless, frontSeats, windows } = adaptCar(this._carObject, color);
+    const { driver, driverHeadless, frontSeats, windows, windows2 } = adaptCar(this._carObject, color);
 
     if (options.noDriver) {
       driver.visible = false;
@@ -516,6 +525,10 @@ class MovingCar extends SimulationSceneElement {
     if (following) {
       windows.visible = false;
       frontSeats.visible = false;
+
+      if (windows2) {
+        windows2.visible = false;
+      }
     }
 
     this._carObject.position.y += 0.275;

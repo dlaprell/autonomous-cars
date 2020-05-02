@@ -14,7 +14,7 @@ import streetTCrossUrl from 'url:../../static/objects/street/t_cross.gltf';
 import streetCrossUrl from 'url:../../static/objects/street/cross.gltf';
 import accessoiresUrl from 'url:../../static/objects/street/accessoires.gltf';
 
-import carUrl from 'url:../../static/objects/new/Car_combined.gltf';
+import carUrl from 'url:../../static/objects/car/standard.gltf';
 
 import architectureHouseSimpleUrl from 'url:../../static/objects/architecture/house_simple.gltf';
 import architectureHouseBungalowUrl from 'url:../../static/objects/architecture/house_bungalow.gltf';

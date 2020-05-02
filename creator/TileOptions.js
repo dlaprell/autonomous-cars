@@ -257,7 +257,8 @@ class TileOptions extends Component {
                 { value: 'PriorityRoad' },
                 { value: 'Stop' },
                 { value: 'Yield' },
-                { value: 'PriorityAtNext' }
+                { value: 'PriorityAtNext' },
+                { value: 'Target' }
               ]}
               onChange={this.handleSignChange}
             />

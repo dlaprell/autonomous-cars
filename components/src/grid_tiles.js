@@ -316,6 +316,10 @@ class Tile {
       if (type === 'PriorityAtNext' && child.name !== 'Achtung') {
         child.visible = false;
       }
+
+      if (type === 'Target' && child.name !== 'Sign_Target') {
+        child.visible = false;
+      }
     });
 
     sign.castShadow = true;

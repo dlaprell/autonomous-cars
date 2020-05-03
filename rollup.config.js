@@ -16,7 +16,12 @@ export default {
   input: 'pages/index.js',
   output: {
     dir: 'build',
-    format: 'iife'
+    format: isProd ? 'iife' : 'esm'
+  },
+  manualChunks(id) {
+    if (!isProd && id.includes('node_modules')) {
+      return 'vendor';
+    }
   },
   watch: {
     chokidar: false,

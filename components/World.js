@@ -2,7 +2,7 @@ import { TextureLoader, RepeatWrapping, MeshLambertMaterial, Mesh, DoubleSide, F
 
 import { SimulationSceneElement } from './SimulationScene';
 
-import imageGrassUrl from 'url:../static/images/grass.png';
+import imageGrassUrl from '../static/images/grass.png';
 
 class GridRenderer extends SimulationSceneElement {
   constructor(...args) {

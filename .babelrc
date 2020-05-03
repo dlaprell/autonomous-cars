@@ -1,8 +1,17 @@
 {
   "presets": [
-    "preact"
+    "preact",
+    [
+      "@babel/env",
+      {
+        "modules": false,
+        "targets": {
+          "esmodules": true
+        }
+      }
+    ]
   ],
   "plugins": [
-    "styled-jsx/babel"
+    ["styled-jsx/babel"]
   ]
 }

@@ -1,7 +1,6 @@
 .cache
 .parcel-cache
-dist
-car-demo-threejs-master
+build
 node_modules
 .DS_Store
 .vscode

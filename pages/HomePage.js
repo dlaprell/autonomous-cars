@@ -1,13 +1,11 @@
 /** @jsx h */
 
-import { h, render } from 'preact';
-import { Simulation } from './components/Simulation';
-import world from './components/worlds/standard.json';
+import { h } from 'preact';
+import { Simulation } from '../components/Simulation';
+import world from '../components/worlds/standard.json';
 
-function init() {
-  const root = document.body;
-
-  render(
+export default function Home({ root }) {
+  return (
     <Simulation
       container={root}
       withCamera={window.location.href.indexOf('camera') !== -1}
@@ -19,11 +17,6 @@ function init() {
         shadow: window.location.href.indexOf('shadow') !== -1
       }}
       stopAfter={30000}
-    />,
-    root
+    />
   );
 }
-
-window.addEventListener('load', (/* event */) => {
-  init();
-});

@@ -14,12 +14,12 @@ import { RandomGen } from './src/randomgen';
 import { ModelManager } from './ModelManager';
 import loadModels from './models/ModelLoader';
 
-import cloudsNorthPath from 'url:../static/images/clouds1/clouds1_north.jpg';
-import cloudsSouthPath from 'url:../static/images/clouds1/clouds1_south.jpg';
-import cloudsUpPath from 'url:../static/images/clouds1/clouds1_up.jpg';
-import cloudsDownPath from 'url:../static/images/clouds1/clouds1_down.jpg';
-import cloudsWestPath from 'url:../static/images/clouds1/clouds1_west.jpg';
-import cloudsEastPath from 'url:../static/images/clouds1/clouds1_east.jpg';
+import cloudsNorthPath from '../static/images/clouds1/clouds1_north.jpg';
+import cloudsSouthPath from '../static/images/clouds1/clouds1_south.jpg';
+import cloudsUpPath from '../static/images/clouds1/clouds1_up.jpg';
+import cloudsDownPath from '../static/images/clouds1/clouds1_down.jpg';
+import cloudsWestPath from '../static/images/clouds1/clouds1_west.jpg';
+import cloudsEastPath from '../static/images/clouds1/clouds1_east.jpg';
 
 class Simulation extends Component {
   constructor(...args) {

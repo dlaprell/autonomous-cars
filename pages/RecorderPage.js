@@ -1,10 +1,12 @@
 // @ts-check
 /** @jsx h */
 
-import { h, render, Component, createRef, Fragment } from 'preact';
-import { Simulation } from './components/Simulation';
-import { TimeProvider } from './components/TimeProvider';
-import world from './components/worlds/standard.json';
+import { h, Component, createRef, Fragment } from 'preact';
+import { Simulation } from '../components/Simulation';
+import { TimeProvider } from '../components/TimeProvider';
+
+// IMPORTANT: Will be imported as a URL
+import ffmpegWorkerUrl from '../node_modules/ffmpeg.js/ffmpeg-worker-mp4.js';
 
 class RecorderProvider extends TimeProvider {
   constructor(...args) {
@@ -32,7 +34,7 @@ class RecorderProvider extends TimeProvider {
     this._renderFinished = false;
     this._convertRunning = false;
 
-    this._worker = new Worker("./node_modules/ffmpeg.js/ffmpeg-worker-mp4.js");
+    this._worker = new Worker(ffmpegWorkerUrl);
     this._worker.onerror = function (e) {
       console.error(e);
       debugger;
@@ -193,7 +195,7 @@ class RecorderProvider extends TimeProvider {
   }
 }
 
-class RecordingManager extends Component {
+export default class RecorderPage extends Component {
   constructor(...args) {
     super(...args);
 
@@ -286,6 +288,8 @@ class RecordingManager extends Component {
       step,
       rec,
 
+      world,
+
       frameCount,
       frameBlob,
 
@@ -367,20 +371,19 @@ class RecordingManager extends Component {
             </a>
           </div>
         )}
+
+        <style jsx>{`
+          #offScreen {
+            width: 1280px;
+            height: 720px;
+            visibility: hidden;
+          }
+
+          #preview {
+            max-width: 480px;
+          }
+        `}</style>
       </div>
     );
   }
 }
-
-function init() {
-  const root = document.body;
-
-  render(
-    <RecordingManager />,
-    root
-  );
-}
-
-window.addEventListener('load', (/* event */) => {
-  init();
-});

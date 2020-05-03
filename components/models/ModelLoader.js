@@ -1,27 +1,27 @@
 import { LoadingManager } from 'three'
 import { GLTFLoader } from '../third-party/GLTFLoader.js';
 
-import treeBranchedUrl from 'url:../../static/objects/tree/branched.gltf';
-import treeOpenUrl from 'url:../../static/objects/tree/open.gltf';
-import treePyramidalUrl from 'url:../../static/objects/tree/pyramidal.gltf';
-import treeRoundUrl from 'url:../../static/objects/tree/round.gltf';
-import treeSpreadingUrl from 'url:../../static/objects/tree/spreading.gltf';
+import treeBranchedUrl from '../../static/objects/tree/branched.gltf';
+import treeOpenUrl from '../../static/objects/tree/open.gltf';
+import treePyramidalUrl from '../../static/objects/tree/pyramidal.gltf';
+import treeRoundUrl from '../../static/objects/tree/round.gltf';
+import treeSpreadingUrl from '../../static/objects/tree/spreading.gltf';
 
-import plainUrl from 'url:../../static/objects/street/plain.gltf';
-import streetCurveUrl from 'url:../../static/objects/street/curve.gltf';
-import streetStraightUrl from 'url:../../static/objects/street/straight.gltf';
-import streetTCrossUrl from 'url:../../static/objects/street/t_cross.gltf';
-import streetCrossUrl from 'url:../../static/objects/street/cross.gltf';
-import accessoiresUrl from 'url:../../static/objects/street/accessoires.gltf';
+import plainUrl from '../../static/objects/street/plain.gltf';
+import streetCurveUrl from '../../static/objects/street/curve.gltf';
+import streetStraightUrl from '../../static/objects/street/straight.gltf';
+import streetTCrossUrl from '../../static/objects/street/t_cross.gltf';
+import streetCrossUrl from '../../static/objects/street/cross.gltf';
+import accessoiresUrl from '../../static/objects/street/accessoires.gltf';
 
-import carUrl from 'url:../../static/objects/car/standard.gltf';
+import carUrl from '../../static/objects/car/standard.gltf';
 
-import architectureHouseSimpleUrl from 'url:../../static/objects/architecture/house_simple.gltf';
-import architectureHouseBungalowUrl from 'url:../../static/objects/architecture/house_bungalow.gltf';
-import architectureHouseFlatUrl from 'url:../../static/objects/architecture/house_flat.gltf';
-import architectureHouseDoubleUrl from 'url:../../static/objects/architecture/house_double.gltf';
+import architectureHouseSimpleUrl from '../../static/objects/architecture/house_simple.gltf';
+import architectureHouseBungalowUrl from '../../static/objects/architecture/house_bungalow.gltf';
+import architectureHouseFlatUrl from '../../static/objects/architecture/house_flat.gltf';
+import architectureHouseDoubleUrl from '../../static/objects/architecture/house_double.gltf';
 
-import signUrl from 'url:../../static/objects/sign/signs.gltf';
+import signUrl from '../../static/objects/sign/signs.gltf';
 
 const MODELS = {
   treeBranched: treeBranchedUrl,

@@ -186,43 +186,6 @@ function adaptStreetObject(obj) {
   return objs;
 }
 
-function adaptAccessoires(obj) {
-  const o = obj.clone();
-
-  const objs = {};
-
-  o.traverse((child) => {
-    if (!child.isMesh && !child.isGroup) {
-      return;
-    }
-
-    child.castShadow = true;
-
-    if (child.name === 'Bank') {
-      objs.bench = child;
-    }
-
-    if (child.name === 'Bank_target') {
-      objs.benchTarget = child;
-    }
-
-    if (child.name === 'Trashcan') {
-      objs.trashcan = child;
-    }
-
-    if (child.name === 'Trashcan_target') {
-      objs.trashcanTarget = child;
-    }
-  });
-
-  o.rotation.x -= Math.PI;
-  o.castShadow = true;
-
-  objs.full = o;
-
-  return objs;
-}
-
 class Tile {
   constructor(type, rotation, baseOptions) {
     this._type = type;
@@ -273,8 +236,11 @@ class Tile {
   }
 
   addBench(models, options = {}, inner = false) {
-    const { bench, benchTarget } = adaptAccessoires(models.accessoires);
-    const obj = options.target ? benchTarget : bench;
+    const obj = (
+      options.target
+        ? models.benchTarget
+        : models.bench
+    ).clone();
 
     obj.rotation.x = Math.PI;
 
@@ -304,8 +270,11 @@ class Tile {
   }
 
   addTrashCan(models, options = {}, inner = false) {
-    const { trashcan, trashcanTarget } = adaptAccessoires(models.accessoires);
-    const obj = options.target ? trashcanTarget : trashcan;
+    const obj = (
+      options.target
+        ? models.trashcanTarget
+        : models.trashcan
+    ).clone();
 
     obj.rotation.x = Math.PI;
 

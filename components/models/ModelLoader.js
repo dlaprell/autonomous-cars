@@ -12,7 +12,12 @@ import streetCurveUrl from '../../static/objects/street/curve.gltf';
 import streetStraightUrl from '../../static/objects/street/straight.gltf';
 import streetTCrossUrl from '../../static/objects/street/t_cross.gltf';
 import streetCrossUrl from '../../static/objects/street/cross.gltf';
-import accessoiresUrl from '../../static/objects/street/accessoires.gltf';
+// import accessoiresUrl from '../../static/objects/street/accessoires.gltf';
+
+import benchUrl from '../../static/objects/decoration/bench.gltf';
+import trashcanUrl from '../../static/objects/decoration/trashcan.gltf';
+import benchTargetUrl from '../../static/objects/decoration/bench_target.gltf';
+import trashcanTargetUrl from '../../static/objects/decoration/trashcan_target.gltf';
 
 import carUrl from '../../static/objects/car/standard.gltf';
 
@@ -36,7 +41,12 @@ const MODELS = {
   streetTCross: streetTCrossUrl,
   streetCross: streetCrossUrl,
 
-  accessoires: accessoiresUrl,
+  // accessoires: accessoiresUrl,
+
+  bench: benchUrl,
+  benchTarget: benchTargetUrl,
+  trashcan: trashcanUrl,
+  trashcanTarget: trashcanTargetUrl,
 
   car: carUrl,
 

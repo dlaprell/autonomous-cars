@@ -24,6 +24,7 @@ import { shuffleArray, pickRandomEntries } from '../utils/array';
 
 /**
  * @typedef {Object} WorldData
+ * @property {string} name
  * @property {MapData} map
  * @property {Array<CarData>} cars
  */
@@ -49,6 +50,7 @@ const worldsBare = [];
  */
 function removeNoDriver(world) {
   return {
+    name: world.name,
     map: world.map,
     cars: world.cars
       .map(car => {
@@ -73,6 +75,7 @@ function removeNoDriver(world) {
  */
 function removeTargets(world) {
   return {
+    name: world.name,
     cars: world.cars,
     map: world.map
       .map(row => row.map(tile => {
@@ -144,7 +147,7 @@ export function extractWorldsForRuns() {
     /** @type {RunConfig} */
     const config = (/** @type {RunConfig} */ c);
 
-    runs.push(...pickAtMostRandomEntries(10, entries).map(w => ({ config, name: '', world: w })));
+    runs.push(...pickAtMostRandomEntries(10, entries).map(w => ({ config, name: w.name, world: w })));
   }
 
   // Finally, shuffle again to change the order of the

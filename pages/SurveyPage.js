@@ -9,6 +9,7 @@ import { Content } from './survey/Ui';
 import { assert } from '../components/utils/assert';
 import { Simulation } from '../components/Simulation';
 import RunResult from './survey/RunResult';
+import loadModels from '../components/models/ModelLoader';
 
 const languages = {
   de: {},
@@ -55,6 +56,10 @@ export default class SurveyPage extends Component {
 
       intro: true,
 
+      models: null,
+      modelsLoaded: false,
+      modelsError: null,
+
       runs,
       curRun: null,
       curRunFinished: false,
@@ -84,6 +89,26 @@ export default class SurveyPage extends Component {
     }
   }
 
+  componentDidMount() {
+    loadModels({
+      onError: (err) => {
+        this.setState({
+          modelsError: err,
+          modelsLoaded: true
+        });
+      },
+
+      onProgress: () => {},
+
+      onLoad: (models) => {
+        this.setState({
+          models,
+          modelsLoaded: true
+        });
+      }
+    });
+  }
+
   render() {
     const {
       intro,
@@ -91,7 +116,11 @@ export default class SurveyPage extends Component {
       curRun,
       runs,
       curRunFinished,
-      runResults
+      runResults,
+
+      models,
+      modelsError,
+      modelsLoaded
     } = this.state;
 
     if (intro) {
@@ -105,6 +134,24 @@ export default class SurveyPage extends Component {
     if (curRun !== null && curRun < runs.length) {
       assert(curRun >= 0 && curRun < runs.length);
 
+      if (!modelsLoaded) {
+        return (
+          <Content nextDisabled={true} onNextClick={null}>
+            Loading models
+          </Content>
+        );
+      }
+
+      if (modelsError !== null) {
+        return (
+          <Content nextDisabled={true} onNextClick={null}>
+            <h3>An Error occured</h3>
+
+            <pre>{modelsError.stack}</pre>
+          </Content>
+        );
+      }
+
       const { world } = runs[curRun];
 
       if (!curRunFinished) {
@@ -112,7 +159,8 @@ export default class SurveyPage extends Component {
           <Simulation
             withTraffic
             world={world}
-            stopAfter={30000}
+            stopAfter={40000}
+            models={models}
             onStop={this.handleSimulationStop}
           />
         );

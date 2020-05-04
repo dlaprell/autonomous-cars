@@ -16,7 +16,7 @@ export default function Home({ root }) {
         antialias: window.location.href.indexOf('antialias') !== -1,
         shadow: window.location.href.indexOf('shadow') !== -1
       }}
-      stopAfter={45000}
+      stopAfter={40000}
     />
   );
 }

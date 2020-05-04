@@ -462,11 +462,11 @@ function adaptCar(car, color) {
       objs.windows = child;
     }
 
-    if (child.name === 'Human_BaseMesh') {
+    if (child.name === 'Human_BaseMesh_withHead') {
       objs.driver = child;
     }
 
-    if (child.name === 'Human_BaseMesh_NoHead') {
+    if (child.name === 'Human_BaseMesh_withoutHead') {
       objs.driverHeadless = child;
     }
 

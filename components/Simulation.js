@@ -20,13 +20,14 @@ import cloudsUpPath from '../static/images/clouds1/clouds1_up.jpg';
 import cloudsDownPath from '../static/images/clouds1/clouds1_down.jpg';
 import cloudsWestPath from '../static/images/clouds1/clouds1_west.jpg';
 import cloudsEastPath from '../static/images/clouds1/clouds1_east.jpg';
+import { assert } from './utils/assert';
 
 class Simulation extends Component {
   constructor(...args) {
     super(...args);
 
     this.state = {
-      loaded: false,
+      loaded: Boolean(this.props.models),
       progress: 0,
       stop: false
     };
@@ -49,6 +50,12 @@ class Simulation extends Component {
   }
 
   componentDidMount() {
+    if (this.state.loaded) {
+      return;
+    }
+
+    console.warn('Falling back to loading the models on the fly. This is not optimal!');
+
     loadModels({
       onLoad: (models) => {
         this.setState({ loaded: true, models });
@@ -61,7 +68,7 @@ class Simulation extends Component {
       onError: (err) => {
         console.error(err);
       }
-    })
+    });
   }
 
   handleTimeUpdate(time) {
@@ -95,9 +102,12 @@ class Simulation extends Component {
 
     const {
       loaded,
-      models,
       stop
     } = this.state;
+
+    let models = this.props.models || this.state.models || null;
+
+    assert(Boolean(models) === Boolean(loaded));
 
     if (!loaded) {
       return null;

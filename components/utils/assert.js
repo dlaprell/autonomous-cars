@@ -1,3 +1,4 @@
+// @ts-check
 export function assert(cond, message = null) {
   if (process.env.NODE_ENV !== 'production') {
     if (!cond) {

@@ -1,14 +1,12 @@
+// @ts-check
+
 import {
   Group,
   Mesh,
   BoxBufferGeometry,
-  MeshBasicMaterial,
 
-  VertexColors,
   MeshLambertMaterial,
-  DoubleSide,
-  FrontSide,
-  BackSide
+  DoubleSide
 } from 'three';
 
 import { BufferGeometryUtils } from '../third-party/BufferGeometryUtils';
@@ -23,12 +21,25 @@ import {
 import { rotate, addColorToGeometry } from './utils';
 import { Lane } from './lane';
 
+/** @typedef {import('./grid_tiles').Tile} Tile */
+/** @typedef {import('./grid_tiles').ForestTile} ForestTile */
+/** @typedef {import('./grid_tiles').TileTypes} TileTypes */
+
+/**
+ * @typedef {Object} TileData
+ * @property {number} x
+ * @property {number} y
+ * @property {number} generation
+ * @property {Tile} tile
+ * @property {[ TileTypes, number, Object]} originalData
+ */
+
 const sideWalkMaterial = new MeshLambertMaterial({
-  vertexColors: VertexColors,
+  vertexColors: true,
   side: DoubleSide
 });
 const laneMaterial = new MeshLambertMaterial({
-  vertexColors: VertexColors,
+  vertexColors: true,
   side: DoubleSide
 });
 const sideWalkColor = '#7d3c00';
@@ -41,17 +52,23 @@ class GridMap {
 
     this._generation = 1;
 
+    /** @type {Array<TileData>} */
     this._tileList = [];
-    this._map = null;
+
+    /** @type {Array<Array<TileData>>} */
+    this._map;
+
     this._group = new Group();
     // this._group.receiveShadow = true;
 
+    const cubeMaterial = new MeshLambertMaterial({ color: 0x77BBFF });
+    cubeMaterial.transparent = true;
+    cubeMaterial.opacity = 0.5;
+
     this._highlightCube = new Mesh(
       new BoxBufferGeometry(TILE_SIZE, TILE_SIZE, TILE_SIZE),
-      new MeshLambertMaterial({ color: 0x77BBFF })
+      cubeMaterial
     );
-    this._highlightCube.material.transparent = true;
-    this._highlightCube.material.opacity = 0.5;
     this._highlightCube.visible = false;
     this._highlightCube.position.y += TILE_SIZE / 2;
     this._group.add(this._highlightCube);
@@ -66,8 +83,10 @@ class GridMap {
   updateBaseMap(baseMap) {
     const curGeneration = this._generation++;
 
-    // assert(this._creatorView);
+    /** @type {Array<TileData>} */
     const tileList = [];
+
+    /** @type {Array<Array<TileData>>} */
     const updatedMap = baseMap
       .map(
         (row, y) => row.map(
@@ -98,7 +117,10 @@ class GridMap {
       }
     }
 
+    /** @type {Array<TileData & { tile: ForestTile }>} */
     const forestTiles = [];
+
+    /** @type {Array<TileData>} */
     const laneTiles = [];
 
     // Collect all updated tiles
@@ -108,6 +130,7 @@ class GridMap {
 
         const data = updatedMap[y][x];
         if (data.tile.getType() === TYPES.FOREST) {
+          // @ts-expect-error
           forestTiles.push(data);
         } else if (data.tile.laneGeometry()) {
           laneTiles.push(data);
@@ -136,7 +159,7 @@ class GridMap {
 
         const mergedForests = BufferGeometryUtils.mergeBufferGeometries(forestGeometries, false);
         assert(mergedForests);
-        const forests = new Mesh(mergedForests, new MeshLambertMaterial({ vertexColors: VertexColors }));
+        const forests = new Mesh(mergedForests, new MeshLambertMaterial({ vertexColors: true }));
         forests.castShadow = true;
         forests.frustumCulled = false;
         forests.updateWorldMatrix(true, false);
@@ -192,7 +215,7 @@ class GridMap {
 
         const g = tile.getGroup();
         const forestGeometry = tile.getForestGeometry();
-        const forestMesh = new Mesh(forestGeometry, new MeshLambertMaterial({ vertexColors: VertexColors }));
+        const forestMesh = new Mesh(forestGeometry, new MeshLambertMaterial({ vertexColors: true }));
         forestMesh.castShadow = true;
         g.add(forestMesh);
       }
@@ -240,6 +263,10 @@ class GridMap {
     this._tileList = tileList;
   }
 
+  /**
+   * @param {Array<TileData?>} row
+   * @param {number} y
+   */
   updateRow(row, y) {
     const oldRowExists = Boolean(this._map && this._map[y]);
     const length = oldRowExists ? Math.max(this._map[y].length, row.length) : row.length;
@@ -269,7 +296,10 @@ class GridMap {
           options || {}
         );
 
+        // @ts-expect-error
         upd.tile._x = x;
+
+        // @ts-expect-error
         upd.tile._y = y;
 
         // Now add the new tile to the grid
@@ -290,7 +320,7 @@ class GridMap {
     this._group.add(g);
   }
 
-  removeTile({ x, y, tile }) {
+  removeTile({ tile }) {
     this._group.remove(tile.getGroup());
   }
 
@@ -388,7 +418,7 @@ class GridMap {
             topConnect.outgoing._adjacentTiles.add(tile);
             topConnect.incoming._adjacentTiles.add(tile);
           } else {
-            tile._ownLanes.push(Object.values(topConnect));
+            tile._ownLanes.push(...Object.values(topConnect));
           }
         }
 
@@ -405,11 +435,13 @@ class GridMap {
             leftConnect.outgoing._adjacentTiles.add(tile);
             leftConnect.incoming._adjacentTiles.add(tile);
           } else {
-            tile._ownLanes.push(Object.values(leftConnect));
+            tile._ownLanes.push(...Object.values(leftConnect));
           }
         }
 
         for (const side of [ 1, 2 ]) {
+          assert(side === 1 || side === 2);
+
           if (!tileLaneSides.has(side)) {
             continue;
           }
@@ -485,7 +517,10 @@ class GridMap {
       }
     }
 
+    /** @type {Set<Lane>} */
     const lanes = new Set();
+
+    /** @type {Map<Tile, [number, number]>} */
     const xyTile = new Map();
 
     for (const { x, y, tile } of this._tileList) {
@@ -529,7 +564,7 @@ class GridMap {
         const { tile: next } = this.getTileAt(nX, nY);
 
         if (next.getType() === TYPES.T_SECTION || next.getType() === TYPES.CROSS) {
-          from = rotate(end[0], 2);
+          from = rotate(Number(end[0]), 2);
           break;
         }
 
@@ -575,6 +610,9 @@ class GridMap {
     }
   }
 
+  /**
+   * @param {{ x: number, y: number }} tile
+   */
   highlightTile(tile) {
     if (!tile) {
       this._highlightCube.visible = false;

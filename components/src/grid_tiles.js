@@ -1,3 +1,5 @@
+// @ts-check
+
 import {
   Mesh,
   Group,
@@ -18,9 +20,22 @@ import { rotate, normalizeRotation, angle, addColorToGeometry } from './utils';
 import { assert } from '../utils/assert';
 import { RandomGen } from './randomgen';
 
+/** @typedef {import('./lane').Lane} Lane */
+
+/**
+ * @typedef {Object} TileSideLanes
+ * @property {Lane?} incoming
+ * @property {Lane?} outgoing
+ */
+
 const DEBUG_TILES = false;
 const DEBUG_MOVEMENT = false;
 
+/**
+ * @typedef { 0 | 1 | 2 | 3 | 4 | 20 | 30 } TileTypes
+ */
+
+ /** @type {Object.<string,TileTypes>} */
 const TYPES = {
   PLAIN: 0,
   ROAD: 1,
@@ -109,7 +124,7 @@ function interpolerateStraightMovement(from, to, distance, rotation) {
   const isInv = from === 2 || from === 1;
 
   // now derive angle, x, y from it
-  const centerOfLane = (TILE_SIZE / 2) - (LANE_WIDTH / 2) + ((isInv ^ !isVert) ? LANE_WIDTH : 0);
+  const centerOfLane = (TILE_SIZE / 2) - (LANE_WIDTH / 2) + ((isInv !== !isVert) ? LANE_WIDTH : 0);
   const pos = isInv ? TILE_SIZE - distance : distance;
 
   return {
@@ -188,12 +203,20 @@ function adaptStreetObject(obj) {
 
 class Tile {
   constructor(type, rotation, baseOptions) {
+    /** @type {TileTypes} */
     this._type = type;
+
+    /** @type {number} */
     this._rotation = rotation;
 
     this._group = new Group();
     // this._group.receiveShadow = true;
     this._group.matrixAutoUpdate = false;
+
+    /** @type {THREE.BufferGeometry?} */
+    this._laneGeometry = null;
+    /** @type {THREE.BufferGeometry?} */
+    this._sideWalkGeometry = null;
 
     if (DEBUG_TILES || (baseOptions && baseOptions.drawBorders)) {
       const outlineShape = new Shape();
@@ -226,11 +249,20 @@ class Tile {
       this.add(mesh);
     }
 
+    /** @type {Array<Lane>} */
     this._ownLanes = [];
+
     this._lanes = {
+      /** @type {TileSideLanes?} */
       '0': null,
+
+      /** @type {TileSideLanes?} */
       '-1': null,
+
+      /** @type {TileSideLanes?} */
       '1': null,
+
+      /** @type {TileSideLanes?} */
       '2': null
     };
   }
@@ -383,10 +415,12 @@ class Tile {
     return 40;
   }
 
+  /** @returns {Array<0 | 1 | 2 | -1>} */
   entranceSides() {
     return [];
   }
 
+  /** @returns {Array<0 | 1 | 2 | -1>} */
   exitSides() {
     return [];
   }
@@ -440,6 +474,7 @@ class RoadTile extends Tile {
     }
   }
 
+  /** @returns {Array<0 | 1 | 2 | -1>} */
   entranceSides() {
     if ((Math.abs(this._rotation) % 2) === 0) {
       return [ 0, 2 ];
@@ -489,6 +524,7 @@ class CurveTile extends Tile {
     }
   }
 
+  /** @returns {Array<0 | 1 | 2 | -1>} */
   entranceSides() {
     if (this._rotation === 0) {
       return [ 1, 2 ];
@@ -550,6 +586,7 @@ class TSectionTile extends Tile {
     }
   }
 
+  /** @returns {Array<0 | 1 | 2 | -1>} */
   entranceSides() {
     if (this._rotation === 0) {
       return [ 0, 1, 2 ];
@@ -602,7 +639,7 @@ class TSectionTile extends Tile {
 
 class CrossTile extends Tile {
   constructor(rotation, { models, drawBorders }, options) {
-    super(TYPES.CROSS, rotation, { drawBorders }, options);
+    super(TYPES.CROSS, rotation, { drawBorders });
 
     const { street, sidewalk } = adaptStreetObject(models.streetCross);
 
@@ -623,6 +660,7 @@ class CrossTile extends Tile {
     }
   }
 
+  /** @returns {Array<0 | 1 | 2 | -1>} */
   entranceSides() {
     return [ -1, 0, 1, 2 ];
   }
@@ -694,7 +732,10 @@ class ForestTile extends Tile {
         const xOffset = rnd.integer(-7, 7);
         const yOffset = rnd.integer(hasSideDecoration ? -4 : -7, 7);
 
+        /** @type {THREE.Mesh?} */
         let trunk = null;
+
+        /** @type {THREE.Mesh?} */
         let leaves = null;
 
         t.traverse(child => {
@@ -713,8 +754,11 @@ class ForestTile extends Tile {
 
         assert(trunk && leaves);
 
-        const trunkGeometry = trunk.geometry.clone();
-        const leavesGeometry = leaves.geometry.clone();
+        /** @type {THREE.BufferGeometry} */
+        const trunkGeometry = (/** @type {THREE.BufferGeometry} */ trunk.geometry.clone());
+
+        /** @type {THREE.BufferGeometry} */
+        const leavesGeometry = (/** @type {THREE.BufferGeometry} */ leaves.geometry.clone());
 
         // Some models have the color attribute set, but this prevents the
         // geometries from being mergeable
@@ -826,6 +870,17 @@ const TILE_BY_TYPE = {
   [TYPES.FOREST]: ForestTile,
 
   [TYPES.HOUSE]: HouseTile
+};
+
+export {
+  Tile,
+  PlainTile,
+  RoadTile,
+  CurveTile,
+  TSectionTile,
+  CrossTile,
+  ForestTile,
+  HouseTile
 };
 
 export {

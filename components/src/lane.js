@@ -1,9 +1,30 @@
+// @ts-check
+
+/**
+ * @typedef {import('./grid_tiles').Tile} Tile
+ */
+
 class Lane {
   constructor() {
+    /** @type {Set<Tile>} */
     this._adjacentTiles = new Set();
+
+    /** @type {Set<Tile>} */
     this._includedTiles = new Set();
+
+    /** @type {Array<Tile>} */
+    this._includedTilesOrder = [];
+
+    /** @type {Array<number>} */
+    this._includedTilesDistances = [];
+
+    this._totalDistance = 0;
   }
 
+  /**
+   * @param {Lane} lane 
+   * @param {Tile} tile 
+   */
   _absorbConnections(lane, tile) {
     for (const d of Object.values(tile._lanes)) {
       if (!d) {
@@ -20,6 +41,9 @@ class Lane {
     }
   }
 
+  /**
+   * @param {Lane} lane 
+   */
   absorb(lane) {
     if (lane === this) {
       return;

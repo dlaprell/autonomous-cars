@@ -1,4 +1,4 @@
-import { TextureLoader, RepeatWrapping, MeshLambertMaterial, Mesh, DoubleSide, FrontSide, PlaneGeometry, BackSide } from 'three';
+import { TextureLoader, RepeatWrapping, MeshLambertMaterial, Mesh, PlaneGeometry, BackSide } from 'three';
 
 import { SimulationSceneElement } from './SimulationScene';
 

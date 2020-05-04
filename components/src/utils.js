@@ -1,16 +1,34 @@
+// @ts-check
 import { BufferAttribute, Color } from 'three';
+import { assert } from '../utils/assert';
 
+/**
+ * @param {number} v 
+ * @returns {0 | 1 | 2 | -1}
+ */
 function normalizeRotation(v) {
    const limited = v % 4;
-   return ((limited + 5) % 4) - 1;
+   const res = ((limited + 5) % 4) - 1;
+   assert(res === 0 || res === 1 || res === 2 || res === -1);
+   return res;
 } 
 
+/**
+ * @param {number} base
+ * @param {number} by
+ * @returns {0 | 1 | 2 | -1}
+ */
 function rotate(base, by) {
   return normalizeRotation(
     (((base + 1) + by) % 4) - 1
   );
 }
 
+/**
+ * @param {number} base
+ * @param {number} to
+ * @returns {0 | 1 | 2 | -1}
+ */
 function angle(base, to) {
   return rotate(to, -base);
 }

@@ -1,7 +1,20 @@
 // @ts-check
 import mitt from 'mitt';
 
+/**
+ * @template T
+ */
 class TimeProvider {
+  /**
+   * @typedef {Object} TimeProviderEvent
+   * @property {number} total
+   * @property {number} delta
+   * @property {T} context
+   */
+
+  /**
+   * @param {T?} context 
+   */
   constructor(context) {
     this._listeners = mitt();
 
@@ -11,6 +24,9 @@ class TimeProvider {
     this._loop = false;
   }
 
+  /**
+   * @param {T} context
+   */
   setContext(context) {
     this._context = context;
   }
@@ -28,21 +44,21 @@ class TimeProvider {
   }
 
   /**
-   * @param {function(any) : void} listener
+   * @param {function(TimeProviderEvent) : void} listener
    */
   registerBeforeFrame(listener) {
     this._listeners.on('beforeFrame', listener);
   }
 
   /**
-   * @param {function(any) : void} listener
+   * @param {function(TimeProviderEvent) : void} listener
    */
   registerOnFrame(listener) {
     this._listeners.on('frame', listener);
   }
 
   /**
-   * @param {function(any) : void} listener
+   * @param {function(TimeProviderEvent) : void} listener
    */
   registerAfterFrame(listener) {
     this._listeners.on('afterFrame', listener);
@@ -58,6 +74,7 @@ class TimeProvider {
 
     this._totalTime += time;
 
+    /** @type {TimeProviderEvent} */
     const event = {
       delta: time,
       total: this._totalTime,

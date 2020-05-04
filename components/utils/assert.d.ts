@@ -1,0 +1,1 @@
+export function assert(cond: any, msg?: string): asserts cond;

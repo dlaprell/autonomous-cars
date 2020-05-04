@@ -1,3 +1,4 @@
+// @ts-check
 /** @jsx h */
 
 import { h, Component, createContext } from 'preact';

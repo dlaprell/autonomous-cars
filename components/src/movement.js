@@ -1,3 +1,5 @@
+// @ts-check
+
 import { rotate } from './utils';
 import { assert } from '../utils/assert';
 import { TYPES } from './grid_tiles';
@@ -165,6 +167,7 @@ class RandomMovement extends GridMovementBase {
   constructor(grid, initialTile, random) {
     super(grid);
 
+    /** @type {import('./randomgen').RandomGen} */
     this._random = random;
 
     this._currentTile = initialTile;
@@ -197,12 +200,6 @@ class RandomMovement extends GridMovementBase {
   }
 
   getCurrentTileMovement() {
-    // const {
-    //   from,
-    //   to,
-    //   tile: [ xTile, yTile ]
-    // } = this._path.current();
-
     return {
       from: this._from,
       to: this._nextSteps[0],

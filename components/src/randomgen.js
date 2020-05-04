@@ -1,6 +1,13 @@
+// @ts-check
+
 import MersenneTwister from 'mersenne-twister';
 
 class NormalDistribution {
+  /**
+   * @param {RandomGen} random 
+   * @param {number} mean 
+   * @param {number} deviation 
+   */
   constructor(random, mean, deviation = 1) {
     this._random = random;
     this._mean = mean;
@@ -9,6 +16,9 @@ class NormalDistribution {
     this._spare = null;
   }
 
+  /**
+   * @returns {number}
+   */
   value() {
     let x = this._spare;
     this._spare = null;
@@ -52,14 +62,22 @@ class RandomGen {
   }
 
   bool() {
-    return this._mt.bool();
+    return Math.round(this._mt.random()) === 1;
   }
 
+  /**
+   * @param {number} min
+   * @param {number} max
+   * @returns {number}
+   */
   integer(min, max) {
     const diff = max - min;
     return min + Math.round(diff * this._mt.random());
   }
 
+  /**
+   * @returns {number}
+   */
   random() {
     return this._mt.random();
   }

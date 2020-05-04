@@ -1,6 +1,6 @@
 /** @jsx h */
 
-import { Scene, Group, AmbientLight, PointLight, DirectionalLight, SpotLight, CameraHelper } from 'three';
+import { Scene, Group, AmbientLight, SpotLight } from 'three';
 import { h, Component, createContext } from 'preact';
 
 import { SimulationRenderer } from './SimulationRenderer';

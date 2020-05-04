@@ -2,21 +2,23 @@
 import { BufferAttribute, Color } from 'three';
 import { assert } from '../utils/assert';
 
+/** @typedef {import('./grid_tiles').TileOrientation} TileOrientation */
+
 /**
- * @param {number} v 
- * @returns {0 | 1 | 2 | -1}
+ * @param {number} v
+ * @returns {TileOrientation}
  */
 function normalizeRotation(v) {
    const limited = v % 4;
    const res = ((limited + 5) % 4) - 1;
    assert(res === 0 || res === 1 || res === 2 || res === -1);
    return res;
-} 
+}
 
 /**
  * @param {number} base
  * @param {number} by
- * @returns {0 | 1 | 2 | -1}
+ * @returns {TileOrientation}
  */
 function rotate(base, by) {
   return normalizeRotation(
@@ -27,7 +29,7 @@ function rotate(base, by) {
 /**
  * @param {number} base
  * @param {number} to
- * @returns {0 | 1 | 2 | -1}
+ * @returns {TileOrientation}
  */
 function angle(base, to) {
   return rotate(to, -base);

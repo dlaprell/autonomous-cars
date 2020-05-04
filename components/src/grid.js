@@ -24,6 +24,7 @@ import { Lane } from './lane';
 /** @typedef {import('./grid_tiles').Tile} Tile */
 /** @typedef {import('./grid_tiles').ForestTile} ForestTile */
 /** @typedef {import('./grid_tiles').TileTypes} TileTypes */
+/** @typedef {import('./grid_tiles').TileBaseData} TileBaseData */
 
 /**
  * @typedef {Object} TileData
@@ -31,7 +32,7 @@ import { Lane } from './lane';
  * @property {number} y
  * @property {number} generation
  * @property {Tile} tile
- * @property {[ TileTypes, number, Object]} originalData
+ * @property {TileBaseData} originalData
  */
 
 const sideWalkMaterial = new MeshLambertMaterial({

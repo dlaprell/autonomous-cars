@@ -31,11 +31,13 @@ import { RandomGen } from './randomgen';
 const DEBUG_TILES = false;
 const DEBUG_MOVEMENT = false;
 
-/**
- * @typedef { 0 | 1 | 2 | 3 | 4 | 20 | 30 } TileTypes
- */
+/** @typedef { 0 | 1 | 2 | 3 | 4 | 20 | 30 } TileTypes */
 
- /** @type {Object.<string,TileTypes>} */
+/** @typedef { 0 | 1 | 2 | -1} TileOrientation */
+
+/** @typedef {[ TileTypes, TileOrientation, Object ]} TileBaseData */
+
+/** @type {Object.<string,TileTypes>} */
 const TYPES = {
   PLAIN: 0,
   ROAD: 1,
@@ -202,11 +204,13 @@ function adaptStreetObject(obj) {
 }
 
 class Tile {
+  /**
+   * @param {TileTypes} type
+   * @param {TileOrientation} rotation
+   * @param {Object} baseOptions
+   */
   constructor(type, rotation, baseOptions) {
-    /** @type {TileTypes} */
     this._type = type;
-
-    /** @type {number} */
     this._rotation = rotation;
 
     this._group = new Group();
@@ -252,17 +256,11 @@ class Tile {
     /** @type {Array<Lane>} */
     this._ownLanes = [];
 
+    /** @type {Object.<TileOrientation, TileSideLanes?>} */
     this._lanes = {
-      /** @type {TileSideLanes?} */
       '0': null,
-
-      /** @type {TileSideLanes?} */
       '-1': null,
-
-      /** @type {TileSideLanes?} */
       '1': null,
-
-      /** @type {TileSideLanes?} */
       '2': null
     };
   }

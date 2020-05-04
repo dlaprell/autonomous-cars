@@ -1,6 +1,7 @@
 // @ts-check
 
 import standardWorld from './standard.json';
+import { shuffleArray, pickRandomEntries } from '../utils/array';
 
 /** @typedef {import('../src/grid_tiles').TileBaseData} TileBaseData */
 /** @typedef {Array<Array<TileBaseData>>} MapData */
@@ -51,7 +52,7 @@ function removeNoDriver(world) {
     map: world.map,
     cars: world.cars
       .map(car => {
-        if (!car.options.noDriver && !car.options.noHead) {
+        if (!car.options.noDriver) {
           return car;
         }
 
@@ -59,8 +60,7 @@ function removeNoDriver(world) {
           ...car,
           options: {
             ...car.options,
-            noDriver: false,
-            noHead: false
+            noDriver: false
           }
         };
       })
@@ -95,17 +95,20 @@ function removeTargets(world) {
   };
 }
 
+/** @typedef {"noDriver" | "target" | "targetAndNoDriver" | "bare"} RunConfig */
+
 function getAllPossibleWorlds() {
+  /** @type {Object.<RunConfig, Array<WorldData>>} */
   const worlds = {
     noDriver: [],
     target: [],
-    noDriverAndTarget: [],
+    targetAndNoDriver: [],
     bare: []
   };
 
   worlds.noDriver.push(...worldsWithNoDriver);
   worlds.target.push(...worldsWithTarget);
-  worlds.noDriverAndTarget.push(...worldsWithTargetAndNoDriver);
+  worlds.targetAndNoDriver.push(...worldsWithTargetAndNoDriver);
   worlds.bare.push(...worldsBare);
 
   worlds.noDriver.push(...worldsWithTargetAndNoDriver.map(removeTargets));
@@ -116,4 +119,34 @@ function getAllPossibleWorlds() {
   worlds.bare.push(...worldsWithTargetAndNoDriver.map(removeNoDriver).map(removeTargets));
 
   return worlds;
+}
+
+/** @typedef {{ name: string, config: RunConfig, world: WorldData }} RunData */
+
+// Small helper to extract `count` entries if possible and otherwise the most entries
+// we can get
+function pickAtMostRandomEntries(count, base) {
+  return pickRandomEntries(Math.min(count, base.length), base);
+}
+
+export function extractWorldsForRuns() {
+  // These should be selected at random
+  /** @type {Object.<RunConfig, Array<WorldData>>} */
+  const poss = getAllPossibleWorlds();
+
+  /** @type {Array<RunData>} */
+  const runs = [];
+
+  // TODO: Add for variant 1, 2, 3, 4, 5, 6
+  // runs.push(...pickAtMostRandomEntries(10, < array >))
+
+  for (const [ c, entries ] of Object.entries(poss)) {
+    /** @type {RunConfig} */
+    const config = (/** @type {RunConfig} */ c);
+
+    runs.push(...pickAtMostRandomEntries(10, entries).map(w => ({ config, name: '', world: w })));
+  }
+
+  // Finally, shuffle again to change the order of the
+  return shuffleArray(runs);
 }

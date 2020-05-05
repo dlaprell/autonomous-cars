@@ -502,7 +502,7 @@ class MovingCar extends SimulationSceneElement {
     const color = options.color || colors[random.integer(0, colors.length - 1)];
     const { driver, driverHeadless, frontSeats, windows, car } = adaptCar(this._carObject, color);
 
-    if (options.noDriver) {
+    if (options.noDriver || following) {
       driver.visible = false;
       driverHeadless.visible = false;
     }

@@ -10,6 +10,7 @@ import Home from './HomePage';
 import Creator from './CreatorPage';
 import Recorder from './RecorderPage';
 import SurveyPage from './SurveyPage';
+import NotFound from './NotFoundPage';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -22,6 +23,8 @@ function Main({ root }) {
         {!isProd && <Creator path="/creator" root={root} />}
         {!isProd && <Recorder path="/recorder" root={root} />}
         {!isProd && <SurveyPage path="/survey" root={root} />}
+
+        <NotFound default />
       </Router>
       <style jsx global>{`
         html {

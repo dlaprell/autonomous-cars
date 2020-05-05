@@ -8,6 +8,7 @@ import replace from '@rollup/plugin-replace';
 import serve from 'rollup-plugin-serve';
 import livereload from 'rollup-plugin-livereload';
 import alias from '@rollup/plugin-alias';
+import strip from '@rollup/plugin-strip';
 import { terser } from 'rollup-plugin-terser';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -53,6 +54,9 @@ export default {
       delimiters: ['', ''],
 
       [`import "preact/debug";`]: ''
+    }) : null,
+    isProd ? strip({
+      functions: ['assert']
     }) : null,
     replace({
       delimiters: ['' , ''],

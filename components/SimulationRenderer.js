@@ -34,6 +34,7 @@ class SimulationRenderer extends Component {
     }
 
     this._renderer.xr.enabled = vr;
+    this._renderer.toneMappingExposure = 1.5;
 
     const { creatorView } = this.props;
     this._camera = new PerspectiveCamera(20, 1, .1, creatorView ? 2500 : 750 );

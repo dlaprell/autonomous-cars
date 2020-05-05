@@ -1,6 +1,6 @@
 // @ts-check
 
-import { rotate } from './utils';
+import { rotate, getRelativeFrom } from './utils';
 import { assert } from '../utils/assert';
 import { TYPES } from './grid_tiles';
 
@@ -67,7 +67,7 @@ class GridMovementBase {
   previousTile() {
     const { tile, from } = this.getCurrentTileMovement();
 
-    const [ x, y ] = this._grid.getRelativeFrom(tile[0], tile[1], from);
+    const [ x, y ] = getRelativeFrom(tile[0], tile[1], from);
     return this._grid.getTileAt(x, y);
   }
 
@@ -79,7 +79,7 @@ class GridMovementBase {
   targetTile() {
     const { to, tile } = this.getCurrentTileMovement();
 
-    const [ x, y ] = this._grid.getRelativeFrom(tile[0], tile[1], to);
+    const [ x, y ] = getRelativeFrom(tile[0], tile[1], to);
     return this._grid.getTileAt(x, y);
   }
 
@@ -175,7 +175,7 @@ class RandomMovement extends GridMovementBase {
 
     const to = this.randomTo(initialTile[0], initialTile[1], this._from);
     const next = this.randomTo(
-      ...grid.getRelativeFrom(initialTile[0], initialTile[1], to),
+      ...getRelativeFrom(initialTile[0], initialTile[1], to),
       rotate(to, 2)
     );
 
@@ -218,13 +218,13 @@ class RandomMovement extends GridMovementBase {
     const [ x, y ] = this._currentTile;
     const [ reached, newDir ] = this._nextSteps;
 
-    const nT = this.grid().getRelativeFrom(x, y, reached);
+    const nT = getRelativeFrom(x, y, reached);
 
     // Update tile to the next in line
     this._currentTile = nT;
     this._from = rotate(reached, 2);
 
-    const [ nX, nY ] = this.grid().getRelativeFrom(nT[0], nT[1], newDir);
+    const [ nX, nY ] = getRelativeFrom(nT[0], nT[1], newDir);
     const futureDir = this.randomTo(nX, nY, rotate(newDir, 2));
 
     this._nextSteps = [ newDir, futureDir ];
@@ -256,7 +256,7 @@ class PathMovement extends GridMovementBase {
 
     this._currentIndex = 0;
 
-    const [ nextX, nextY ] = grid.getRelativeFrom(initial[0], initial[1], path[0]);
+    const [ nextX, nextY ] = getRelativeFrom(initial[0], initial[1], path[0]);
     this._nextTile = grid.getTileAt(nextX, nextY).tile;
   }
 
@@ -293,13 +293,13 @@ class PathMovement extends GridMovementBase {
       : this._path[this._currentIndex];
 
     this._current = {
-      tile: this._grid.getRelativeFrom(curTile[0], curTile[1], curTo),
+      tile: getRelativeFrom(curTile[0], curTile[1], curTo),
 
       from,
       to
     };
 
-    const next = this._grid.getRelativeFrom(this._current.tile[0], this._current.tile[1], to);
+    const next = getRelativeFrom(this._current.tile[0], this._current.tile[1], to);
     this._nextTile = this._grid.getTileAt(...next).tile;
   }
 }

@@ -56,10 +56,27 @@ function addColorToGeometry(geometry, c) {
   geometry.setAttribute('color', colorAttrib);
 }
 
+function getRelativeFrom(x, y, dir, steps = 1) {
+  assert(dir === 0 || dir === 1 || dir === 2 || dir === -1);
+
+  // const anchor = this.getTileAt(x, y);
+  steps *= (dir === 0 || dir === -1) ? -1 : 1;
+
+  if (dir === 0 || dir === 2) {
+    y += steps;
+  } else {
+    x += steps;
+  }
+
+  return [ x, y ];
+}
+
 export {
   normalizeRotation,
   rotate,
   angle,
+
+  getRelativeFrom,
 
   addColorToGeometry
 };

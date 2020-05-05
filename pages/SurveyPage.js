@@ -2,7 +2,7 @@
 
 /** @jsx h */
 
-import { h, Component, Fragment } from 'preact';
+import { h, Component } from 'preact';
 import { extractWorldsForRuns } from '../components/worlds/WorldSelector';
 
 import { Content } from './survey/Ui';
@@ -10,6 +10,7 @@ import { assert } from '../components/utils/assert';
 import { Simulation } from '../components/Simulation';
 import RunResult from './survey/RunResult';
 import loadModels from '../components/models/ModelLoader';
+import { GridMap } from '../components/src/grid';
 
 const languages = {
   de: {},
@@ -27,6 +28,27 @@ function getUserLanguages() {
     (navigator.userLanguage ? [ navigator.userLanguage ] : null) ||
     [ 'en' ]
   );
+}
+
+function preLoadNextRun({ curRun, runs, models }) {
+  if (curRun !== null && curRun >= runs.length - 1) {
+    return { preLoadGrid: null, preLoadedRun: null };
+  }
+
+  const preLoadedRun = curRun === null ? 0 : curRun + 1;
+
+  const r = runs[preLoadedRun];
+
+  const preLoadGrid = new GridMap(
+    models,
+    {
+      baseMap: r.world.map,
+      creatorView: false,
+      asyncInit: true
+    }
+  );
+
+  return { preLoadGrid, preLoadedRun };
 }
 
 export default class SurveyPage extends Component {
@@ -51,6 +73,8 @@ export default class SurveyPage extends Component {
     /** @type {Array<boolean | null>} */
     const runResults = new Array(runs.length).fill(null);
 
+    this._forestCache = null;
+
     this.state = {
       languageData,
 
@@ -60,6 +84,9 @@ export default class SurveyPage extends Component {
       modelsLoaded: false,
       modelsError: null,
 
+      preLoadedRun: null,
+      preLoadGrid: null,
+
       runs,
       curRun: null,
       curRunFinished: false,
@@ -67,24 +94,57 @@ export default class SurveyPage extends Component {
     };
 
     this.skipIntro = () => {
-      this.setState({ intro: false, curRun: 0 });
+      this.setState(st => {
+        let { preLoadGrid, preLoadedRun, models, runs } = st;
+
+        if (preLoadedRun !== null) {
+          assert(preLoadedRun === 0);
+          preLoadGrid.ensureReady();
+        } else {
+          preLoadedRun = 0;
+          preLoadGrid = new GridMap(models, {
+            creatorView: false,
+            baseMap: runs[0].world.map,
+            asyncInit: false
+          });
+        }
+
+        return {
+          intro: false,
+          curRun: 0,
+          preLoadGrid,
+          preLoadedRun: 0
+        };
+      });
     };
 
     this.handleSimulationStop = () => {
-      this.setState({ curRunFinished: true });
+      this.setState(({ curRun, runs, models }) => {
+        const up = preLoadNextRun({ curRun, runs, models });
+
+        return {
+          ...up,
+          curRunFinished: true
+        };
+      });
     };
 
     this.moveToNextRun = (result) => {
-      const { curRun, runResults } = this.state;
+      this.setState(({ curRun, runResults, preLoadGrid, preLoadedRun }) => {
 
-      // TODO: collect results and update
-      const updatedResults = [ ...runResults ];
-      updatedResults[curRun] = result;
+        const updatedResults = [ ...runResults ];
+        updatedResults[curRun] = result;
 
-      this.setState({
-        curRun: curRun + 1,
-        curRunFinished: false,
-        runResults: updatedResults
+        if (preLoadGrid !== null) {
+          assert(preLoadedRun === curRun + 1);
+          preLoadGrid.ensureReady();
+        }
+
+        return {
+          curRun: curRun + 1,
+          curRunFinished: false,
+          runResults: updatedResults
+        };
       });
     }
   }
@@ -101,7 +161,20 @@ export default class SurveyPage extends Component {
       onProgress: () => {},
 
       onLoad: (models) => {
+        this._forestCache = null;
+
+        let preL = {};
+        if (this.state.intro) {
+          preL = preLoadNextRun({
+            curRun: this.state.curRun,
+            runs: this.state.runs,
+            models
+          });
+        }
+
         this.setState({
+          ...preL,
+
           models,
           modelsLoaded: true
         });
@@ -117,6 +190,9 @@ export default class SurveyPage extends Component {
       runs,
       curRunFinished,
       runResults,
+
+      preLoadGrid,
+      preLoadedRun,
 
       models,
       modelsError,
@@ -152,13 +228,22 @@ export default class SurveyPage extends Component {
         );
       }
 
+      if (this._forestCache !== null) {
+        this._forestCache.cancel();
+        this._forestCache = null;
+      }
+
       const { world } = runs[curRun];
 
       if (!curRunFinished) {
+        assert(preLoadGrid);
+        assert(preLoadedRun === curRun);
+
         return (
           <Simulation
             withTraffic
             world={world}
+            preLoadedGrid={preLoadGrid}
             stopAfter={40000}
             models={models}
             onStop={this.handleSimulationStop}

@@ -91,6 +91,8 @@ class Simulation extends Component {
       container,
       sceneRef,
 
+      preLoadedGrid,
+
       creatorView,
       highlightTile,
       renderOptions,
@@ -116,11 +118,15 @@ class Simulation extends Component {
     if (this._grid === null || this._gridMap !== world.map) {
       if (this._grid) {
         this._grid.updateBaseMap(world.map);
+        this._grid.ensureReady();
+      } else if (preLoadedGrid) {
+        this._grid = preLoadedGrid;
+        preLoadedGrid.ensureReady();
       } else {
         this._grid = new GridMap(
           models,
           {
-            withLanes: withTraffic && !creatorView,
+            asyncInit: false,
             baseMap: world.map,
             creatorView
           }

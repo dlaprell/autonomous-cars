@@ -1,17 +1,17 @@
 /** @jsx h */
-import { h, Component } from 'preact';
+import { h, Component, Fragment } from 'preact';
 
-import { Option, SelectOption, CheckBoxOption } from './UiComponents';
-import { rotate } from '../../components/src/utils';
+import { RotationOption, SelectOption, CheckBoxOption, Option } from './UiComponents';
+import { assert } from '../../components/utils/assert';
 
 const types = {
   'plain': { value: 0, name: 'Grass' },
-  'road': { value: 1, name: 'Street', streetSides: [ 0, 2 ] },
+  'road': { value: 1, name: 'Street', streetSides: [ 0, 2 ], decorationLocations: [ 'topLeft', 'bottomLeft' ] },
   'curve': { value: 2, name: 'Curve', streetSides: [ 1, 2 ] },
-  'tsection': { value: 3, name: 'T - Intersection', streetSides: [ 0, 1, 2 ] },
+  'tsection': { value: 3, name: 'T - Intersection', streetSides: [ 0, 1, 2 ], decorationLocations: [ 'topLeft', 'bottomLeft' ] },
   'cross': { value: 4, name: 'Cross', streetSides: [ 0, 1, 2, -1 ] },
-  'forest': { value: 20, name: 'Forest' },
-  'house': { value: 30, name: 'House' }
+  'forest': { value: 20, name: 'Forest', decorationLocations: [ 'topLeft', 'topRight' ] },
+  'house': { value: 30, name: 'House', decorationLocations: [ 'topLeft', 'topRight' ] }
 }
 
 const typesByValue = Object
@@ -21,72 +21,148 @@ const typesByValue = Object
       .map(a => [ a.value, a ])
   );
 
-class RotationOption extends Component {
+const decorationTypes = {
+  trashcan: {
+    name: 'Trashcan'
+  },
+  bench: {
+    name: 'Bench'
+  }
+};
+
+function extractDecorationOptions(tile) {
+  const { bench, trashCan, decorations } = (tile[2] || {});
+
+  if (decorations) {
+    return decorations;
+  }
+
+  const type = typesByValue[tile[0]];
+  if (!type.decorationLocations || type.decorationLocations.length === 0) {
+    return {};
+  }
+
+  const dec = {};
+
+  for (const side of type.decorationLocations) {
+    dec[side] = null;
+  }
+
+  if (bench) {
+    let side;
+
+    // top right for forest / house; road bottom left
+    if (type.value === types.road.value || type.value === types.tsection.value) {
+      side = 'bottomLeft';
+    } else {
+      side = 'topRight';
+    }
+
+    dec[side] = {
+      type: 'bench',
+      ...(bench && typeof bench === 'object' ? bench : {})
+    };
+  }
+
+  if (trashCan) {
+    let side;
+
+    if (type.value === types.road.value || type.value === types.tsection.value) {
+      side = 'topLeft';
+    } else {
+      side = 'topLeft';
+    }
+
+    dec[side] = {
+      type: 'trashcan',
+      ...(trashCan && typeof trashCan === 'object' ? trashCan : {})
+    };
+  }
+
+  return dec;
+}
+
+class DecorationOptions extends Component {
   constructor(...args) {
     super(...args);
 
-    this.handleRotateLeft = () => {
-      const { rotation, onChange } = this.props;
+    this.handleTypeChange = (evt) => {
+      const { location, onChange } = this.props;
+      const { value } = evt.target;
 
-      if (onChange) {
-        onChange(rotate(rotation, -1));
+      if (!onChange) {
+        return;
       }
+
+      onChange(
+        value === '' ? null : { type: value },
+        location
+      )
     };
 
-    this.handleRotateRight = () => {
-      const { rotation, onChange } = this.props;
+    this.handleOptionChange = (evt) => {
+      const { options, type, location, onChange } = this.props;
 
-      if (onChange) {
-        onChange(rotate(rotation, 1));
+      if (!onChange) {
+        return;
       }
-    };
 
-    this.handleRotationChange = (evt) => {
-      const { onChange } = this.props;
+      const newOpt = { type };
 
-      if (onChange) {
-        onChange(Number(evt.target.value));
+      if (!evt.target) {
+        newOpt.rotation = evt;
+      } else {
+        const [ _, name ] = evt.target.name.split('.');
+
+        let { type, value, checked } = evt.target;
+        if (type === 'checkbox') {
+          value = checked;
+        }
+
+        newOpt[name] = value;
       }
+
+      onChange({ ...options, ...newOpt }, location);
     };
   }
 
   render() {
-    const { rotation } = this.props;
+    const { options, type, location } = this.props;
+
+    assert(Boolean(options) === Boolean(type));
 
     return (
-      <Option label="Orientation">
-        <div className="wrapper">
-          <select value={rotation} onChange={this.handleRotationChange}>
-            <option value={0}>0°</option>
-            <option value={-1}>-90°</option>
-            <option value={1}>90°</option>
-            <option value={2}>180°</option>
-          </select>
+      <div>
+        <SelectOption
+          label="Decoration"
+          name={`${location}.type`}
+          value={type || ''}
+          choices={[
+            { value: '', name: 'None' },
+            ...Object.entries(decorationTypes).map(a => ({ value: a[0], name: a[1].name }))
+          ]}
+          onChange={this.handleTypeChange}
+        />
 
-          <button type="button" onClick={this.handleRotateLeft}>
-            {"\u27f2"}
-          </button>
-          <button type="button" onClick={this.handleRotateRight}>
-            {"\u27f3"}
-          </button>
-        </div>
+        {options && (
+          <Fragment>
+            <CheckBoxOption
+              label=""
+              value={Boolean(options.target)}
+              checkedText="Target"
+              name={`${location}.target`}
+              onChange={this.handleOptionChange}
+            />
 
-        <style jsx>{`
-          .wrapper {
-            display: flex;
-            flex-direction: row;
-          }
-
-          select {
-            flex: 1;
-            margin-right: 6px;
-          }
-
-          button {
-            flex: 0 0 auto;
-          }
-        `}</style>
-      </Option>
+            <RotationOption
+              label=""
+              rotation={typeof options.rotation === 'number' ? options.rotation : 0}
+              name={`${location}.rotation`}
+              onChange={this.handleOptionChange}
+            />
+          </Fragment>
+        )}
+      </div>
     );
   }
 }
@@ -185,6 +261,28 @@ class TileOptions extends Component {
         }
       }
     }
+
+    this.handleDecorationChange = (options, location) => {
+      const { tile, onChange } = this.props;
+
+      const dec = extractDecorationOptions(tile);
+
+      if (onChange) {
+        onChange([
+          tile[0],
+          tile[1],
+          {
+            ...(tile[2] || {}),
+
+            decorations: {
+              ...dec,
+
+              [location]: options
+            }
+          }
+        ]);
+      }
+    };
   }
 
   render() {
@@ -199,6 +297,8 @@ class TileOptions extends Component {
     const streetSides = (typesByValue[type].streetSides || []);
     const signs = options.signs || [];
 
+    const dec = extractDecorationOptions(tile);
+
     return (
       <div>
         <SelectOption
@@ -210,61 +310,29 @@ class TileOptions extends Component {
         />
 
         <RotationOption
+          name="rotation"
           rotation={rotation}
           onChange={this.handleRotationChange}
         />
 
-        <div className="spacer" />
+        {type === types.house.value && (
+          <Fragment>
+            <div className="spacer" />
 
-        <CheckBoxOption
-          label="Trashcan"
-          value={Boolean(options.trashCan)}
-          checkedText="Show"
-          disabled={disDecorations}
-          name="trashCan"
-          onChange={this.handleOptionChange}
-        />
-
-        <CheckBoxOption
-          label=""
-          value={Boolean(options.trashCan && options.trashCan.target)}
-          checkedText="Target"
-          disabled={disDecorations || !options.trashCan}
-          name="trashCan.target"
-          onChange={this.handleOptionChange}
-        />
-
-        <CheckBoxOption
-          label="Bench"
-          value={Boolean(options.bench)}
-          checkedText="Show"
-          disabled={disDecorations}
-          name="bench"
-          onChange={this.handleOptionChange}
-        />
-
-        <CheckBoxOption
-          label=""
-          value={Boolean(options.bench && options.bench.target)}
-          checkedText="Target"
-          disabled={disDecorations || !options.bench}
-          name="bench.target"
-          onChange={this.handleOptionChange}
-        />
-
-        <SelectOption
-          label="House Type"
-          name="type"
-          value={options.type || 'Simple'}
-          disabled={type !== types.house.value}
-          choices={[
-            { value: 'Simple' },
-            { value: 'Flat' },
-            { value: 'Double' },
-            { value: 'Bungalow' }
-          ]}
-          onChange={this.handleOptionChange}
-        />
+            <SelectOption
+              label="House Type"
+              name="type"
+              value={options.type || 'Simple'}
+              choices={[
+                { value: 'Simple' },
+                { value: 'Flat' },
+                { value: 'Double' },
+                { value: 'Bungalow' }
+              ]}
+              onChange={this.handleOptionChange}
+            />
+          </Fragment>
+        )}
 
         <div className="spacer" />
 
@@ -298,6 +366,22 @@ class TileOptions extends Component {
             />
           );
         })}
+
+        {Object.entries(dec).map(([ location, options ]) => (
+          <div key={location}>
+            <div className="spacer" />
+            <Option>
+              <h5>Decoration {location}</h5>
+            </Option>
+
+            <DecorationOptions
+              location={location}
+              type={options ? options.type : ''}
+              options={options}
+              onChange={this.handleDecorationChange}
+            />
+          </div>
+        ))}
 
         <style jsx>{`
           .spacer {

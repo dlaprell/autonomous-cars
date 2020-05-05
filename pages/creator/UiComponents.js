@@ -1,5 +1,6 @@
 /** @jsx h */
-import { h } from 'preact';
+import { h, Component } from 'preact';
+import { rotate } from '../../components/src/utils';
 
 function Option({ label, children }) {
   return (
@@ -79,8 +80,79 @@ function CheckBoxOption({ label, name, disabled, checkedText, value, onChange })
   );
 }
 
+class RotationOption extends Component {
+  constructor(...args) {
+    super(...args);
+
+    this.handleRotateLeft = () => {
+      const { rotation, onChange } = this.props;
+
+      if (onChange) {
+        onChange(rotate(rotation, -1));
+      }
+    };
+
+    this.handleRotateRight = () => {
+      const { rotation, onChange } = this.props;
+
+      if (onChange) {
+        onChange(rotate(rotation, 1));
+      }
+    };
+
+    this.handleRotationChange = (evt) => {
+      const { onChange } = this.props;
+
+      if (onChange) {
+        onChange(Number(evt.target.value));
+      }
+    };
+  }
+
+  render() {
+    const { rotation, name, label } = this.props;
+
+    return (
+      <Option label={label || 'Orientation'}>
+        <div className="wrapper">
+          <select value={rotation} onChange={this.handleRotationChange} name={name}>
+            <option value={0}>0°</option>
+            <option value={-1}>-90°</option>
+            <option value={1}>90°</option>
+            <option value={2}>180°</option>
+          </select>
+
+          <button type="button" onClick={this.handleRotateLeft}>
+            {"\u27f2"}
+          </button>
+          <button type="button" onClick={this.handleRotateRight}>
+            {"\u27f3"}
+          </button>
+        </div>
+
+        <style jsx>{`
+          .wrapper {
+            display: flex;
+            flex-direction: row;
+          }
+
+          select {
+            flex: 1;
+            margin-right: 6px;
+          }
+
+          button {
+            flex: 0 0 auto;
+          }
+        `}</style>
+      </Option>
+    );
+  }
+}
+
 export {
   Option,
   SelectOption,
+  RotationOption,
   CheckBoxOption
 };

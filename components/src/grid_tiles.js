@@ -203,6 +203,50 @@ function adaptStreetObject(obj) {
   return objs;
 }
 
+
+function extractDecorationOptions(tileType, options) {
+  const { bench, trashCan, decorations } = (options || {});
+
+  if (decorations) {
+    return decorations;
+  }
+
+  const dec = {};
+
+  if (bench) {
+    let side;
+
+    // top right for forest / house; road bottom left
+    if (tileType === TYPES.ROAD || tileType === TYPES.T_SECTION) {
+      side = 'bottomLeft';
+    } else {
+      side = 'topRight';
+    }
+
+    dec[side] = {
+      type: 'bench',
+      ...(bench && typeof bench === 'object' ? bench : {})
+    };
+  }
+
+  if (trashCan) {
+    let side;
+
+    if (tileType === TYPES.ROAD || tileType === TYPES.T_SECTION) {
+      side = 'topLeft';
+    } else {
+      side = 'topLeft';
+    }
+
+    dec[side] = {
+      type: 'trashcan',
+      ...(trashCan && typeof trashCan === 'object' ? trashCan : {})
+    };
+  }
+
+  return dec;
+}
+
 class Tile {
   /**
    * @param {TileTypes} type
@@ -265,57 +309,46 @@ class Tile {
     };
   }
 
-  addBench(models, options = {}, inner = false) {
-    const obj = (
-      options.target
-        ? models.benchTarget
-        : models.bench
-    ).clone();
-
-    obj.rotation.x = Math.PI;
-
-    if (inner) {
-      obj.rotation.z = Math.PI;
-
-      obj.position.x -= 6;
-      obj.position.y += 3;
-    } else {
-      obj.rotation.z = -Math.PI / 2;
-
-      obj.position.y -= 6;
-      obj.position.x += 3;
-    }
-
-    obj.castShadow = true;
-    obj.traverse(child => {
-      if (child.isMesh) {
-        child.castShadow = true;
+  addDecorations(models, options, inner = false) {
+    const opt = extractDecorationOptions(this._type, options);
+    for (const [ location, o ] of Object.entries(opt)) {
+      if (!o) {
+        continue;
       }
-    });
 
-    obj.updateWorldMatrix(true, false);
-    obj.matrixAutoUpdate = false;
-
-    this.add(obj);
+      this.addDecoration(models, location, o, inner);
+    }
   }
 
-  addTrashCan(models, options = {}, inner = false) {
-    const obj = (
-      options.target
-        ? models.trashcanTarget
-        : models.trashcan
-    ).clone();
+  addDecoration(models, location, options, inner = false) {
+    assert(location === 'bottomLeft' || location === 'topLeft' || location === 'topRight');
+    assert(options.type === 'bench' || options.type === 'trashcan');
+
+    const rot = typeof options.rotation === 'number' ? options.rotation : 0;
+
+    const obj = models[`${options.type}${options.target ? 'Target' : ''}`].clone();
 
     obj.rotation.x = Math.PI;
+    obj.rotation.z = options.type === 'bench'
+      ? (inner ? Math.PI : -Math.PI / 2)
+      : (inner ? 0 : Math.PI / 2);
 
-    if (inner) {
+    obj.rotation.z += rot * (Math.PI / 2);
+
+    if (location === 'bottomLeft') {
       obj.position.x -= 6;
-      obj.position.y -= 3;
-    } else {
-      obj.rotation.z = Math.PI / 2;
-
-      obj.position.y -= 6;
+      obj.position.y += 3;
+    } else if (location === 'topLeft') {
+      if (inner) {
+        obj.position.x -= 6;
+        obj.position.y -= 3;
+      } else {
+        obj.position.x += 3;
+        obj.position.y -= 6;
+      }
+    } else if (location === 'topRight') {
       obj.position.x -= 3;
+      obj.position.y -= 6;
     }
 
     obj.castShadow = true;
@@ -457,13 +490,7 @@ class RoadTile extends Tile {
     this._sideWalkGeometry = sidewalk.geometry.clone();
     this._sideWalkGeometry.applyMatrix4(sidewalk.matrixWorld);
 
-    if (options.bench) {
-      this.addBench(models, options.bench, true);
-    }
-
-    if (options.trashCan) {
-      this.addTrashCan(models, options.trashCan, true);
-    }
+    this.addDecorations(models, options, true);
 
     if (options.signs) {
       for (const { type, side, options: signOptions } of options.signs) {
@@ -569,13 +596,7 @@ class TSectionTile extends Tile {
     this._sideWalkGeometry = sidewalk.geometry.clone();
     this._sideWalkGeometry.applyMatrix4(sidewalk.matrixWorld);
 
-    if (options.bench) {
-      this.addBench(models, options.bench, true);
-    }
-
-    if (options.trashCan) {
-      this.addTrashCan(models, options.trashCan, true);
-    }
+    this.addDecorations(models, options, true);
 
     if (options.signs) {
       for (const { type, side, options: signOptions } of options.signs) {
@@ -710,13 +731,7 @@ class ForestTile extends Tile {
 
     this._forestGeometries = getForestGeometriesCached(rnd.integer(0, 10000), models);
 
-    if (options.bench) {
-      this.addBench(models, options.bench);
-    }
-
-    if (options.trashCan) {
-      this.addTrashCan(models, options.trashCan);
-    }
+    this.addDecorations(models, options, false);
   }
 
   getForestGeometry() {
@@ -763,13 +778,7 @@ class HouseTile extends Tile {
 
     this.add(house);
 
-    if (options.bench) {
-      this.addBench(models, options.bench);
-    }
-
-    if (options.trashCan) {
-      this.addTrashCan(models, options.trashCan);
-    }
+    this.addDecorations(models, options, false);
   }
 }
 
@@ -777,13 +786,7 @@ class PlainTile extends Tile {
   constructor(rotation, { drawBorders, models }, options) {
     super(TYPES.PLAIN, rotation, { drawBorders });
 
-    if (options.bench) {
-      this.addBench(models, options.bench);
-    }
-
-    if (options.trashCan) {
-      this.addTrashCan(models, options.trashCan);
-    }
+    this.addDecorations(models, options, false);
   }
 }
 

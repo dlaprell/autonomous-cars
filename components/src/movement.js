@@ -260,11 +260,20 @@ class PathMovement extends GridMovementBase {
     this._nextTile = grid.getTileAt(nextX, nextY).tile;
   }
 
+  checkNextTileExists() {
+    assert(
+      this._currentIndex + 1 < this._path.length,
+      `The car that starts in ${this._initial} has reached the end of the path. Cur tile = ${this._current.tile}`
+    );
+  }
+
   getCurrentTileMovement() {
     return this._current;
   }
 
   getNextTileDirections() {
+    this.checkNextTileExists();
+
     const from = rotate(this._current.to, 2);
 
     const to = (this._nextTile.getType() === TYPES.ROAD || this._nextTile.getType() === TYPES.CURVE)
@@ -281,6 +290,7 @@ class PathMovement extends GridMovementBase {
     const nextIsPredefined = this._nextTile.getType() === TYPES.ROAD || this._nextTile.getType() === TYPES.CURVE;
 
     if (!nextIsPredefined) {
+      this.checkNextTileExists();
       this._currentIndex++;
     }
 

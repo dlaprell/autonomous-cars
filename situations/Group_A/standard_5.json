@@ -552,7 +552,13 @@
         1,
         0,
         {
-          "trashCan": true
+          "trashCan": true,
+          "signs": [
+            {
+              "type": "Target",
+              "side": 2
+            }
+          ]
         }
       ],
       [
@@ -560,7 +566,7 @@
         2,
         {
           "bench": {
-            "target": true
+            "target": false
           }
         }
       ],
@@ -1406,7 +1412,7 @@
     "options": {
       "noDriver": true
     },
-    "startOffset": 1000
+    "startOffset": 0
   },
   {
     "following":false,
@@ -1425,31 +1431,19 @@
     "movement": {
       "type": "path",
       "initial": [ 9, 9 ],
-      "path": [ 0, 2, -1, 0]
+      "path": [ 0, 2, 1, 1]
     },
     "options": {
       "noDriver": true
     },
-    "startOffset": 4200
-  },
-  {
-    "following": false,
-    "movement": {
-      "type": "path",
-      "initial": [ 9, 8 ],
-      "path": [0, -1, 0]
-    },
-    "options": {
-      "noDriver": false
-    },
-    "startOffset": 4500
+    "startOffset": 0
   },
   {
     "following": false,
     "movement": {
       "type": "path",
       "initial": [ 10, 9 ],
-      "path": [-1, -1, 0]
+      "path": [-1, -1, 0, 1]
     },
     "options": {
       "noDriver": false
@@ -1461,7 +1455,7 @@
     "movement": {
       "type": "path",
       "initial": [ 6, 4 ],
-      "path": [2, 1, 1]
+      "path": [2, 1, 2, -1]
     },
     "options": {
       "noDriver": false
@@ -1473,7 +1467,7 @@
     "movement": {
       "type": "path",
       "initial": [ 5, 2 ],
-      "path": [1, 2, -1, 0]
+      "path": [1, 2, -1, 0, 1]
     },
     "options": {
       "noDriver": false

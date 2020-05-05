@@ -167,6 +167,66 @@ class DecorationOptions extends Component {
   }
 }
 
+class SignOptions extends Component {
+  constructor(...args) {
+    super(...args);
+
+    this.handleSignChange = (evt) => {
+      const { value } = evt.target;
+
+      const { sign, side, onChange } = this.props;
+      if (onChange) {
+        const newV = value === '' ? null : {
+          ...(sign || {}),
+          type: value,
+          side
+        };
+        onChange(newV, sign);
+      }
+    };
+
+    this.handleRotationChange = (rotation) => {
+      const { sign, onChange } = this.props;
+      if (onChange) {
+        onChange({ ...sign, rotation }, sign);
+      }
+    }
+  }
+
+  render() {
+    const { sign, side } = this.props;
+
+    return (
+      <div>
+        <SelectOption
+          label=""
+          name={`streetSign.${side}`}
+          value={
+            !sign ? '' : sign.type
+          }
+          choices={[
+            { value: '', name: 'None' },
+            { value: 'PriorityRoad' },
+            { value: 'Stop' },
+            { value: 'Yield' },
+            { value: 'PriorityAtNext' },
+            { value: 'Target' }
+          ]}
+          onChange={this.handleSignChange}
+        />
+
+        {sign && (
+          <RotationOption
+            name={`streetSign.${side}.rotation`}
+            rotation={typeof sign.rotation === 'number' ? sign.rotation : 0}
+            onChange={this.handleRotationChange}
+          />
+        )}
+      </div>
+    );
+  }
+}
+
 class TileOptions extends Component {
   constructor(...args) {
     super(...args);
@@ -230,19 +290,15 @@ class TileOptions extends Component {
       }
     };
 
-    this.handleSignChange = evt => {
-      const { name, value } = evt.target;
-      const nameSplit = name.split('.');
-
-      const side = Number(nameSplit[1]);
-
+    this.handleSignChange = (upd, old) => {
       const { tile, onChange } = this.props;
+
       if (onChange) {
         // First of all, remove the corresponding sign
         const signs = ((tile[2] && tile[2].signs) || [])
-          .filter(s => s.side !== side);
+          .filter(s => s !== old);
 
-        if (value === '') { // None
+        if (!upd) { // None
           // So remove the corresponding item in the list
           onChange([
             tile[0],
@@ -255,7 +311,7 @@ class TileOptions extends Component {
             tile[1],
             {
               ...(tile[2] || {}),
-              signs: [ ...signs, { type: value, side: side } ]
+              signs: [ ...signs, upd ]
             }
           ]);
         }
@@ -291,8 +347,6 @@ class TileOptions extends Component {
     const type = tile[0];
     const rotation = tile[1] || 0;
     const options = tile[2] || {};
-
-    const disDecorations = (type === types.cross.value || type === types.tsection.value)
 
     const streetSides = (typesByValue[type].streetSides || []);
     const signs = options.signs || [];
@@ -334,9 +388,7 @@ class TileOptions extends Component {
           </Fragment>
         )}
 
-        <div className="spacer" />
-
-        {[ 0, 1, 2, -1 ].map(side => {
+        {streetSides.map(side => {
           const signAtSide = signs.find(s => s.side === side) || null;
 
           const sideName = ({
@@ -347,23 +399,19 @@ class TileOptions extends Component {
           })[side];
 
           return (
-            <SelectOption
-              label={`Sign ${sideName}`}
-              name={`streetSign.${side}`}
-              value={
-                !signAtSide ? '' : signAtSide.type
-              }
-              disabled={streetSides.indexOf(side) === -1}
-              choices={[
-                { value: '', name: 'None' },
-                { value: 'PriorityRoad' },
-                { value: 'Stop' },
-                { value: 'Yield' },
-                { value: 'PriorityAtNext' },
-                { value: 'Target' }
-              ]}
-              onChange={this.handleSignChange}
-            />
+            <div key={side}>
+              <div className="spacer" />
+
+              <Option>
+                <h6>Sign {sideName}</h6>
+              </Option>
+
+              <SignOptions
+                side={side}
+                sign={signAtSide}
+                onChange={this.handleSignChange}
+              />
+            </div>
           );
         })}
 
@@ -371,7 +419,7 @@ class TileOptions extends Component {
           <div key={location}>
             <div className="spacer" />
             <Option>
-              <h5>Decoration {location}</h5>
+              <h6>Decoration {location}</h6>
             </Option>
 
             <DecorationOptions

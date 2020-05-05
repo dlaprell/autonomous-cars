@@ -378,6 +378,12 @@ class Tile {
         return;
       }
 
+      if (child.name === 'Sign_Target') {
+        child.material.emissiveIntensity = 2;
+        child.material.roughness = 1;
+        child.material.metalness = -0.3;
+      }
+
       if (type === 'PriorityRoad' && child.name !== 'Vorfahrtsstra\u00dfe') {
         child.visible = false;
       }
@@ -410,6 +416,10 @@ class Tile {
     } else {
       sign.position.x = (side === -1) ? -7.5 : 7.5;
       sign.position.y = (side === -1 ? 5 : -5);
+    }
+
+    if (options && typeof options.rotation === 'number') {
+      sign.rotation.z += options.rotation * (Math.PI / 2);
     }
 
     sign.updateWorldMatrix(true, false);
@@ -493,8 +503,8 @@ class RoadTile extends Tile {
     this.addDecorations(models, options, true);
 
     if (options.signs) {
-      for (const { type, side, options: signOptions } of options.signs) {
-        this.addSign(models, type, side, signOptions || {});
+      for (const { type, side, ...signOptions } of options.signs) {
+        this.addSign(models, type, side, signOptions);
       }
     }
   }

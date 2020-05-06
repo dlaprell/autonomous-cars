@@ -418,6 +418,8 @@ class Tile {
       sign.position.y = (side === -1 ? 5 : -5);
     }
 
+    sign.position.z += 0.5;
+
     if (options && typeof options.rotation === 'number') {
       sign.rotation.z += options.rotation * (Math.PI / 2);
     }
@@ -553,8 +555,8 @@ class CurveTile extends Tile {
     this._sideWalkGeometry.applyMatrix4(sidewalk.matrixWorld);
 
     if (options.signs) {
-      for (const { type, side, options: signOptions } of options.signs) {
-        this.addSign(models, type, side, signOptions || {});
+      for (const { type, side, ...signOptions } of options.signs) {
+        this.addSign(models, type, side, signOptions);
       }
     }
   }
@@ -609,8 +611,8 @@ class TSectionTile extends Tile {
     this.addDecorations(models, options, true);
 
     if (options.signs) {
-      for (const { type, side, options: signOptions } of options.signs) {
-        this.addSign(models, type, side, signOptions || {});
+      for (const { type, side, ...signOptions } of options.signs) {
+        this.addSign(models, type, side, signOptions);
       }
     }
   }
@@ -683,8 +685,8 @@ class CrossTile extends Tile {
     this._sideWalkGeometry.applyMatrix4(sidewalk.matrixWorld);
 
     if (options.signs) {
-      for (const { type, side, options: signOptions } of options.signs) {
-        this.addSign(models, type, side, signOptions || {});
+      for (const { type, side, ...signOptions } of options.signs) {
+        this.addSign(models, type, side, signOptions);
       }
     }
   }

@@ -756,6 +756,10 @@
           "bench": null,
           "trashCan": {
             "target": true
+          },
+          "decorations": {
+            "topLeft": null,
+            "topRight": null
           }
         }
       ],
@@ -852,7 +856,15 @@
       [
         3,
         1,
-        {}
+        {
+          "decorations": {
+            "topLeft": {
+              "type": "trashcan",
+              "target": true
+            },
+            "bottomLeft": null
+          }
+        }
       ],
       [
         1,
@@ -1395,6 +1407,7 @@
       ]
     ]
   ]
+
 ,
 "cars": [
   {

@@ -552,7 +552,12 @@
         1,
         0,
         {
-          "trashCan": true
+          "trashCan": true,
+          "signs": [],
+          "decorations": {
+            "topLeft": null,
+            "bottomLeft": null
+          }
         }
       ],
       [
@@ -641,13 +646,29 @@
           "trashCan": true,
           "bench": {
             "target": false
-          }
+          },
+          "signs": []
         }
       ],
       [
         4,
         0,
-        {}
+        {
+          "signs": [
+            {
+              "type": "PriorityRoad",
+              "side": 2
+            },
+            {
+              "type": "Stop",
+              "side": 0
+            },
+            {
+              "type": "PriorityRoad",
+              "side": 1
+            }
+          ]
+        }
       ],
       [
         1,
@@ -655,6 +676,13 @@
         {
           "trashCan": {
             "target": true
+          },
+          "decorations": {
+            "topLeft": {
+              "type": "trashcan",
+              "target": false
+            },
+            "bottomLeft": null
           }
         }
       ],
@@ -738,6 +766,23 @@
         {
           "bench": {
             "target": false
+          },
+          "signs": [
+            {
+              "type": "Target",
+              "side": 0,
+              "rotation": -1
+            }
+          ],
+          "decorations": {
+            "topLeft": {
+              "type": "trashcan",
+              "target": false
+            },
+            "bottomLeft": {
+              "type": "bench",
+              "target": false
+            }
           }
         }
       ],

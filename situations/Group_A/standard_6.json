@@ -914,7 +914,15 @@
       [
         3,
         -1,
-        {}
+        {
+          "decorations": {
+            "topLeft": {
+              "type": "bench",
+              "target": true
+            },
+            "bottomLeft": null
+          }
+        }
       ],
       [
         2,
@@ -1004,6 +1012,10 @@
           "bench": null,
           "trashCan": {
             "target": true
+          },
+          "decorations": {
+            "topLeft": null,
+            "topRight": null
           }
         }
       ],

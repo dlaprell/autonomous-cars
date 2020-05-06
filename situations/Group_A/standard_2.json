@@ -210,19 +210,20 @@
         3,
         1,
         {
-          "signs": []
+          "signs": [
+            {
+              "type": "Target",
+              "side": 1,
+              "rotation": 0
+            }
+          ]
         }
       ],
       [
         1,
         -1,
         {
-          "signs": [
-            {
-              "type": "Target",
-              "side": 0
-            }
-          ]
+          "signs": []
         }
       ],
       [
@@ -306,7 +307,18 @@
       [
         1,
         0,
-        {}
+        {
+          "signs": [
+            {
+              "type": "PriorityRoad",
+              "side": 0
+            },
+            {
+              "type": "PriorityRoad",
+              "side": 2
+            }
+          ]
+        }
       ],
       [
         30,
@@ -1402,6 +1414,7 @@
       ]
     ]
   ]
+
 ,
   "cars": [
     {
@@ -1409,19 +1422,19 @@
       "movement": {
         "type": "path",
         "initial": [ 6, 8 ],
-        "path": [ 0, 0, 1, 2]
+        "path": [ 0, 0, 1, 2, -1]
       },
       "options": {
         "noDriver": true
       },
-      "startOffset": 0
+      "startOffset": 1000
     },
     {
       "following": false,
       "movement": {
         "type": "path",
         "initial": [ 12, 2 ],
-        "path": [ -1, -1, 2]
+        "path": [ -1, -1, 2, 2, 1]
       },
       "options": {
         "noDriver": true
@@ -1432,8 +1445,20 @@
       "following": false,
       "movement": {
         "type": "path",
+        "initial": [ 6, 6 ],
+        "path": [ 0, 1, 2, -1, 0, 1]
+      },
+      "options": {
+        "noDriver": false
+      },
+      "startOffset": 2000
+    },
+    {
+      "following": false,
+      "movement": {
+        "type": "path",
         "initial": [ 6, 5 ],
-        "path": [ 0, -1, 2, 1]
+        "path": [ 0, -1, 2, 2, 2, 1]
       },
       "options": {
         "noDriver": false
@@ -1445,7 +1470,7 @@
       "movement": {
         "type": "path",
         "initial": [ 6, 2 ],
-        "path": [2, 1, 1]
+        "path": [2, 1, 1, -1, 2]
       },
       "options": {
         "noDriver": false

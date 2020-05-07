@@ -1,3 +1,5 @@
+import { resolve } from 'path';
+
 import nodeResolve from '@rollup/plugin-node-resolve';
 import babel from '@rollup/plugin-babel';
 import json from '@rollup/plugin-json';
@@ -16,7 +18,7 @@ const isProd = process.env.NODE_ENV === 'production';
 export default {
   input: 'pages/index.js',
   output: {
-    dir: 'build',
+    dir: isProd ? resolve(__dirname, 'server', 'static') : 'build',
     format: isProd ? 'iife' : 'esm'
   },
   manualChunks(id) {
@@ -48,12 +50,17 @@ export default {
       title: 'Autonomous Cars'
     }),
     replace({
-      'process.env.NODE_ENV': process.env.NODE_ENV || '"development"'
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development')
     }),
     isProd ? replace({
       delimiters: ['', ''],
 
       [`import "preact/debug";`]: ''
+    }) : null,
+    isProd ? babel({
+      babelrc: false,
+      presets: [ 'preact' ],
+      babelHelpers: 'bundled'
     }) : null,
     isProd ? strip({
       functions: ['assert']

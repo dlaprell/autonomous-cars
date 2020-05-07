@@ -20,11 +20,11 @@ function Main({ root }) {
   return (
     <Fragment>
       <Router>
-        <Home path="/" root={root} />
+        {!isProd && <Home path="/" root={root} />}
 
         {!isProd && <Creator path="/creator" root={root} />}
         {!isProd && <Recorder path="/recorder" root={root} />}
-        {!isProd && <SurveyPage path="/survey" root={root} />}
+        <SurveyPage path="/survey" root={root} />
         {!isProd && <TestPage path="/test" root={root} />}
 
         <NotFound default />

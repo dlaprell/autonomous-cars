@@ -14,6 +14,8 @@ import { GridMap } from '../components/src/grid';
 
 import Intro from './survey/IntroPage';
 import RunResult from './survey/RunResult';
+import Tutorial from './survey/TutorialPage';
+import ResultSubmit from './survey/ResultSubmitPage';
 
 const languages = {
   de: {},
@@ -24,9 +26,22 @@ const RUN_TIME = process.env.NODE_ENV !== 'production'
   ? Number(new URLSearchParams(window.location.search).get('run_time') || '20000')
   : 20000;
 
-const NUM_RUNS = process.env.NODE_ENV !== 'production'
+const NUM_MAX_RUNS = process.env.NODE_ENV !== 'production'
   ? Number(new URLSearchParams(window.location.search).get('run_count') || 'Infinity')
   : Infinity;
+
+function debug(...args) {
+  if (process.env.NODE_ENV !== 'production') {
+    console.debug(...args);
+  }
+}
+/** @enum {string} */
+const UI_STATE = {
+  INTRO: 'intro',
+  TUTORIAL: 'tutorial',
+  RUNS: 'runs',
+  FINISHED: 'finshed'
+}
 
 /**
  * @returns {Array<string>}
@@ -39,27 +54,6 @@ function getUserLanguages() {
     (navigator.userLanguage ? [ navigator.userLanguage ] : null) ||
     [ 'en' ]
   );
-}
-
-function preLoadNextRun({ curRun, runs, models }) {
-  if (curRun !== null && curRun >= runs.length - 1) {
-    return { preLoadGrid: null, preLoadedRun: null };
-  }
-
-  const preLoadedRun = curRun === null ? 0 : curRun + 1;
-
-  const r = runs[preLoadedRun];
-
-  const preLoadGrid = new GridMap(
-    models,
-    {
-      baseMap: r.world.map,
-      creatorView: false,
-      asyncInit: true
-    }
-  );
-
-  return { preLoadGrid, preLoadedRun };
 }
 
 export default class SurveyPage extends Component {
@@ -80,8 +74,8 @@ export default class SurveyPage extends Component {
       .find(Boolean) || null;
 
     let runs = extractWorldsForRuns();
-    if (runs.length > NUM_RUNS) {
-      runs = runs.slice(0, NUM_RUNS);
+    if (runs.length > NUM_MAX_RUNS) {
+      runs = runs.slice(0, NUM_MAX_RUNS);
     }
 
     console.info('All runs: ', runs);
@@ -89,15 +83,14 @@ export default class SurveyPage extends Component {
     /** @type {Array<boolean | null>} */
     const runResults = new Array(runs.length).fill(null);
 
-    this._forestCache = null;
-
     this.state = {
       languageData,
 
-      intro: true,
+      /** @type {UI_STATE} */
+      uiState: UI_STATE.INTRO,
 
       models: null,
-      modelsLoaded: false,
+      modelsLoading: true,
       modelsError: null,
 
       preLoadedRun: null,
@@ -110,58 +103,86 @@ export default class SurveyPage extends Component {
     };
 
     this.skipIntro = () => {
-      this.setState(st => {
-        let { preLoadGrid, preLoadedRun, models, runs } = st;
-
-        if (preLoadedRun !== null) {
-          assert(preLoadedRun === 0);
-          preLoadGrid.ensureReady();
-        } else {
-          preLoadedRun = 0;
-          preLoadGrid = new GridMap(models, {
-            creatorView: false,
-            baseMap: runs[0].world.map,
-            asyncInit: false
-          });
-        }
-
-        console.info('starting run: ', runs[0]);
-
-        return {
-          intro: false,
-          curRun: 0,
-          preLoadGrid,
-          preLoadedRun: 0
-        };
+      this.setState({
+        uiState: UI_STATE.TUTORIAL
       });
     };
 
     this.handleSimulationStop = () => {
       this.setState(({ curRun, runs, models }) => {
-        const up = preLoadNextRun({ curRun, runs, models });
+
+        let preLoadGrid = null;
+        let preLoadedRun = null;
+
+        if (curRun + 1 < runs.length) {
+          const { world } = runs[curRun + 1];
+
+          preLoadedRun = curRun + 1;
+          preLoadGrid = new GridMap(models, {
+            baseMap: world.map,
+            creatorView: false,
+            asyncInit: true
+          });
+
+          debug(`Started preloading for run=${preLoadedRun}`);
+        }
 
         return {
-          ...up,
+          preLoadGrid,
+          preLoadedRun,
           curRunFinished: true
         };
       });
     };
 
     this.moveToNextRun = (result) => {
-      this.setState(({ curRun, runResults, preLoadGrid, preLoadedRun }) => {
+      this.setState(({ curRun, runResults, models, preLoadGrid, preLoadedRun }) => {
+        let updatedResults;
+        let nextRun;
+        let finished = false;
+        let uiState;
 
-        const updatedResults = [ ...runResults ];
-        updatedResults[curRun] = result;
+        debug(`Requested next run, cur=${curRun}, preLoaded=${preLoadedRun}`);
 
-        if (preLoadGrid !== null) {
-          assert(preLoadedRun === curRun + 1);
-          preLoadGrid.ensureReady();
+        if (curRun === null) {
+          updatedResults = runResults;
+          nextRun = 0;
+          uiState = UI_STATE.RUNS;
+        } else {
+          updatedResults = [ ...runResults ];
+          updatedResults[curRun] = result;
+
+          if (curRun + 1 < runs.length) {
+            nextRun = curRun + 1;
+            uiState = UI_STATE.RUNS;
+          } else {
+            nextRun = null;
+            uiState = UI_STATE.FINISHED;
+          }
         }
 
-        console.info('starting run: ', runs[curRun + 1]);
+        let grid = preLoadGrid;
+        let loaded = null;
+
+        if (grid) {
+          assert(preLoadedRun === nextRun);
+          loaded = nextRun;
+          grid.ensureReady();
+        } else {
+          assert(!models || uiState === UI_STATE.FINISHED);
+        }
+
+        if (!finished) {
+          console.info('starting run: ', nextRun, runs[nextRun]);
+        }
 
         return {
-          curRun: curRun + 1,
+          uiState,
+          curRun: nextRun,
+
+          preLoadedRun: loaded,
+          preLoadGrid: grid,
+
           curRunFinished: false,
           runResults: updatedResults
         };
@@ -172,31 +193,36 @@ export default class SurveyPage extends Component {
   componentDidMount() {
     loadModels({
       onError: (err) => {
+        console.error(err);
         this.setState({
           modelsError: err,
-          modelsLoaded: true
+          modelsLoading: false
         });
       },
 
       onProgress: () => {},
 
       onLoad: (models) => {
-        this._forestCache = null;
+        this.setState(st => {
+          const { world } = st.runs[0];
 
-        let preL = {};
-        if (this.state.intro) {
-          preL = preLoadNextRun({
-            curRun: this.state.curRun,
-            runs: this.state.runs,
-            models
+          debug(`Models finished loading`);
+          assert(st.preLoadGrid === null);
+          assert(st.preLoadedRun === null);
+
+          const grid = new GridMap(models, {
+            asyncInit: st.curRun === null,
+            creatorView: false,
+            baseMap: world.map
           });
-        }
 
-        this.setState({
-          ...preL,
+          return {
+            preLoadGrid: grid,
+            preLoadedRun: 0,
 
-          models,
-          modelsLoaded: true
+            models,
+            modelsLoading: false
+          };
         });
       }
     });
@@ -204,7 +230,7 @@ export default class SurveyPage extends Component {
 
   render() {
     const {
-      intro,
+      uiState,
 
       curRun,
       runs,
@@ -216,21 +242,25 @@ export default class SurveyPage extends Component {
 
       models,
       modelsError,
-      modelsLoaded
+      modelsLoading
     } = this.state;
 
-    const inRuns = curRun !== null && curRun < runs.length;
+    assert(Object.values(UI_STATE).indexOf(uiState) !== -1);
 
     const total = runs.length + 2;
     const progress = (
       <ProgressBar total={total} now={
-        intro ? 0 : (
-          inRuns ? 1 + curRun : curRun.length
+        uiState === UI_STATE.INTRO ? 0 : (
+          uiState === UI_STATE.TUTORIAL ? 1 : (
+            uiState === UI_STATE.RUNS
+              ? 2 + curRun
+              : runs.length + 2
+          )
         )
       } />
     );
 
-    if (intro) {
+    if (uiState === UI_STATE.INTRO) {
       return (
         <Intro
           onStart={this.skipIntro}
@@ -239,10 +269,19 @@ export default class SurveyPage extends Component {
       );
     }
 
-    if (inRuns) {
+    if (uiState === UI_STATE.TUTORIAL) {
+      return (
+        <Tutorial
+          onStart={this.moveToNextRun}
+          footer={progress}
+        />
+      );
+    }
+
+    if (uiState === UI_STATE.RUNS) {
       assert(curRun >= 0 && curRun < runs.length);
 
-      if (!modelsLoaded) {
+      if (modelsLoading) {
         return (
           <Content footer={progress}>
             Loading models
@@ -250,7 +289,7 @@ export default class SurveyPage extends Component {
         );
       }
 
-      if (modelsError !== null) {
+      if (modelsError) {
         return (
           <Content footer={progress}>
             <h3>An Error occured</h3>
@@ -258,11 +297,6 @@ export default class SurveyPage extends Component {
             <pre>{modelsError.stack}</pre>
           </Content>
         );
-      }
-
-      if (this._forestCache !== null) {
-        this._forestCache.cancel();
-        this._forestCache = null;
       }
 
       const { world } = runs[curRun];
@@ -292,19 +326,14 @@ export default class SurveyPage extends Component {
       }
     }
 
-    if (curRun !== null && curRun >= runs.length) {
+    if (uiState === UI_STATE.FINISHED) {
       return (
-        <Content footer={progress}>
-          Submit results here ...
-
-          <pre>
-            {JSON.stringify(
-              runs.map(
-                (r, idx) => ({ name: r.name, answer: runResults[idx] })
-              ), null, 2
-            )}
-          </pre>
-        </Content>
+        <ResultSubmit
+          results={runs.map(
+            (r, idx) => ({ name: r.name, answer: runResults[idx] })
+          )}
+          footer={progress}
+        />
       );
     }
 

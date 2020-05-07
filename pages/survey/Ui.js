@@ -106,7 +106,12 @@ export function ProgressBar({ now, total }) {
   const progress = Math.ceil(5 + 95 * (1.0 * now / total));
 
   return (
-    <div className="progress-bar">
+    <div
+      className="progress-bar"
+      aria-valuenow={now}
+      aria-valuemin={0}
+      aria-valuemax={total}
+    >
       <div className="progress-indicator"
         style={{ width: `${progress}%` }}
       />

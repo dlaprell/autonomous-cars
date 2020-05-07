@@ -2,22 +2,70 @@
 
 /** @jsx h */
 
-import { h, Component } from 'preact';
+import { h, Component, Fragment } from 'preact';
 import { Content, Button, ButtonBar } from './Ui';
+import { version } from '../../package.json';
+
+/** @enum {string} */
+const UI_STATE = {
+  START: 'start',
+  LOADING: 'loading',
+  ERROR: 'error',
+  FINISHED: 'finished'
+};
 
 export default class TutorialPage extends Component {
   constructor(...args) {
     super(...args);
 
-    this.handleClick = (evt) => {
-      evt.preventDefault();
+    this.state = {
+      error: null,
+      uiState: UI_STATE.START
+    };
 
-      alert('Ups. This is an alpha version - remember? ;-D');
-    }
+    this.submitResults = () => {
+      this.setState({
+        uiState: UI_STATE.LOADING
+      });
+
+      const { results } = this.props;
+
+      fetch(
+        '/results',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Request-With': `survey-${version}`
+          },
+          body: JSON.stringify(results)
+        }
+      )
+        .then(r => {
+          if (r.ok) {
+            this.setState({
+              uiState: UI_STATE.FINISHED
+            });
+            return;
+          }
+
+          this.setState({
+            uiState: UI_STATE.ERROR,
+            error: `Error: request return with status code ${r.status}`
+          });
+        })
+        .catch(ex => {
+          this.setState({
+            uiState: UI_STATE.ERROR,
+            error: ex
+          });
+        })
+    };
   }
 
   render() {
     const { footer, results } = this.props;
+    const { uiState, error } = this.state;
 
     return (
       <Content footer={footer}>
@@ -25,20 +73,45 @@ export default class TutorialPage extends Component {
           <div className="top-spacer" />
 
           <h3>
-            Finished!
+            {uiState === UI_STATE.FINISHED ? (
+              "Thanks for participating"
+            ) : (
+              "Results submission"
+            )}
           </h3>
 
-          <div className="top-spacer" />
+          {uiState === UI_STATE.ERROR && (
+            <p>
+              An error occured:
+              <pre>
+                {error}
+              </pre>
+            </p>
+          )}
 
-          <pre>
-            {JSON.stringify(results, null, 2)}
-          </pre>
+          {uiState === UI_STATE.FINISHED && (
+            <p>
+              Some thank you note...
+            </p>
+          )}
 
-          <ButtonBar align="center">
-            <Button onClick={this.handleClick}>
-              Submit Results
-            </Button>
-          </ButtonBar>
+          {uiState === UI_STATE.START && (
+            <p>
+              Finished text...
+            </p>
+          )}
+
+          {uiState !== UI_STATE.FINISHED && (
+            <Fragment>
+              <div className="top-spacer" />
+
+              <ButtonBar align="center">
+                <Button onClick={this.submitResults} disabled={uiState === UI_STATE.LOADING}>
+                  {uiState === UI_STATE.ERROR ? 'Retry submission' : 'Submit Results'}
+                </Button>
+              </ButtonBar>
+            </Fragment>
+          )}
         </div>
 
         <style jsx>{`

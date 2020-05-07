@@ -20,7 +20,8 @@
     "preact": "^10.4.0",
     "preact-router": "^3.2.1",
     "styled-jsx": "^3.2.5",
-    "three": "^0.115.0"
+    "three": "^0.115.0",
+    "unfetch": "^4.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.9.6",

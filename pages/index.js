@@ -12,6 +12,8 @@ import Recorder from './RecorderPage';
 import SurveyPage from './SurveyPage';
 import NotFound from './NotFoundPage';
 
+import TestPage from './TestPage';
+
 const isProd = process.env.NODE_ENV === 'production';
 
 function Main({ root }) {
@@ -23,6 +25,7 @@ function Main({ root }) {
         {!isProd && <Creator path="/creator" root={root} />}
         {!isProd && <Recorder path="/recorder" root={root} />}
         {!isProd && <SurveyPage path="/survey" root={root} />}
+        {!isProd && <TestPage path="/test" root={root} />}
 
         <NotFound default />
       </Router>
@@ -58,7 +61,7 @@ function Main({ root }) {
           overflow: hidden;
         }
         html, body {
-          background-color: #eee;
+          background-color: #fff;
           color: #000;
         }
 

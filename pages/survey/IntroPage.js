@@ -6,72 +6,60 @@ import { h, Component } from 'preact';
 import { Content, Button, ButtonBar } from './Ui';
 import { assert } from '../../components/utils/assert';
 
-export default class RunResult extends Component {
+export default class IntroPage extends Component {
   constructor(...args) {
     super(...args);
 
     this.state = {
-      answer: null
+      agreed: false
     };
 
-    this.handleAnswerChange = (evt) => {
-      const { value } = evt.target;
-
-      assert(value !== 'unspecified');
+    this.handleAgreementChange = (evt) => {
+      const { checked } = evt.target;
 
       this.setState({
-        answer: value === 'yes'
+        agreed: checked
       });
     };
 
     this.submitResult = (evt) => {
       evt.preventDefault();
-      const { onResult } = this.props;
-      if (onResult) {
-        const { answer } = this.state;
-        onResult(answer);
+
+      const { onStart } = this.props;
+      if (onStart) {
+        onStart({});
       }
     }
   }
 
   render() {
     const { footer } = this.props;
-    const { answer } = this.state;
+    const { agreed } = this.state;
 
     return (
       <Content footer={footer}>
         <form onSubmit={this.submitResult}>
           <div className="top-spacer" />
 
-          <p>Question formulation here:</p>
+          <h1>
+            Survey
+          </h1>
 
           <fieldset>
             <label>
               <input
-                type="radio"
-                name="answer"
-                value="yes"
-                checked={answer === true}
-                onChange={this.handleAnswerChange}
+                type="checkbox"
+                name="agree"
+                checked={agreed}
+                onChange={this.handleAgreementChange}
               />
-              <span>Yes</span>
-            </label>
-
-            <label>
-              <input
-                type="radio"
-                name="answer"
-                value="no"
-                checked={answer === false}
-                onChange={this.handleAnswerChange}
-              />
-              <span>No</span>
+              Yes, I agree ...
             </label>
           </fieldset>
 
           <ButtonBar align="center">
-            <Button type="submit" disabled={answer === null}>
-              Next Situation
+            <Button type="submit" disabled={!agreed}>
+              Start
             </Button>
           </ButtonBar>
         </form>
@@ -101,6 +89,10 @@ export default class RunResult extends Component {
 
           label span {
             margin-left: 16px;
+          }
+
+          input {
+            margin-right: 5px;
           }
 
           label[data-disabled="true"] {

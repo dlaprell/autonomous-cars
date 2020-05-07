@@ -272,8 +272,6 @@ class PathMovement extends GridMovementBase {
   }
 
   getNextTileDirections() {
-    this.checkNextTileExists();
-
     const from = rotate(this._current.to, 2);
 
     const isPredefined = (this._nextTile.getType() === TYPES.ROAD || this._nextTile.getType() === TYPES.CURVE);

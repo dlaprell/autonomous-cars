@@ -5,17 +5,28 @@
 import { h, Component } from 'preact';
 import { extractWorldsForRuns } from '../components/worlds/WorldSelector';
 
-import { Content } from './survey/Ui';
+import { Content, SimulationWrapper, ProgressBar } from './survey/Ui';
+import AspectRatioKeeper from './survey/AspectRatioKeeper';
 import { assert } from '../components/utils/assert';
 import { Simulation } from '../components/Simulation';
-import RunResult from './survey/RunResult';
 import loadModels from '../components/models/ModelLoader';
 import { GridMap } from '../components/src/grid';
+
+import Intro from './survey/IntroPage';
+import RunResult from './survey/RunResult';
 
 const languages = {
   de: {},
   en: {}
 };
+
+const RUN_TIME = process.env.NODE_ENV !== 'production'
+  ? Number(new URLSearchParams(window.location.search).get('run_time') || '20000')
+  : 20000;
+
+const NUM_RUNS = process.env.NODE_ENV !== 'production'
+  ? Number(new URLSearchParams(window.location.search).get('run_count') || 'Infinity')
+  : Infinity;
 
 /**
  * @returns {Array<string>}
@@ -68,7 +79,12 @@ export default class SurveyPage extends Component {
       })
       .find(Boolean) || null;
 
-    const runs = extractWorldsForRuns();
+    let runs = extractWorldsForRuns();
+    if (runs.length > NUM_RUNS) {
+      runs = runs.slice(0, NUM_RUNS);
+    }
+
+    console.info('All runs: ', runs);
 
     /** @type {Array<boolean | null>} */
     const runResults = new Array(runs.length).fill(null);
@@ -109,6 +125,8 @@ export default class SurveyPage extends Component {
           });
         }
 
+        console.info('starting run: ', runs[0]);
+
         return {
           intro: false,
           curRun: 0,
@@ -139,6 +157,8 @@ export default class SurveyPage extends Component {
           assert(preLoadedRun === curRun + 1);
           preLoadGrid.ensureReady();
         }
+
+        console.info('starting run: ', runs[curRun + 1]);
 
         return {
           curRun: curRun + 1,
@@ -199,20 +219,32 @@ export default class SurveyPage extends Component {
       modelsLoaded
     } = this.state;
 
+    const inRuns = curRun !== null && curRun < runs.length;
+
+    const total = runs.length + 2;
+    const progress = (
+      <ProgressBar total={total} now={
+        intro ? 0 : (
+          inRuns ? 1 + curRun : curRun.length
+        )
+      } />
+    );
+
     if (intro) {
       return (
-        <Content onNextClick={this.skipIntro} nextDisabled={false}>
-          Intro text here ...
-        </Content>
+        <Intro
+          onStart={this.skipIntro}
+          footer={progress}
+        />
       );
     }
 
-    if (curRun !== null && curRun < runs.length) {
+    if (inRuns) {
       assert(curRun >= 0 && curRun < runs.length);
 
       if (!modelsLoaded) {
         return (
-          <Content nextDisabled={true} onNextClick={null}>
+          <Content footer={progress}>
             Loading models
           </Content>
         );
@@ -220,7 +252,7 @@ export default class SurveyPage extends Component {
 
       if (modelsError !== null) {
         return (
-          <Content nextDisabled={true} onNextClick={null}>
+          <Content footer={progress}>
             <h3>An Error occured</h3>
 
             <pre>{modelsError.stack}</pre>
@@ -240,29 +272,37 @@ export default class SurveyPage extends Component {
         assert(preLoadedRun === curRun);
 
         return (
-          <Simulation
-            withTraffic
-            world={world}
-            preLoadedGrid={preLoadGrid}
-            stopAfter={40000}
-            models={models}
-            onStop={this.handleSimulationStop}
-          />
+          <SimulationWrapper>
+            <AspectRatioKeeper minRatio={4 / 3} maxRatio={16 / 9}>
+              <Simulation
+                withTraffic
+                world={world}
+                preLoadedGrid={preLoadGrid}
+                stopAfter={RUN_TIME}
+                models={models}
+                onStop={this.handleSimulationStop}
+              />
+            </AspectRatioKeeper>
+          </SimulationWrapper>
         );
       } else {
         return (
-          <RunResult onResult={this.moveToNextRun} />
+          <RunResult onResult={this.moveToNextRun} footer={progress} />
         );
       }
     }
 
     if (curRun !== null && curRun >= runs.length) {
       return (
-        <Content onNextClick={null} nextDisabled={true}>
+        <Content footer={progress}>
           Submit results here ...
 
           <pre>
-            {JSON.stringify(runs.map((r, idx) => ({ name: r.name, config: r.config, answer: runResults[idx] })), null, 2)}
+            {JSON.stringify(
+              runs.map(
+                (r, idx) => ({ name: r.name, answer: runResults[idx] })
+              ), null, 2
+            )}
           </pre>
         </Content>
       );

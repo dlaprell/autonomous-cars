@@ -8,12 +8,17 @@ import csvStringify from 'csv-stringify/lib/sync.js';
 import Joi from '@hapi/joi';
 import asyncHandler from 'express-async-handler';
 import staticComp from 'express-static-gzip';
+import { createHash } from 'crypto';
+
+let uidInternalCounter = 0;
 
 const resultSchema = Joi
   .object({
     mobile: Joi.boolean().required(),
     driverLicense: Joi.boolean().required(),
     age: Joi.number().min(1).max(130).required(),
+
+    email: Joi.string().allow(null).optional(),
 
     results: Joi
       .array()
@@ -31,15 +36,53 @@ const resultSchema = Joi
   })
   .required();
 
-const resultFile = resolve('data', 'results.csv');
+const resultDir = resolve('data');
+const resultFile = resolve(resultDir, 'results.csv');
+const emailFile = resolve(resultDir, 'emails.csv');
+
 if (!existsSync(resultFile)) {
   writeFileSync(
     resultFile,
     csvStringify([[
-      'timestamp', 'name','answer','mobile','driverLicense','age'
+      'unique id',
+      'timestamp',
+      'trial',
+      'situation',
+      'answer',
+      'mobile',
+      'driverLicense',
+      'age'
     ]]),
     'utf8'
   );
+}
+
+if (!existsSync(emailFile)) {
+  writeFileSync(
+    emailFile,
+    csvStringify([[
+      'email address'
+    ]]),
+    'utf8'
+  );
+}
+
+function deriveUniqueId(...args) {
+  const c = createHash('sha256');
+
+  for (const arg of args) {
+    let d = arg;
+
+    if (typeof d === 'boolean') {
+      d = arg ? 'true' : 'false';
+    } else if (typeof d === 'number') {
+      d = String(arg);
+    }
+
+    c.update(Buffer.from(d));
+  }
+
+  return c.digest('hex').slice(0, 12);
 }
 
 const app = express();
@@ -68,14 +111,38 @@ app.post('/results', asyncHandler(async function (req, res) {
     results,
     mobile,
     driverLicense,
-    age
+    age,
+    email
   } = await resultSchema.validateAsync(data);
+
+  const reqWith = req.get('X-Requested-With');
+  if (!reqWith || !/^survey-\d+\.\d+\.\d+$/) {
+    return res
+      .status(400)
+      .send();
+  }
+
+  const userAgent = req.get('User-Agent') || 'unknonw';
+  const langs = req.get('Accept-Language') || 'unknonw';
 
   const now = new Date().toISOString();
 
+  const uid = deriveUniqueId(
+    uidInternalCounter++,
+    now,
+    reqWith,
+    userAgent,
+    langs,
+    mobile,
+    driverLicense,
+    age
+  );
+
   const resultCsv = csvStringify(
-    results.map(e => ([
+    results.map((e, idx) => ([
+      uid,
       now,
+      idx + 1,
       e.name,
       e.answer ? 'true' : 'false',
       mobile ? 'true' : 'false',
@@ -86,6 +153,27 @@ app.post('/results', asyncHandler(async function (req, res) {
 
   try {
     await fs.appendFile(resultFile, resultCsv, 'utf8');
+
+    if (email) {
+      await fs.appendFile(emailFile, email, 'utf8');
+    }
+
+    await fs.writeFile(
+      resolve(resultDir, `${uid}.json`),
+      JSON.stringify(
+        {
+          uid,
+          age,
+          mobile,
+          driverLicense,
+          datetime: now,
+          results
+        },
+        null,
+        2
+      ),
+      'utf8'
+    );
   } catch (ex) {
     console.error(ex);
     res.status(500).send();

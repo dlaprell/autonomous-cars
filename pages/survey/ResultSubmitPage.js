@@ -28,7 +28,7 @@ export default class TutorialPage extends Component {
         uiState: UI_STATE.LOADING
       });
 
-      const { results } = this.props;
+      const { resultData } = this.props;
 
       fetch(
         '/results',
@@ -38,7 +38,10 @@ export default class TutorialPage extends Component {
             'Content-Type': 'application/json',
             'X-Request-With': `survey-${version}`
           },
-          body: JSON.stringify(results)
+          body: JSON.stringify({
+            mobile: false,
+            ...resultData
+          })
         }
       )
         .then(r => {
@@ -64,7 +67,7 @@ export default class TutorialPage extends Component {
   }
 
   render() {
-    const { footer, results } = this.props;
+    const { footer } = this.props;
     const { uiState, error } = this.state;
 
     return (

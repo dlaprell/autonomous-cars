@@ -3,6 +3,7 @@
 /** @jsx h */
 
 import { h, Component } from 'preact';
+import linkState from 'linkstate';
 import { Content, Button, ButtonBar } from './Ui';
 import { assert } from '../../components/utils/assert';
 
@@ -11,7 +12,18 @@ export default class IntroPage extends Component {
     super(...args);
 
     this.state = {
-      agreed: false
+      agreed: false,
+      driverLicense: null,
+      age: ''
+    };
+
+    this.handleDriverLicenseChange = (evt) => {
+      const { checked, value } = evt.target;
+
+      const has = checked && value === 'yes';
+      this.setState({
+        driverLicense: has
+      });
     };
 
     this.handleAgreementChange = (evt) => {
@@ -25,16 +37,32 @@ export default class IntroPage extends Component {
     this.submitResult = (evt) => {
       evt.preventDefault();
 
+      const {
+        driverLicense, age
+      } = this.state;
+
       const { onStart } = this.props;
       if (onStart) {
-        onStart({});
+        onStart({
+          driverLicense,
+          age: Math.round(Number(age))
+        });
       }
     }
   }
 
   render() {
     const { footer } = this.props;
-    const { agreed } = this.state;
+    const {
+      agreed,
+      driverLicense,
+      age
+    } = this.state;
+
+    const dataReady = (
+      age !== '' && !isNaN(Number(age)) && Number(age) > 0 && Number(age) <= 130
+      && driverLicense !== null
+    );
 
     return (
       <Content footer={footer}>
@@ -44,6 +72,45 @@ export default class IntroPage extends Component {
           <h1>
             Survey
           </h1>
+
+          <fieldset>
+            <label>
+              <input
+                type="radio"
+                name="driverLicense"
+                value="yes"
+                onChange={this.handleDriverLicenseChange}
+                checked={driverLicense === true}
+              />
+
+              Yes, driver license
+            </label>
+
+            <label>
+              <input
+                type="radio"
+                name="driverLicense"
+                value="no"
+                onChange={this.handleDriverLicenseChange}
+                checked={driverLicense === false}
+              />
+
+              No, driver license
+            </label>
+          </fieldset>
+
+          <fieldset>
+            <label htmlFor="age">
+              Age
+            </label>
+            <input
+              type="number"
+              name="age"
+              value={age}
+              id="age"
+              onInput={linkState(this, 'age')}
+            />
+          </fieldset>
 
           <fieldset>
             <label>
@@ -58,7 +125,7 @@ export default class IntroPage extends Component {
           </fieldset>
 
           <ButtonBar align="center">
-            <Button type="submit" disabled={!agreed}>
+            <Button type="submit" disabled={!agreed || !dataReady}>
               Start
             </Button>
           </ButtonBar>

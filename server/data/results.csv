@@ -1,0 +1,4 @@
+timestamp,name,answer,mobile,driverLicense,age
+2020-05-07T18:35:09.296Z,test,1,,1,23
+2020-05-07T18:38:40.223Z,test,1,1,1,23
+2020-05-07T18:39:21.933Z,test,yes,yes,yes,23

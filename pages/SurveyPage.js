@@ -86,6 +86,9 @@ export default class SurveyPage extends Component {
     this.state = {
       languageData,
 
+      driverLicense: null,
+      age: null,
+
       /** @type {UI_STATE} */
       uiState: UI_STATE.INTRO,
 
@@ -102,9 +105,11 @@ export default class SurveyPage extends Component {
       runResults
     };
 
-    this.skipIntro = () => {
+    this.skipIntro = ({ driverLicense, age }) => {
       this.setState({
-        uiState: UI_STATE.TUTORIAL
+        uiState: UI_STATE.TUTORIAL,
+        driverLicense,
+        age
       });
     };
 
@@ -232,6 +237,9 @@ export default class SurveyPage extends Component {
     const {
       uiState,
 
+      driverLicense,
+      age,
+
       curRun,
       runs,
       curRunFinished,
@@ -329,9 +337,13 @@ export default class SurveyPage extends Component {
     if (uiState === UI_STATE.FINISHED) {
       return (
         <ResultSubmit
-          results={runs.map(
-            (r, idx) => ({ name: r.name, answer: runResults[idx] })
-          )}
+          resultData={{
+            age,
+            driverLicense,
+            results: runs.map(
+              (r, idx) => ({ name: r.name, answer: runResults[idx] })
+            )
+          }}
           footer={progress}
         />
       );

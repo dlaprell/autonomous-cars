@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "ffmpeg.js": "^4.2.9003",
+    "linkstate": "^1.1.1",
     "mersenne-twister": "^1.1.0",
     "mitt": "^1.2.0",
     "preact": "^10.4.0",

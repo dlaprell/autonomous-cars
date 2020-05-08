@@ -5,13 +5,37 @@ import { resolve } from 'path';
 import bodyParser from 'body-parser';
 import express from 'express';
 import csvStringify from 'csv-stringify/lib/sync.js';
+import Joi from '@hapi/joi';
+import asyncHandler from 'express-async-handler';
+
+const resultSchema = Joi
+  .object({
+    mobile: Joi.boolean().required(),
+    driverLicense: Joi.boolean().required(),
+    age: Joi.number().min(1).max(130).required(),
+
+    results: Joi
+      .array()
+      .items(
+        Joi
+          .object({
+            name: Joi.string().required(),
+            answer: Joi.boolean().required()
+          })
+          .required()
+      )
+      .min(1)
+      .max(60)
+      .required()
+  })
+  .required();
 
 const resultFile = resolve('data', 'results.csv');
 if (!existsSync(resultFile)) {
   writeFileSync(
     resultFile,
     csvStringify([[
-      'timestamp', 'name', 'answer'
+      'timestamp', 'name','answer','mobile','driverLicense','age'
     ]]),
     'utf8'
   );
@@ -32,21 +56,26 @@ app.get('/survey', function (req, res) {
   });
 });
 
-app.post('/results', async function (req, res) {
-  const results = req.body;
-
-  if (!Array.isArray(results) || results.length === 0) {
-    return res.status(400).send();
-  }
-
-  if (results.find(e => !e || typeof e.name !== 'string' || typeof e.answer !== 'boolean')) {
-    return res.status(400).send();
-  }
+app.post('/results', asyncHandler(async function (req, res) {
+  const data = req.body;
+  const {
+    results,
+    mobile,
+    driverLicense,
+    age
+  } = await resultSchema.validateAsync(data);
 
   const now = new Date().toISOString();
 
   const resultCsv = csvStringify(
-    results.map(e => ([ now, e.name, e.answer ]))
+    results.map(e => ([
+      now,
+      e.name,
+      e.answer ? 'true' : 'false',
+      mobile ? 'true' : 'false',
+      driverLicense ? 'true' : 'false',
+      age
+    ]))
   );
 
   try {
@@ -58,7 +87,7 @@ app.post('/results', async function (req, res) {
   }
 
   res.status(200).send();
-});
+}));
 
 const PORT = Number(process.env.PORT || '3000');
 

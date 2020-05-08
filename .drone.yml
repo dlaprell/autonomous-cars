@@ -1,0 +1,40 @@
+kind: pipeline
+type: docker
+name: default
+
+steps:
+- name: fix permissions
+  image: alpine
+  commands:
+    - chown -R root:1000 .
+    - chmod -R g+w .
+
+- name: prepare and build
+  image: node:14.2-buster-slim
+  volumes:
+    - name: yarn-cache
+      path: /tmp/yarn-cache
+      host:
+        path: /tmp/drone-yarn-cache
+  commands:
+    - yarn
+    - yarn build
+
+- name: docker build and push
+  image: plugins/docker
+  environment:
+    DOCKER_USERNAME:
+      from_secret: docker_username
+    DOCKER_PASSWORD:
+      from_secret: docker_password
+  settings:
+    tags: [ "latest" ]
+    repo: hub.laprell.eu/autonomous-cars
+    registry: https://hub.laprell.eu
+    dockerfile: server/Dockerfile
+  when:
+    branch:
+    - master
+
+image_pull_secrets:
+  - docker_config

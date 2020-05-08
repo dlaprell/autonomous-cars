@@ -62,6 +62,7 @@ export default {
     isProd ? babel({
       babelrc: false,
       presets: [ 'preact' ],
+      plugins: [ 'styled-jsx/babel' ],
       babelHelpers: 'bundled'
     }) : null,
     isProd ? strip({

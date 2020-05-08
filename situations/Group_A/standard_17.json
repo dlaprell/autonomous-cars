@@ -1102,7 +1102,17 @@
         {
           "trashCan": true,
           "bench": true,
-          "seed": 1970
+          "seed": 1970,
+          "decorations": {
+            "topLeft": {
+              "type": "trashcan",
+              "rotation": 1,
+              "target": true
+            },
+            "bottomLeft": {
+              "type": "bench"
+            }
+          }
         }
       ],
       [
@@ -1867,19 +1877,20 @@
         }
       ]
     ]
-  ],
+  ]
+,
   "cars": [
     {
       "following": true,
       "movement": {
         "type": "path",
-        "initial": [ 6, 3 ],
+        "initial": [ 6, 2 ],
         "path": [ 2, 1, 1 ]
       },
       "options": {
         "noHead": true
       },
-      "startOffset": 0
+      "startOffset": 2100
     },
     {
       "following": false,
@@ -1891,7 +1902,7 @@
       "options": {
         "noDriver": true
       },
-      "startOffset": 0
+      "startOffset": 1380
     },
     {
       "following": false,

@@ -307,14 +307,26 @@
         1,
         -1,
         {
-          "seed": 99373
+          "seed": 99373,
+          "decorations": {
+            "topLeft": {
+              "type": "trashcan",
+              "target": true,
+              "rotation": -1
+            },
+            "bottomLeft": null
+          }
         }
       ],
       [
         1,
-        -1,
+        1,
         {
-          "seed": 98049
+          "seed": 98049,
+          "decorations": {
+            "topLeft": null,
+            "bottomLeft": null
+          }
         }
       ],
       [
@@ -1867,7 +1879,9 @@
         }
       ]
     ]
-  ],
+  ]
+
+,
   "cars": [
     {
       "following": true,
@@ -1891,7 +1905,7 @@
       "options": {
         "noDriver": true
       },
-      "startOffset": 0
+      "startOffset": 300
     },
     {
       "following": false,

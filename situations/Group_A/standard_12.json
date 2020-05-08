@@ -878,16 +878,34 @@
       ],
       [
         1,
-        -1,
+        1,
         {
-          "seed": 83121
+          "seed": 83121,
+          "decorations": {
+            "topLeft": {
+              "type": "trashcan",
+              "target": false,
+              "rotation": -1
+            },
+            "bottomLeft": {
+              "type": "bench"
+            }
+          },
+          "signs": [
+            {
+              "type": "Target",
+              "side": 0,
+              "rotation": 2
+            }
+          ]
         }
       ],
       [
         2,
         1,
         {
-          "seed": 51624
+          "seed": 51624,
+          "signs": []
         }
       ],
       [
@@ -1867,7 +1885,9 @@
         }
       ]
     ]
-  ],
+  ]
+
+,
   "cars": [
     {
       "following": true,

@@ -312,16 +312,28 @@
       ],
       [
         1,
-        -1,
+        1,
         {
-          "seed": 98049
+          "seed": 98049,
+          "decorations": {
+            "topLeft": null,
+            "bottomLeft": null
+          },
+          "signs": [
+            {
+              "type": "Target",
+              "side": 0,
+              "rotation": -1
+            }
+          ]
         }
       ],
       [
         2,
         1,
         {
-          "seed": 54256
+          "seed": 54256,
+          "signs": []
         }
       ],
       [
@@ -1867,7 +1879,8 @@
         }
       ]
     ]
-  ],
+  ]
+,
   "cars": [
     {
       "following": true,
@@ -1879,19 +1892,19 @@
       "options": {
         "noHead": true
       },
-      "startOffset": 0
+      "startOffset": 500
     },
     {
       "following": false,
       "movement": {
         "type": "path",
-        "initial": [ 7, 2 ],
+        "initial": [ 6, 2 ],
         "path": [ 1, 2, -1 ]
       },
       "options": {
         "noDriver": true
       },
-      "startOffset": 0
+      "startOffset": 500
     },
     {
       "following": false,

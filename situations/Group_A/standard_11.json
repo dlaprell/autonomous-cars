@@ -858,7 +858,16 @@
         {
           "trashCan": true,
           "bench": true,
-          "seed": 16399
+          "seed": 16399,
+          "decorations": {
+            "topLeft": {
+              "type": "trashcan"
+            },
+            "bottomLeft": {
+              "type": "bench",
+              "target": true
+            }
+          }
         }
       ],
       [
@@ -1867,13 +1876,15 @@
         }
       ]
     ]
-  ],
+  ]
+
+  ,
   "cars": [
     {
       "following": true,
       "movement": {
         "type": "path",
-        "initial": [ 6, 3 ],
+        "initial": [ 6, 4 ],
         "path": [ 2, 2, 1 ]
       },
       "options": {
@@ -1885,13 +1896,13 @@
       "following": false,
       "movement": {
         "type": "path",
-        "initial": [ 4, 7 ],
+        "initial": [ 5, 7 ],
         "path": [ 1, 0, 1, 2 ]
       },
       "options": {
         "noDriver": true
       },
-      "startOffset": 0
+      "startOffset": 1700
     },
     {
       "following": false,
@@ -1915,19 +1926,31 @@
       "options": {
         "noDriver": false
       },
+      "startOffset": 2000
+    },
+    {
+      "following": false,
+      "movement": {
+        "type": "path",
+        "initial": [ 10, 12 ],
+        "path": [ 2, -1, 0 ]
+      },
+      "options": {
+        "noDriver": false
+      },
       "startOffset": 0
     },
     {
       "following": false,
       "movement": {
         "type": "path",
-        "initial": [ 9, 13 ],
-        "path": [ -1, -1, 0 ]
+        "initial": [ 5, 7 ],
+        "path": [ -1, 0, 1, 2 ]
       },
       "options": {
         "noDriver": false
       },
-      "startOffset": 0
+      "startOffset": 900
     }
   ]
 }

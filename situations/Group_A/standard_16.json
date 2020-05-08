@@ -785,9 +785,15 @@
       ],
       [
         1,
-        0,
+        2,
         {
-          "seed": 77590
+          "seed": 77590,
+          "decorations": {
+            "topLeft": {
+              "type": "trashcan"
+            },
+            "bottomLeft": null
+          }
         }
       ],
       [
@@ -908,7 +914,15 @@
         1,
         0,
         {
-          "seed": 54508
+          "seed": 54508,
+          "decorations": {
+            "topLeft": {
+              "type": "trashcan",
+              "target": true,
+              "rotation": -1
+            },
+            "bottomLeft": null
+          }
         }
       ],
       [
@@ -1022,9 +1036,13 @@
       ],
       [
         1,
-        0,
+        2,
         {
-          "seed": 4382
+          "seed": 4382,
+          "decorations": {
+            "topLeft": null,
+            "bottomLeft": null
+          }
         }
       ],
       [
@@ -1139,7 +1157,13 @@
         1,
         -1,
         {
-          "seed": 86679
+          "seed": 86679,
+          "decorations": {
+            "topLeft": {
+              "type": "bench"
+            },
+            "bottomLeft": null
+          }
         }
       ],
       [
@@ -1867,31 +1891,33 @@
         }
       ]
     ]
-  ],
+  ]
+
+,
   "cars": [
     {
       "following": true,
       "movement": {
         "type": "path",
-        "initial": [ 8, 7 ],
-        "path": [ 1, 1, -1 ]
+        "initial": [ 9, 7 ],
+        "path": [ 2, 1, -1 ]
       },
       "options": {
         "noHead": true
       },
-      "startOffset": 0
+      "startOffset": 500
     },
     {
       "following": false,
       "movement": {
         "type": "path",
-        "initial": [ 11, 2 ],
-        "path": [ 1, 2, -1 ]
+        "initial": [ 12, 2 ],
+        "path": [ 2, -1, -1, 0 ]
       },
       "options": {
         "noDriver": true
       },
-      "startOffset": 0
+      "startOffset": 500
     },
     {
       "following": false,
@@ -1903,7 +1929,7 @@
       "options": {
         "noDriver": false
       },
-      "startOffset": 0
+      "startOffset": 600
     },
     {
       "following": false,
@@ -1927,7 +1953,19 @@
       "options": {
         "noDriver": false
       },
-      "startOffset": 0
+      "startOffset": 1300
+    },
+    {
+      "following": false,
+      "movement": {
+        "type": "path",
+        "initial": [ 10, 2 ],
+        "path": [ 1, -1, -1, 0 ]
+      },
+      "options": {
+        "noDriver": false
+      },
+      "startOffset": 2000
     }
   ]
 }

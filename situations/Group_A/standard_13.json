@@ -1200,7 +1200,17 @@
         {
           "trashCan": true,
           "bench": true,
-          "seed": 14703
+          "seed": 14703,
+          "decorations": {
+            "topLeft": {
+              "type": "bench",
+              "target": true,
+              "rotation": -1
+            },
+            "bottomLeft": {
+              "type": "trashcan"
+            }
+          }
         }
       ],
       [
@@ -1867,7 +1877,10 @@
         }
       ]
     ]
-  ],
+  ]
+
+
+,
   "cars": [
     {
       "following": true,
@@ -1911,6 +1924,18 @@
         "type": "path",
         "initial": [ 7, 11 ],
         "path": [ 0, 0, 1, 1 ]
+      },
+      "options": {
+        "noDriver": false
+      },
+      "startOffset": 0
+    },
+    {
+      "following": false,
+      "movement": {
+        "type": "path",
+        "initial": [ 2, 8 ],
+        "path": [ 2, 1, 1 ]
       },
       "options": {
         "noDriver": false

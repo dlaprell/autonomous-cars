@@ -980,7 +980,14 @@
         1,
         0,
         {
-          "seed": 78857
+          "seed": 78857,
+          "signs": [
+            {
+              "type": "Target",
+              "side": 0,
+              "rotation": 2
+            }
+          ]
         }
       ],
       [
@@ -1867,7 +1874,8 @@
         }
       ]
     ]
-  ],
+  ]
+,
   "cars": [
     {
       "following": true,
@@ -1879,7 +1887,7 @@
       "options": {
         "noHead": true
       },
-      "startOffset": 0
+      "startOffset": 500
     },
     {
       "following": false,

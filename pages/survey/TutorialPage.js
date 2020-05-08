@@ -4,23 +4,56 @@
 
 import { h, Component } from 'preact';
 import { Content, Button, ButtonBar } from './Ui';
+import AspectRatioKeeper from './AspectRatioKeeper';
+import { Simulation } from '../../components/Simulation';
+
+import * as world from '../../situations/standard_practice.json';
+import { GridMap } from '../../components/src/grid';
 
 export default class TutorialPage extends Component {
   constructor(...args) {
     super(...args);
 
-    this.handleClick = (evt) => {
+    this.state = {
+      fullRunAtLeastOnce: false,
+
+      worldKey: 0
+    };
+
+    this.handleReady = (evt) => {
       evt.preventDefault();
 
-      const { onStart } = this.props;
-      if (onStart) {
-        onStart({});
+      const { onReady } = this.props;
+      if (onReady) {
+        onReady();
       }
     }
+
+    this.grid = new GridMap(
+      this.props.models,
+      {
+        baseMap: world.map,
+        creatorView: false,
+        asyncInit: false
+      }
+    );
+
+    this.handleSimulationStop = () => {
+      this.setState({
+        fullRunAtLeastOnce: true
+      });
+    };
+
+    this.handleRepeat = () => {
+      this.setState(st => ({
+        worldKey: st.worldKey + 1
+      }));
+    };
   }
 
   render() {
-    const { footer } = this.props;
+    const { footer, models, duration } = this.props;
+    const { fullRunAtLeastOnce, worldKey } = this.state;
 
     return (
       <Content footer={footer}>
@@ -28,26 +61,31 @@ export default class TutorialPage extends Component {
           <div className="top-spacer" />
 
           <h3>
-            Notes
+            Übungsdurchlauf
           </h3>
 
           <div className="top-spacer" />
 
-          <p>
-            Lorem ipsum dolor sit amet, consetetur sadipscing elitr,
-            sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat,
-            sed diam voluptua. At vero eos et accusam et justo duo dolores et ea
-            rebum. Stet clita kasd gubergren, no sea takimata sanctus est
-            Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur
-            sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et
-            dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et
-            justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea
-            takimata sanctus est Lorem ipsum dolor sit amet.
-          </p>
+          <AspectRatioKeeper minRatio={4 / 3} maxRatio={16 / 9}>
+            <Simulation
+              key={`world_${worldKey}`}
+              withTraffic
+              world={world}
+              preLoadedGrid={this.grid}
+              stopAfter={duration}
+              models={models}
+              onStop={this.handleSimulationStop}
+            />
+          </AspectRatioKeeper>
+
+          <div className="top-spacer" />
 
           <ButtonBar align="center">
-            <Button onClick={this.handleClick}>
-              First Situation
+            <Button onClick={this.handleRepeat}>
+              Testszene wiederholen
+            </Button>
+            <Button onClick={this.handleReady} disabled={!fullRunAtLeastOnce}>
+              Zur ersten Szene
             </Button>
           </ButtonBar>
         </div>

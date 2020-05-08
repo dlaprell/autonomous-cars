@@ -3,27 +3,14 @@
 /** @jsx h */
 
 import { h, Component } from 'preact';
-import linkState from 'linkstate';
 import { Content, Button, ButtonBar } from './Ui';
-import { assert } from '../../components/utils/assert';
 
 export default class IntroPage extends Component {
   constructor(...args) {
     super(...args);
 
     this.state = {
-      agreed: false,
-      driverLicense: null,
-      age: ''
-    };
-
-    this.handleDriverLicenseChange = (evt) => {
-      const { checked, value } = evt.target;
-
-      const has = checked && value === 'yes';
-      this.setState({
-        driverLicense: has
-      });
+      agreed: false
     };
 
     this.handleAgreementChange = (evt) => {
@@ -37,16 +24,9 @@ export default class IntroPage extends Component {
     this.submitResult = (evt) => {
       evt.preventDefault();
 
-      const {
-        driverLicense, age
-      } = this.state;
-
-      const { onStart } = this.props;
-      if (onStart) {
-        onStart({
-          driverLicense,
-          age: Math.round(Number(age))
-        });
+      const { onNext } = this.props;
+      if (onNext) {
+        onNext();
       }
     }
   }
@@ -54,15 +34,8 @@ export default class IntroPage extends Component {
   render() {
     const { footer } = this.props;
     const {
-      agreed,
-      driverLicense,
-      age
+      agreed
     } = this.state;
-
-    const dataReady = (
-      age !== '' && !isNaN(Number(age)) && Number(age) > 0 && Number(age) <= 130
-      && driverLicense !== null
-    );
 
     return (
       <Content footer={footer}>
@@ -70,47 +43,47 @@ export default class IntroPage extends Component {
           <div className="top-spacer" />
 
           <h1>
-            Survey
+            Studie
           </h1>
 
-          <fieldset>
-            <label>
-              <input
-                type="radio"
-                name="driverLicense"
-                value="yes"
-                onChange={this.handleDriverLicenseChange}
-                checked={driverLicense === true}
-              />
-
-              Yes, driver license
-            </label>
-
-            <label>
-              <input
-                type="radio"
-                name="driverLicense"
-                value="no"
-                onChange={this.handleDriverLicenseChange}
-                checked={driverLicense === false}
-              />
-
-              No, driver license
-            </label>
-          </fieldset>
-
-          <fieldset>
-            <label htmlFor="age">
-              Age
-            </label>
-            <input
-              type="number"
-              name="age"
-              value={age}
-              id="age"
-              onInput={linkState(this, 'age')}
-            />
-          </fieldset>
+          <p>
+            Herzlich willkommen zur … Studie. Vielen Dank für Ihr Interesse an dieser Studie.
+            Die Teilnahme dauert ungefähr 30 bis 40 Minuten und wenn Sie Psychologie an der
+            Heinrich-Heine Universität studieren, können Sie am Ende der Studie Ihre
+            E-Mail Adresse angeben und zwei halbe VP-Stunden erhalten. Die E-Mail Adresse
+            wird separat von Ihren Daten gespeichert.
+          </p>
+          <p>
+            Die Teilnahme an der Studie ist freiwillig. Sie können jederzeit ohne Angabe von Gründen
+            abbrechen, ohne dass Ihnen dadurch ein Nachteil entsteht. Ihre Teilnahme ist mit keinen
+            vorhersehbaren Risiken verbunden. Sollten Sie jedoch zu irgendeinem Zeitpunkt nachteilige
+            Auswirkungen feststellen, empfehlen wir Ihnen, die Studie zu beenden, indem Sie Ihren
+            Webbrowser schließen. Dann können allerdings auch keine VP-Stunden bescheinigt werden.
+          </p>
+          <p>
+            Ihre Angaben werden streng vertraulich behandelt und ausgewertet.
+            Alle Mitglieder unseres Forschungsteams wurden in Belangen des Datenschutzes
+            unterwiesen und unterliegen der Schweigepflicht.
+          </p>
+          <p>
+            Alle erhobenen Daten werden auf verschlüsselten Datenträgern (AES-256 Bit) gespeichert.
+            Die Daten werden auf den Rechnern der Abteilung für Mathematische und Kognitive
+            Psychologie verarbeitet und ausgewertet. Möglicherweise werden diese elektronischen Daten
+            (ohne individuellen Code) außerdem anderen Personen in Europa und im
+            außereuropäischen Ausland zur Datenauswertung zur Verfügung gestellt
+            (beispielsweise in Langzeitarchiven). Nach dem derzeitigen Stand der Erkenntnisse ist es
+            anhand Ihrer Daten Dritten praktisch nicht möglich, auf Ihre Identität zu schließen.
+          </p>
+          <p>
+            Wir planen, die Ergebnisse dieser Studie in Fachzeitschriften und Büchern zu veröffentlichen.
+            Auf Basis dieser Publikationen kann nicht durch Dritte auf Ihre Identität
+            geschlossen werden. Wenn Sie an diesen Veröffentlichungen interessiert sind,
+            oder für weitere Einzelheiten zu dieser Studie, wenden Sie sich bitte an{' '}
+            <a href="mailto:Julie.Niziurski@hhu.de">Dr. Julie A. Niziurski (Julie.Niziurski@hhu.de)</a>.
+          </p>
+          <p>
+            Wenn Sie einverstanden sind, klicken Sie bitte nun auf den Button „Einverstanden“:
+          </p>
 
           <fieldset>
             <label>
@@ -120,13 +93,17 @@ export default class IntroPage extends Component {
                 checked={agreed}
                 onChange={this.handleAgreementChange}
               />
-              Yes, I agree ...
+              <i>
+                Hiermit bestätige ich meine freiwillige Teilnahme an dieser Umfrage. Ich habe alle Informationen verstanden.
+                Ich bin darüber informiert worden, dass ich den Versuch jederzeit ohne Angabe von Gründen beenden kann,
+                ohne dass mir dadurch Nachteile entstehen. Ich verzichte auf mein dauerhaftes Widerrufsrecht.
+              </i>
             </label>
           </fieldset>
 
           <ButtonBar align="center">
-            <Button type="submit" disabled={!agreed || !dataReady}>
-              Start
+            <Button type="submit" disabled={!agreed}>
+              Einverstanden
             </Button>
           </ButtonBar>
         </form>

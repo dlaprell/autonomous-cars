@@ -17,6 +17,7 @@ const resultSchema = Joi
     mobile: Joi.boolean().required(),
     driverLicense: Joi.boolean().required(),
     age: Joi.number().min(1).max(130).required(),
+    group: Joi.string().pattern(/^a|b$/),
 
     email: Joi.string().allow(null).optional(),
 

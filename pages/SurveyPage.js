@@ -3,6 +3,8 @@
 /** @jsx h */
 
 import { h, Component } from 'preact';
+import { WEBGL } from 'three/examples/jsm/WebGL';
+
 import { extractWorldsForRuns } from '../components/worlds/WorldSelector';
 
 import { Content, SimulationWrapper, ProgressBar } from './survey/Ui';
@@ -13,9 +15,12 @@ import loadModels from '../components/models/ModelLoader';
 import { GridMap } from '../components/src/grid';
 
 import Intro from './survey/IntroPage';
-import RunResult from './survey/RunResult';
+import Data from './survey/DataPage';
+import Hint from './survey/HintsPage';
 import Tutorial from './survey/TutorialPage';
+import RunResult from './survey/RunResult';
 import ResultSubmit from './survey/ResultSubmitPage';
+import AttentionTest from './survey/AttentionTestPage';
 
 const languages = {
   de: {},
@@ -28,7 +33,11 @@ const RUN_TIME = process.env.NODE_ENV !== 'production'
 
 const NUM_MAX_RUNS = process.env.NODE_ENV !== 'production'
   ? Number(new URLSearchParams(window.location.search).get('run_count') || 'Infinity')
-  : 3;
+  : Infinity;
+
+const ATTENTION_TESTS_EACH = process.env.NODE_ENV !== 'production'
+  ? Number(new URLSearchParams(window.location.search).get('attn_test') || '20')
+  : 20;
 
 function debug(...args) {
   if (process.env.NODE_ENV !== 'production') {
@@ -38,9 +47,12 @@ function debug(...args) {
 /** @enum {string} */
 const UI_STATE = {
   INTRO: 'intro',
+  HINT: 'hint',
+  DATA: 'data',
   TUTORIAL: 'tutorial',
   RUNS: 'runs',
-  FINISHED: 'finshed'
+  FINISHED: 'finshed',
+  ATTENTION: 'attention'
 }
 
 /**
@@ -54,6 +66,35 @@ function getUserLanguages() {
     (navigator.userLanguage ? [ navigator.userLanguage ] : null) ||
     [ 'en' ]
   );
+}
+
+function storageAvailable(type) {
+  let storage;
+  try {
+      /** @type {WindowLocalStorage|WindowSessionStorage} */
+      storage = window[type];
+      let x = '__storage_test__';
+
+      // @ts-ignore
+      storage.setItem(x, x);
+
+      // @ts-ignore
+      storage.removeItem(x);
+      return true;
+  } catch(e) {
+      return e instanceof DOMException && (
+          // everything except Firefox
+          e.code === 22 ||
+          // Firefox
+          e.code === 1014 ||
+          // test name field too, because code might not be present
+          // everything except Firefox
+          e.name === 'QuotaExceededError' ||
+          // Firefox
+          e.name === 'NS_ERROR_DOM_QUOTA_REACHED') &&
+          // acknowledge QuotaExceededError only if there's something already stored
+          (storage && storage.length !== 0);
+  }
 }
 
 export default class SurveyPage extends Component {
@@ -78,6 +119,21 @@ export default class SurveyPage extends Component {
       runs = runs.slice(0, NUM_MAX_RUNS);
     }
 
+    const runsWithAttnTests = [];
+    const offsetInitial = Math.floor(ATTENTION_TESTS_EACH / 2 + (ATTENTION_TESTS_EACH / 2) * Math.random());
+    for (let i = offsetInitial; i < runs.length; i += ATTENTION_TESTS_EACH) {
+      runsWithAttnTests.push(i);
+    }
+
+    debug("Attention tests at runs: ", runsWithAttnTests);
+
+    this.webGlSupport = WEBGL.isWebGLAvailable();
+    if (!this.webGlSupport) {
+      this.webGlError = WEBGL.getWebGLErrorMessage();
+    }
+
+    const group = Math.random() <= 0.5 ? 'a' : 'b';
+
     console.info('All runs: ', runs);
 
     /** @type {Array<boolean | null>} */
@@ -99,23 +155,62 @@ export default class SurveyPage extends Component {
       preLoadedRun: null,
       preLoadGrid: null,
 
+      group,
       runs,
       curRun: null,
       curRunFinished: false,
       runResults
     };
 
-    this.skipIntro = ({ driverLicense, age }) => {
+    this.handleAttentionTestFinished = () => {
       this.setState({
-        uiState: UI_STATE.TUTORIAL,
-        driverLicense,
-        age
+        uiState: UI_STATE.RUNS
+      });
+    };
+
+    this.handleNext = (data) => {
+      this.setState(({ uiState }) => {
+        assert(
+          uiState === UI_STATE.INTRO || uiState === UI_STATE.HINT ||
+          uiState === UI_STATE.DATA || uiState === UI_STATE.TUTORIAL
+        );
+
+        const update = {};
+
+        switch (uiState) {
+          case UI_STATE.INTRO: {
+            update.uiState = UI_STATE.DATA;
+            break;
+          }
+
+          case UI_STATE.DATA: {
+            update.uiState = UI_STATE.HINT;
+
+            const { driverLicense, age } = data;
+            update.driverLicense = driverLicense;
+            update.age = age;
+            break;
+          }
+
+          case UI_STATE.HINT: {
+            update.uiState = UI_STATE.TUTORIAL;
+            break;
+          }
+
+          case UI_STATE.TUTORIAL: {
+            update.uiState = UI_STATE.RUNS;
+            break;
+          }
+        }
+
+        assert(typeof update.uiState === 'string' && update.uiState !== uiState);
+
+        return update;
       });
     };
 
     this.handleSimulationStop = () => {
       this.setState(({ curRun, runs, models }) => {
-
         let preLoadGrid = null;
         let preLoadedRun = null;
 
@@ -132,10 +227,14 @@ export default class SurveyPage extends Component {
           debug(`Started preloading for run=${preLoadedRun}`);
         }
 
+        const attentionTest = runsWithAttnTests.indexOf(curRun) !== -1;
+
         return {
           preLoadGrid,
           preLoadedRun,
-          curRunFinished: true
+          curRunFinished: true,
+
+          uiState: attentionTest ? UI_STATE.ATTENTION : UI_STATE.RUNS
         };
       });
     };
@@ -234,11 +333,29 @@ export default class SurveyPage extends Component {
   }
 
   render() {
+    if (!this.webGlSupport) {
+      return (
+        <Content footer={null}>
+          <h3>Entschuldingung</h3>
+
+          <p>
+            Teile dieser Studie basieren auf einer Technik mit dem Namen WebGL.
+            Ihr aktueller Browser scheint diese Technik nicht zu unterstützen. Daher
+            können Sie zur Zeit leider nicht an der Studie teilnehmen.
+          </p>
+
+          <div dangerouslySetInnerHTML={{ __html: this.webGlError.outerHTML }} />
+        </Content>
+      );
+    }
+
     const {
       uiState,
 
       driverLicense,
       age,
+
+      group,
 
       curRun,
       runs,
@@ -255,40 +372,70 @@ export default class SurveyPage extends Component {
 
     assert(Object.values(UI_STATE).indexOf(uiState) !== -1);
 
-    const total = runs.length + 2;
+
+    const progTotal = runs.length + 4;
+    let progValue = 0;
+    switch (uiState) {
+      case UI_STATE.INTRO: {
+        progValue = 0;
+        break;
+      }
+      case UI_STATE.DATA: {
+        progValue = 1;
+        break;
+      }
+      case UI_STATE.HINT: {
+        progValue = 2;
+        break;
+      }
+      case UI_STATE.TUTORIAL: {
+        progValue = 3;
+        break;
+      }
+      case UI_STATE.RUNS:
+      case UI_STATE.ATTENTION: {
+        progValue = 4 + curRun;
+        break;
+      }
+      case UI_STATE.FINISHED: {
+        progValue = 4 + runs.length;
+        break;
+      }
+    }
+
     const progress = (
-      <ProgressBar total={total} now={
-        uiState === UI_STATE.INTRO ? 0 : (
-          uiState === UI_STATE.TUTORIAL ? 1 : (
-            uiState === UI_STATE.RUNS
-              ? 2 + curRun
-              : runs.length + 2
-          )
-        )
-      } />
+      <ProgressBar total={progTotal} now={progValue} />
     );
 
     if (uiState === UI_STATE.INTRO) {
       return (
         <Intro
-          onStart={this.skipIntro}
+          onNext={this.handleNext}
           footer={progress}
         />
       );
     }
 
-    if (uiState === UI_STATE.TUTORIAL) {
+    if (uiState === UI_STATE.DATA) {
       return (
-        <Tutorial
-          onStart={this.moveToNextRun}
+        <Data
+          onNext={this.handleNext}
           footer={progress}
         />
       );
     }
 
-    if (uiState === UI_STATE.RUNS) {
-      assert(curRun >= 0 && curRun < runs.length);
+    if (uiState === UI_STATE.HINT) {
+      return (
+        <Hint
+          group={group}
+          onNext={this.handleNext}
+          footer={progress}
+        />
+      );
+    }
 
+    if (uiState === UI_STATE.TUTORIAL || uiState === UI_STATE.RUNS) {
       if (modelsLoading) {
         return (
           <Content footer={progress}>
@@ -306,7 +453,30 @@ export default class SurveyPage extends Component {
           </Content>
         );
       }
+    }
 
+    if (uiState === UI_STATE.TUTORIAL) {
+      return (
+        <Tutorial
+          duration={RUN_TIME}
+          models={models}
+          onReady={this.moveToNextRun}
+          footer={progress}
+        />
+      );
+    }
+
+    if (uiState === UI_STATE.ATTENTION) {
+      return (
+        <AttentionTest
+          footer={progress}
+          onNext={this.handleAttentionTestFinished}
+        />
+      );
+    }
+
+    if (uiState === UI_STATE.RUNS) {
+      assert(curRun >= 0 && curRun < runs.length);
       const { world } = runs[curRun];
 
       if (!curRunFinished) {
@@ -340,6 +510,7 @@ export default class SurveyPage extends Component {
           resultData={{
             age,
             driverLicense,
+            group,
             results: runs.map(
               (r, idx) => ({ name: r.name, answer: runResults[idx] })
             )

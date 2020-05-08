@@ -60,6 +60,17 @@ export function ButtonBar({ children, align, ...props }) {
         .button-bar[data-alignment="right"] {
           text-align: right;
         }
+
+        .button-bar > :global(button:not(:first-of-type)) {
+          border-top-left-radius: 0;
+          border-bottom-left-radius: 0;
+          border-left-width: 0;
+        }
+
+        .button-bar > :global(button:not(:last-of-type)) {
+          border-top-right-radius: 0;
+          border-bottom-right-radius: 0;
+        }
       `}</style>
     </div>
   );
@@ -103,7 +114,7 @@ export function Content({ children, footer }) {
 }
 
 export function ProgressBar({ now, total }) {
-  const progress = Math.ceil(5 + 95 * (1.0 * now / total));
+  const progress = Math.ceil(1 + 99 * (1.0 * now / total));
 
   return (
     <div
@@ -112,20 +123,126 @@ export function ProgressBar({ now, total }) {
       aria-valuemin={0}
       aria-valuemax={total}
     >
-      <div className="progress-indicator"
-        style={{ width: `${progress}%` }}
-      />
+      <div className="progress-background progress-inner">
+        <div aria-hidden="true" className="progress-text">
+          {progress} %
+        </div>
+        <div className="progress-indicator progress-inner"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
 
       <style jsx>{`
         .progress-bar {
           padding: 12px 8px;
+          color: #fff;
+          font-size: 12px;
+          font-weight: 600;
+          text-align: center;
+        }
+
+        .progress-text {
+          display: block;
+          height: 0;
+          width: 100%;
+          overflow: visible;
+        }
+
+        .progress-inner {
+          border-radius: 4px;
+        }
+
+        .progress-background {
+          background-color: #666;
         }
 
         .progress-indicator {
-          border-radius: 4px;
-          height: 8px;
+          min-height: 14px;
           background-color: rgb(31, 101, 179);
           transition: all 200ms;
+        }
+      `}</style>
+    </div>
+  );
+}
+
+/**
+ * @param {{ label: string, multiLine?: boolean, error?: string, name: string } & Object} param
+ */
+export function Textbox({ label, name, multiLine, error, ...props }) {
+  return (
+    <div className="has-float-label" data-has-error={Boolean(error)}>
+      {multiLine ? (
+        <textarea name={name} id={name} placeholder={label} {...props} />
+      ) : (
+        <input type="text" name={name} id={name} placeholder={label} {...props} />
+      )}
+      <label htmlFor={name}>{label}</label>
+
+      <style jsx>{`
+        .has-float-label {
+          display: block;
+          position: relative;
+          margin: 10px 0;
+        }
+        .has-float-label label {
+          position: absolute;
+          left: 0.2rem;
+          top: 0;
+          right: 0;
+          cursor: text;
+          font-size: 75%;
+          opacity: 1;
+          will-change: top,font-size,opacity;
+          transition: all .175s ease-out;
+        }
+
+        .has-float-label textarea, .has-float-label input {
+          width: 100%;
+          max-width: 100%;
+          min-width: 100%;
+          font-size: inherit;
+          margin-top: 1em;
+          margin-bottom: 1px;
+          padding: 0.4rem 0.2rem 0.2rem;
+          border: 0;
+          border-radius: 0;
+          border-bottom: 1px solid #aaa;
+          background-color: #fff7f2;
+        }
+
+        .has-float-label textarea:disabled, .has-float-label input:disabled {
+          background-color: #fff;
+          color: rgb(100, 100, 100);
+        }
+
+        .has-float-label input::placeholder, .has-float-label textarea::placeholder {
+          opacity: 1;
+          transition: all .2s;
+        }
+
+        .has-float-label input:placeholder-shown:not(:focus)::placeholder, .has-float-label textarea:placeholder-shown:not(:focus)::placeholder {
+          opacity: 0;
+        }
+        .has-float-label input:placeholder-shown:not(:focus) + label, .has-float-label textarea:placeholder-shown:not(:focus) + label {
+          font-size: 100%;
+          opacity: .5;
+          top: 1.25em;
+          pointer-events: none;
+        }
+        .has-float-label input:focus, .has-float-label textarea:focus {
+          outline: none;
+          border-color: rgb(31, 101, 179);
+        }
+
+        .has-float-label[data-has-error="true"] label {
+          color: #A50203;
+        }
+
+        .has-float-label[data-has-error="true"] input,
+        .has-float-label[data-has-error="true"] textarea {
+          border-color: #A50203;
+          background-color: rgb(253, 226, 226);
         }
       `}</style>
     </div>

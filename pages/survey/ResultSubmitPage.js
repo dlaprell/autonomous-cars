@@ -3,7 +3,7 @@
 /** @jsx h */
 
 import { h, Component, Fragment } from 'preact';
-import { Content, Button, ButtonBar } from './Ui';
+import { Content, Button, ButtonBar, Textbox } from './Ui';
 import { version } from '../../package.json';
 
 /** @enum {string} */
@@ -20,7 +20,18 @@ export default class TutorialPage extends Component {
 
     this.state = {
       error: null,
+
+      email: null,
+
       uiState: UI_STATE.START
+    };
+
+    this.handleEmailChange = (evt) => {
+      const { value } = evt.target;
+
+      this.setState({
+        email: value.length === 0 ? null : value
+      });
     };
 
     this.submitResults = () => {
@@ -28,6 +39,7 @@ export default class TutorialPage extends Component {
         uiState: UI_STATE.LOADING
       });
 
+      const { email } = this.state;
       const { resultData } = this.props;
 
       fetch(
@@ -40,6 +52,8 @@ export default class TutorialPage extends Component {
           },
           body: JSON.stringify({
             mobile: false,
+            email,
+
             ...resultData
           })
         }
@@ -68,7 +82,7 @@ export default class TutorialPage extends Component {
 
   render() {
     const { footer } = this.props;
-    const { uiState, error } = this.state;
+    const { uiState, error, email } = this.state;
 
     return (
       <Content footer={footer}>
@@ -77,11 +91,32 @@ export default class TutorialPage extends Component {
 
           <h3>
             {uiState === UI_STATE.FINISHED ? (
-              "Thanks for participating"
+              "Vielen Dank"
             ) : (
-              "Results submission"
+              "Ende"
             )}
           </h3>
+
+          <p>
+            Vielen Dank für Ihre Teilnahme an der Studie. Unser Ziel ist es, herauszufinden, ob autonome Autos
+            im Straßenverkehr Aufmerksamkeit auf sich ziehen und andere Verkehrsteilnehmer ablenken könnten.
+            Da gerade im Straßenverkehr schon geringe Ablenkungen negative Konsequenzen mit sich bringen können,
+            ist es wichtig, herauszufinden, was solche Ablenkungen auslösen kann. Autonome Autos könnten schon
+            in naher Zukunft ein fester Bestandteil des Verkehrsgeschehens sein, aber bisher ist nur wenig
+            Forschung zum Einfluss auf andere Verkehrsteilnehmer betrieben worden. Aus diesem Grund wollten
+            wir die Untersuchung dieser Frage mit dieser Studie anstoßen.
+          </p>
+          <p>
+            Die Teilnehmer wurden in zwei Gruppen unterteilt. Die eine wurde darauf hingewiesen, dass es
+            autonome Autos in den Szenen geben wird während die andere nur allgemein über
+            die Aufgabe aufgeklärt wurde. Es interessiert uns, ob es einen Unterschied für die Zielsuche macht,
+            wenn man sich bewusst darüber ist, was einen erwartet oder wenn man von dem neuen Umstand überrascht wird.
+          </p>
+          <p>
+            Wenn Sie am Ergebnis interessiert sind, kontaktieren Sie gerne{' '}
+            <a href="mailto:hannah.tryba@uni-duesseldorf.de">Hannah Tryba (hannah.tryba@uni-duesseldorf.de)</a>
+            {' '}für weitere Informationen.
+          </p>
 
           {uiState === UI_STATE.ERROR && (
             <p>
@@ -92,16 +127,17 @@ export default class TutorialPage extends Component {
             </p>
           )}
 
-          {uiState === UI_STATE.FINISHED && (
-            <p>
-              Some thank you note...
-            </p>
-          )}
-
           {uiState === UI_STATE.START && (
-            <p>
-              Finished text...
-            </p>
+            <div>
+              <Textbox
+                type="email"
+                name="email"
+                label="E-Mail Adresse"
+                value={email}
+                error={Boolean(email) && email.indexOf('@') === -1}
+                onInput={this.handleEmailChange}
+              />
+            </div>
           )}
 
           {uiState !== UI_STATE.FINISHED && (
@@ -110,7 +146,7 @@ export default class TutorialPage extends Component {
 
               <ButtonBar align="center">
                 <Button onClick={this.submitResults} disabled={uiState === UI_STATE.LOADING}>
-                  {uiState === UI_STATE.ERROR ? 'Retry submission' : 'Submit Results'}
+                  {uiState === UI_STATE.ERROR ? 'Erneut versuchen' : 'Abschicken'}
                 </Button>
               </ButtonBar>
             </Fragment>

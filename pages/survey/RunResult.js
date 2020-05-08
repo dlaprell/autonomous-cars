@@ -43,7 +43,9 @@ export default class RunResult extends Component {
         <form onSubmit={this.submitResult}>
           <div className="top-spacer" />
 
-          <p>Question formulation here:</p>
+          <p>
+            Haben Sie das grüne Dreieck in der vorherigen Szene gesehen?
+          </p>
 
           <fieldset>
             <label>
@@ -54,7 +56,9 @@ export default class RunResult extends Component {
                 checked={answer === true}
                 onChange={this.handleAnswerChange}
               />
-              <span>Yes</span>
+              <span>
+                Ja, ich habe es gesehen.
+              </span>
             </label>
 
             <label>
@@ -65,13 +69,15 @@ export default class RunResult extends Component {
                 checked={answer === false}
                 onChange={this.handleAnswerChange}
               />
-              <span>No</span>
+              <span>
+                Nein, ich habe es nicht gesehen.
+              </span>
             </label>
           </fieldset>
 
           <ButtonBar align="center">
             <Button type="submit" disabled={answer === null}>
-              Next Situation
+              Nächste Szene
             </Button>
           </ButtonBar>
         </form>

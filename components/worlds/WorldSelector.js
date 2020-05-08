@@ -19,17 +19,18 @@ import * as groupA17 from '../../situations/Group_A/standard_17.json';
 import * as groupA18 from '../../situations/Group_A/standard_18.json';
 import * as groupA19 from '../../situations/Group_A/standard_19.json';
 import * as groupA20 from '../../situations/Group_A/standard_20.json';
+import * as groupA21 from '../../situations/Group_A/standard_21.json';
 
-// import * as groupB1 from '../../situations/Group_B/standard_1.json';
-// import * as groupB2 from '../../situations/Group_B/standard_2.json';
-// import * as groupB3 from '../../situations/Group_B/standard_3.json';
-// import * as groupB4 from '../../situations/Group_B/standard_4.json';
-// import * as groupB5 from '../../situations/Group_B/standard_5.json';
-// import * as groupB6 from '../../situations/Group_B/standard_6.json';
-// import * as groupB7 from '../../situations/Group_B/standard_7.json';
-// import * as groupB8 from '../../situations/Group_B/standard_8.json';
-// import * as groupB9 from '../../situations/Group_B/standard_9.json';
-// import * as groupB10 from '../../situations/Group_B/standard_10.json';
+import * as groupB1 from '../../situations/Group_B/standard_1.json';
+import * as groupB2 from '../../situations/Group_B/standard_2.json';
+import * as groupB3 from '../../situations/Group_B/standard_3.json';
+import * as groupB4 from '../../situations/Group_B/standard_4.json';
+import * as groupB5 from '../../situations/Group_B/standard_5.json';
+import * as groupB6 from '../../situations/Group_B/standard_6.json';
+import * as groupB7 from '../../situations/Group_B/standard_7.json';
+import * as groupB8 from '../../situations/Group_B/standard_8.json';
+import * as groupB9 from '../../situations/Group_B/standard_9.json';
+import * as groupB10 from '../../situations/Group_B/standard_10.json';
 
 import { shuffleArray, pickRandomEntries } from '../utils/array';
 
@@ -78,21 +79,23 @@ const worldsGroupA = [
   { name: 'groupA17', ...groupA17 },
   { name: 'groupA18', ...groupA18 },
   { name: 'groupA19', ...groupA19 },
-  { name: 'groupA20', ...groupA20 }
+  { name: 'groupA20', ...groupA20 },
+  { name: 'groupA21', ...groupA21 }
 ];
 
 /** @type {Array<WorldData>} */
 const worldsGroupB = [
-//  { name: 'groupB1', ...groupB1 },
-//  { name: 'groupB2', ...groupB2 },
-//  { name: 'groupB3', ...groupB3 },
-//  { name: 'groupB4', ...groupB4 },
-//  { name: 'groupB5', ...groupB5 },
-//  { name: 'groupB6', ...groupB6 },
-//  { name: 'groupB7', ...groupB7 },
-//  { name: 'groupB8', ...groupB8 },
-//  { name: 'groupB9', ...groupB9 },
-//  { name: 'groupB10', ...groupB10 }
+ { name: 'groupB1', ...groupB1 },
+ // TODO: this one has no cars
+ // { name: 'groupB2', ...groupB2 },
+ { name: 'groupB3', ...groupB3 },
+ { name: 'groupB4', ...groupB4 },
+ { name: 'groupB5', ...groupB5 },
+ { name: 'groupB6', ...groupB6 },
+ { name: 'groupB7', ...groupB7 },
+ { name: 'groupB8', ...groupB8 },
+ { name: 'groupB9', ...groupB9 },
+ { name: 'groupB10', ...groupB10 }
 ];
 
 /** @type {Array<WorldData>} */
@@ -108,7 +111,7 @@ function removeNoDriver(world) {
     map: world.map,
     cars: world.cars
       .map(car => {
-        if (!car.options.noDriver) {
+        if (!car || !car.options || !car.options.noDriver) {
           return car;
         }
 

@@ -266,7 +266,7 @@ class Tile {
     /** @type {THREE.BufferGeometry?} */
     this._sideWalkGeometry = null;
 
-    if (DEBUG_TILES || (baseOptions && baseOptions.drawBorders)) {
+    if ((DEBUG_TILES || (baseOptions && baseOptions.drawBorders)) && process.env.NODE_ENV !== 'production') {
       const outlineShape = new Shape();
 
       const anchorX = TILE_SIZE / 2;

@@ -7,6 +7,7 @@ import express from 'express';
 import csvStringify from 'csv-stringify/lib/sync.js';
 import Joi from '@hapi/joi';
 import asyncHandler from 'express-async-handler';
+import staticComp from 'express-static-gzip';
 
 const resultSchema = Joi
   .object({
@@ -43,12 +44,17 @@ if (!existsSync(resultFile)) {
 
 const app = express();
 
-app.use(express.static('static'));
-app.use(bodyParser.json());
-
 app.get('/', function (req, res) {
   res.redirect('/survey');
 });
+
+app.use(staticComp('static', {
+  enableBrotli: true,
+  orderPreference: [ 'br', 'gz' ]
+}));
+app.use(bodyParser.json({
+  limit: '30kb'
+}));
 
 app.get('/survey', function (req, res) {
   res.sendFile(resolve('static', 'index.html'), {

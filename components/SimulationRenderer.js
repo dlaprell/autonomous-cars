@@ -14,7 +14,7 @@ class SimulationRenderer extends Component {
 
     const { vr, timeProvider, scene, renderOptions } = this.props;
     // Cannot be changed later on
-    this._vr = vr;
+    this._vr = vr && process.env.NODE_ENV !== 'production';
 
     this._ref = null;
     this._mounted = false;
@@ -154,7 +154,7 @@ class SimulationRenderer extends Component {
 
     this._context.canvas = this._renderer.domElement;
 
-    if (this._vr) {
+    if (this._vr && process.env.NODE_ENV !== 'production') {
       this._ref.appendChild(VRButton.createButton(this._renderer));
 
       /** @type {WebXrProvider} */

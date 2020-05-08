@@ -28,7 +28,7 @@ const RUN_TIME = process.env.NODE_ENV !== 'production'
 
 const NUM_MAX_RUNS = process.env.NODE_ENV !== 'production'
   ? Number(new URLSearchParams(window.location.search).get('run_count') || 'Infinity')
-  : Infinity;
+  : 3;
 
 function debug(...args) {
   if (process.env.NODE_ENV !== 'production') {

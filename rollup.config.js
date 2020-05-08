@@ -12,6 +12,8 @@ import livereload from 'rollup-plugin-livereload';
 import alias from '@rollup/plugin-alias';
 import strip from '@rollup/plugin-strip';
 import { terser } from 'rollup-plugin-terser';
+import gzipPlugin from 'rollup-plugin-gzip';
+import { brotliCompressSync } from 'zlib';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -89,6 +91,11 @@ export default {
     }),
     commonjs(),
     json(),
-    isProd ? terser() : null
+    isProd ? terser() : null,
+    isProd ? gzipPlugin({}) : null,
+    isProd ? gzipPlugin({
+      customCompression: content => brotliCompressSync(Buffer.from(content)),
+      fileName: '.br',
+    }) : null
   ].filter(Boolean)
 };

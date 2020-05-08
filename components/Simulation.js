@@ -138,7 +138,7 @@ class Simulation extends Component {
 
     this._grid.highlightTile(highlightTile || null);
 
-    const orbitControls = Boolean(withCamera && !vr);
+    const orbitControls = Boolean(withCamera && !vr) && process.env.NODE_ENV !== 'production';
 
     return (
       <ModelManager models={models}>

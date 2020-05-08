@@ -65,7 +65,7 @@ class GridMap {
     this._group = new Group();
 
     this._highlightCube = null;
-    if (creatorView) {
+    if (creatorView && process.env.NODE_ENV !== 'production') {
       const cubeMaterial = new MeshLambertMaterial({ color: 0x77BBFF });
       cubeMaterial.transparent = true;
       cubeMaterial.opacity = 0.5;
@@ -239,7 +239,7 @@ class GridMap {
 
           yield;
         }
-      } else { // Mode 2
+      } else if (process.env.NODE_ENV !== 'production') { // Mode 2
         for (const { tile, generation } of forestTiles) {
           if (generation !== curGeneration) {
             continue;
@@ -321,7 +321,7 @@ class GridMap {
    */
   updateRowGenerator(row, y) {
     return (function* (_self) {
-      
+
       const oldRowExists = Boolean(_self._map && _self._map[y]);
       const length = oldRowExists ? Math.max(_self._map[y].length, row.length) : row.length;
 
@@ -684,21 +684,23 @@ class GridMap {
    * @param {{ x: number, y: number }} tile
    */
   highlightTile(tile) {
-    if (this._highlightCube === null) {
-      return;
+    if (process.env.NODE_ENV !== 'production') {
+      if (this._highlightCube === null) {
+        return;
+      }
+
+      if (!tile) {
+        this._highlightCube.visible = false;
+        return;
+      }
+
+      this._highlightCube.visible = true;
+
+      const [ aX, aY ] = this.getTileAnchorPosition(tile.x, tile.y);
+
+      this._highlightCube.position.x = aX + TILE_SIZE / 2;
+      this._highlightCube.position.z = aY + TILE_SIZE / 2;
     }
-
-    if (!tile) {
-      this._highlightCube.visible = false;
-      return;
-    }
-
-    this._highlightCube.visible = true;
-
-    const [ aX, aY ] = this.getTileAnchorPosition(tile.x, tile.y);
-
-    this._highlightCube.position.x = aX + TILE_SIZE / 2;
-    this._highlightCube.position.z = aY + TILE_SIZE / 2;
   }
 
   getGroup() {

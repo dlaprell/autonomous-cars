@@ -9,18 +9,6 @@ export default class IntroPage extends Component {
   constructor(...args) {
     super(...args);
 
-    this.state = {
-      agreed: false
-    };
-
-    this.handleAgreementChange = (evt) => {
-      const { checked } = evt.target;
-
-      this.setState({
-        agreed: checked
-      });
-    };
-
     this.submitResult = (evt) => {
       evt.preventDefault();
 
@@ -33,9 +21,6 @@ export default class IntroPage extends Component {
 
   render() {
     const { footer } = this.props;
-    const {
-      agreed
-    } = this.state;
 
     return (
       <Content footer={footer}>
@@ -46,12 +31,16 @@ export default class IntroPage extends Component {
             Studie
           </h1>
 
+          <h5>
+            Wichtig: Wenn Sie an einer Farbsehschwäche leiden, können Sie leider nicht an dieser Studie teilnehmen.
+          </h5>
+
           <p>
             Herzlich willkommen zur … Studie. Vielen Dank für Ihr Interesse an dieser Studie.
-            Die Teilnahme dauert ungefähr 30 bis 40 Minuten und wenn Sie Psychologie an der
-            Heinrich-Heine Universität studieren, können Sie am Ende der Studie Ihre
-            E-Mail Adresse angeben und zwei halbe VP-Stunden erhalten. Die E-Mail Adresse
-            wird separat von Ihren Daten gespeichert.
+            Die Teilnahme dauert ungefähr 35 bis 45 Minuten und wenn Sie Psychologie an der
+            Heinrich-Heine Universität studieren, können Sie am Ende der Studie Ihre E-Mail
+            Adresse angeben und zwei halbe VP-Stunden erhalten. Die E-Mail Adresse wird
+            separat von Ihren Daten gespeichert. 
           </p>
           <p>
             Die Teilnahme an der Studie ist freiwillig. Sie können jederzeit ohne Angabe von Gründen
@@ -61,48 +50,66 @@ export default class IntroPage extends Component {
             Webbrowser schließen. Dann können allerdings auch keine VP-Stunden bescheinigt werden.
           </p>
           <p>
-            Ihre Angaben werden streng vertraulich behandelt und ausgewertet.
-            Alle Mitglieder unseres Forschungsteams wurden in Belangen des Datenschutzes
-            unterwiesen und unterliegen der Schweigepflicht.
+            Ihre Angaben werden streng vertraulich behandelt und ausgewertet. Alle Mitglieder unseres
+            Forschungsteams wurden in Belangen des Datenschutzes unterwiesen und unterliegen der
+            Schweigepflicht. 
+          </p>
+          <p>
+            Bei der Erhebung der Daten wird an keiner Stelle Ihr Name erfragt. Ebenso wird Ihre
+            IP-Adresse nicht gespeichert. Wir erfragen Ihr Alter, Ihr Geschlecht und ob Sie einen
+            Führerschein besitzen. Alle diese Angaben werden anonym und ohne die Möglichkeit auf
+            Rückschlüsse zu Ihrer Person gespeichert.
           </p>
           <p>
             Alle erhobenen Daten werden auf verschlüsselten Datenträgern (AES-256 Bit) gespeichert.
             Die Daten werden auf den Rechnern der Abteilung für Mathematische und Kognitive
-            Psychologie verarbeitet und ausgewertet. Möglicherweise werden diese elektronischen Daten
-            (ohne individuellen Code) außerdem anderen Personen in Europa und im
-            außereuropäischen Ausland zur Datenauswertung zur Verfügung gestellt
-            (beispielsweise in Langzeitarchiven). Nach dem derzeitigen Stand der Erkenntnisse ist es
-            anhand Ihrer Daten Dritten praktisch nicht möglich, auf Ihre Identität zu schließen.
+            Psychologie verarbeitet und ausgewertet. Möglicherweise werden diese elektronischen
+            Daten (ohne individuellen Code) außerdem anderen Personen in Europa und im
+            außereuropäischen Ausland zur Datenauswertung zur Verfügung gestellt (beispielsweise in
+            Langzeitarchiven). Nach dem derzeitigen Stand der Erkenntnisse ist es anhand Ihrer
+            Daten Dritten praktisch nicht möglich, auf Ihre Identität zu schließen.
           </p>
           <p>
-            Wir planen, die Ergebnisse dieser Studie in Fachzeitschriften und Büchern zu veröffentlichen.
-            Auf Basis dieser Publikationen kann nicht durch Dritte auf Ihre Identität
-            geschlossen werden. Wenn Sie an diesen Veröffentlichungen interessiert sind,
-            oder für weitere Einzelheiten zu dieser Studie, wenden Sie sich bitte an{' '}
-            <a href="mailto:Julie.Niziurski@hhu.de">Dr. Julie A. Niziurski (Julie.Niziurski@hhu.de)</a>.
+            Wir planen, die Ergebnisse dieser Studie in Fachzeitschriften und Büchern zu
+            veröffentlichen. Auf Basis dieser Publikationen kann nicht durch Dritte auf
+            Ihre Identität geschlossen werden. Wenn Sie an diesen Veröffentlichungen
+            interessiert sind, oder für weitere Einzelheiten zu dieser Studie, wenden Sie
+            sich bitte an Dr. Julie A. Niziurski (<a href="mailto:Julie.Niziurski@hhu.de">Julie.Niziurski@hhu.de</a>).
           </p>
+
+          <p>
+            Diese Studie wurde durch die Ethikkommission der Heinrich-Heine-Universität Düsseldorf genehmigt.
+          </p>
+          <p>
+            Wenn Sie noch Fragen haben, können Sie diese an die Projektleiterin wenden:
+          </p>
+          <p>
+            Dr. Julie A. Niziurski<br />
+            Abteilung für Mathematische und Kognitive Psychologie<br />
+            Heinrich-Heine-Universität Düsseldorf<br />
+            <a href="https://www.psychologie.hhu.de/arbeitsgruppen/mathematische-und-kognitive-psychologie/arbeitsgruppe.html">
+              www.psychologie.hhu.de/arbeitsgruppen/mathematische-und-kognitive-psychologie/arbeitsgruppe.html
+            </a>
+          </p>
+
+          <p>
+            Die Datenschutzbeauftragte erreichen Sie unter <a href="mailto:Datenschutzbeauftragter@hhu.de">Datenschutzbeauftragter@hhu.de</a>. Das Beschwerderecht bei der zuständigen Aufsichtsbehörde bleibt Ihnen vorbehalten.
+          </p>
+
           <p>
             Wenn Sie einverstanden sind, klicken Sie bitte nun auf den Button „Einverstanden“:
           </p>
 
-          <fieldset>
-            <label>
-              <input
-                type="checkbox"
-                name="agree"
-                checked={agreed}
-                onChange={this.handleAgreementChange}
-              />
-              <i>
-                Hiermit bestätige ich meine freiwillige Teilnahme an dieser Umfrage. Ich habe alle Informationen verstanden.
-                Ich bin darüber informiert worden, dass ich den Versuch jederzeit ohne Angabe von Gründen beenden kann,
-                ohne dass mir dadurch Nachteile entstehen. Ich verzichte auf mein dauerhaftes Widerrufsrecht.
-              </i>
-            </label>
-          </fieldset>
+          <p>
+            <i>
+              Hiermit bestätige ich meine freiwillige Teilnahme an dieser Umfrage. Ich habe alle Informationen verstanden.
+              Ich bin darüber informiert worden, dass ich den Versuch jederzeit ohne Angabe von Gründen beenden kann,
+              ohne dass mir dadurch Nachteile entstehen. Ich verzichte auf mein dauerhaftes Widerrufsrecht.
+            </i>
+          </p>
 
           <ButtonBar align="center">
-            <Button type="submit" disabled={!agreed}>
+            <Button type="submit">
               Einverstanden
             </Button>
           </ButtonBar>
@@ -119,28 +126,6 @@ export default class IntroPage extends Component {
           .top-spacer {
             flex: 1;
             max-height: 64px;
-          }
-
-          fieldset {
-            padding: 0 16px;
-            margin: 16px 0;
-          }
-
-          label {
-            display: block;
-            padding: 12px 0;
-          }
-
-          label span {
-            margin-left: 16px;
-          }
-
-          input {
-            margin-right: 5px;
-          }
-
-          label[data-disabled="true"] {
-            color: #BBB;
           }
         `}</style>
       </Content>

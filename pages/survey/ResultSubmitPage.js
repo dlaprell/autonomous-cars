@@ -51,7 +51,6 @@ export default class TutorialPage extends Component {
             'X-Request-With': `survey-${version}`
           },
           body: JSON.stringify({
-            mobile: false,
             email,
 
             ...resultData
@@ -98,23 +97,39 @@ export default class TutorialPage extends Component {
           </h3>
 
           <p>
-            Vielen Dank für Ihre Teilnahme an der Studie. Unser Ziel ist es, herauszufinden, ob autonome Autos
-            im Straßenverkehr Aufmerksamkeit auf sich ziehen und andere Verkehrsteilnehmer ablenken könnten.
-            Da gerade im Straßenverkehr schon geringe Ablenkungen negative Konsequenzen mit sich bringen können,
-            ist es wichtig, herauszufinden, was solche Ablenkungen auslösen kann. Autonome Autos könnten schon
-            in naher Zukunft ein fester Bestandteil des Verkehrsgeschehens sein, aber bisher ist nur wenig
-            Forschung zum Einfluss auf andere Verkehrsteilnehmer betrieben worden. Aus diesem Grund wollten
-            wir die Untersuchung dieser Frage mit dieser Studie anstoßen.
+            Vielen Dank für Ihre Teilnahme an der Studie. Unser Ziel ist es, herauszufinden,
+            ob autonome Autos im Straßenverkehr Aufmerksamkeit auf sich ziehen und andere
+            Verkehrsteilnehmer ablenken könnten. Da gerade im Straßenverkehr schon geringe
+            Ablenkungen negative Konsequenzen mit sich bringen können, ist es wichtig,
+            herauszufinden, was solche Ablenkungen auslösen kann. Autonome Autos könnten
+            schon in naher Zukunft ein fester Bestandteil des Verkehrsgeschehens sein, aber
+            bisher ist nur wenig Forschung zum Einfluss auf andere Verkehrsteilnehmer
+            betrieben worden. Aus diesem Grund wollten wir die Untersuchung dieser Frage
+            mit dieser Studie anstoßen. 
           </p>
-          <p>
-            Die Teilnehmer wurden in zwei Gruppen unterteilt. Die eine wurde darauf hingewiesen, dass es
-            autonome Autos in den Szenen geben wird während die andere nur allgemein über
-            die Aufgabe aufgeklärt wurde. Es interessiert uns, ob es einen Unterschied für die Zielsuche macht,
-            wenn man sich bewusst darüber ist, was einen erwartet oder wenn man von dem neuen Umstand überrascht wird.
-          </p>
+
+          {uiState === UI_STATE.START && (
+            <div>
+              <p>
+                Wenn Sie Psychologie an der Heinrich-Heine Universität Düsseldorf studieren, können
+                Sie hier Ihre E-Mail Adresse angeben, um zwei halbe VP-Stunden zu erhalten. Die
+                E-Mail Adresse wird separat von Ihren Daten gespeichert.
+              </p>
+
+              <Textbox
+                type="email"
+                name="email"
+                label="E-Mail Adresse"
+                value={email}
+                error={Boolean(email) && email.indexOf('@') === -1}
+                onInput={this.handleEmailChange}
+              />
+            </div>
+          )}
+
           <p>
             Wenn Sie am Ergebnis interessiert sind, kontaktieren Sie gerne{' '}
-            <a href="mailto:hannah.tryba@uni-duesseldorf.de">Hannah Tryba (hannah.tryba@uni-duesseldorf.de)</a>
+            <a href="mailto:Julie.Niziurski@hhu.de">Julie Niziurski (Julie.Niziurski@hhu.de)</a>
             {' '}für weitere Informationen.
           </p>
 
@@ -127,26 +142,13 @@ export default class TutorialPage extends Component {
             </p>
           )}
 
-          {uiState === UI_STATE.START && (
-            <div>
-              <Textbox
-                type="email"
-                name="email"
-                label="E-Mail Adresse"
-                value={email}
-                error={Boolean(email) && email.indexOf('@') === -1}
-                onInput={this.handleEmailChange}
-              />
-            </div>
-          )}
-
           {uiState !== UI_STATE.FINISHED && (
             <Fragment>
               <div className="top-spacer" />
 
               <ButtonBar align="center">
                 <Button onClick={this.submitResults} disabled={uiState === UI_STATE.LOADING}>
-                  {uiState === UI_STATE.ERROR ? 'Erneut versuchen' : 'Abschicken'}
+                  {uiState === UI_STATE.ERROR ? 'Erneut versuchen' : 'Daten Abschicken'}
                 </Button>
               </ButtonBar>
             </Fragment>

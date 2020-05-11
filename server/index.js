@@ -9,15 +9,16 @@ import Joi from '@hapi/joi';
 import asyncHandler from 'express-async-handler';
 import staticComp from 'express-static-gzip';
 import { createHash } from 'crypto';
+import Bowser from "bowser/bundled.js";
 
 let uidInternalCounter = 0;
 
 const resultSchema = Joi
   .object({
-    mobile: Joi.boolean().required(),
     driverLicense: Joi.boolean().required(),
     age: Joi.number().min(1).max(130).required(),
-    group: Joi.string().pattern(/^a|b$/),
+    group: Joi.string().pattern(/^(a|b)$/),
+    gender: Joi.string().pattern(/^(male|female|diverse)$/),
 
     email: Joi.string().allow(null).optional(),
 
@@ -50,7 +51,8 @@ if (!existsSync(resultFile)) {
       'trial',
       'situation',
       'answer',
-      'mobile',
+      'platform',
+      'gender',
       'driverLicense',
       'age'
     ]]),
@@ -110,21 +112,24 @@ app.post('/results', asyncHandler(async function (req, res) {
   const data = req.body;
   const {
     results,
-    mobile,
+    gender,
     driverLicense,
     age,
     email
   } = await resultSchema.validateAsync(data);
 
-  const reqWith = req.get('X-Requested-With');
-  if (!reqWith || !/^survey-\d+\.\d+\.\d+$/) {
+  const reqWith = req.get('X-Request-With');
+  if (!reqWith || !/^survey-\d+\.\d+\.\d+$/.test(reqWith)) {
     return res
       .status(400)
-      .send();
+      .send('Unknown sender');
   }
 
   const userAgent = req.get('User-Agent') || 'unknonw';
   const langs = req.get('Accept-Language') || 'unknonw';
+
+  const browser = Bowser.getParser(userAgent);
+  const platform = browser.getPlatformType(true) || 'unknown';
 
   const now = new Date().toISOString();
 
@@ -134,8 +139,10 @@ app.post('/results', asyncHandler(async function (req, res) {
     reqWith,
     userAgent,
     langs,
-    mobile,
+    platform,
+    gender,
     driverLicense,
+    gender,
     age
   );
 
@@ -146,7 +153,8 @@ app.post('/results', asyncHandler(async function (req, res) {
       idx + 1,
       e.name,
       e.answer ? 'true' : 'false',
-      mobile ? 'true' : 'false',
+      platform,
+      gender,
       driverLicense ? 'true' : 'false',
       age
     ]))
@@ -165,7 +173,8 @@ app.post('/results', asyncHandler(async function (req, res) {
         {
           uid,
           age,
-          mobile,
+          gender,
+          platform,
           driverLicense,
           datetime: now,
           results
@@ -177,7 +186,7 @@ app.post('/results', asyncHandler(async function (req, res) {
     );
   } catch (ex) {
     console.error(ex);
-    res.status(500).send();
+    res.status(500).send(ex.message);
     return;
   }
 

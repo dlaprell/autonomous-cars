@@ -14,6 +14,7 @@
     "development": "last 1 chrome versions, last 1 firefox versions, last 1 edge versions, not ie > 0, not op_mini all"
   },
   "dependencies": {
+    "core-js": "3",
     "ffmpeg.js": "^4.2.9003",
     "linkstate": "^1.1.1",
     "mersenne-twister": "^1.1.0",

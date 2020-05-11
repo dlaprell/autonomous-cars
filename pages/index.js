@@ -2,7 +2,6 @@
 
 // Must be the first import
 import "preact/debug";
-
 import 'unfetch/polyfill';
 
 import Router from 'preact-router';

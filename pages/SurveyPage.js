@@ -144,6 +144,7 @@ export default class SurveyPage extends Component {
 
       driverLicense: null,
       age: null,
+      gender: null,
 
       /** @type {UI_STATE} */
       uiState: UI_STATE.INTRO,
@@ -186,9 +187,10 @@ export default class SurveyPage extends Component {
           case UI_STATE.DATA: {
             update.uiState = UI_STATE.HINT;
 
-            const { driverLicense, age } = data;
+            const { driverLicense, age, gender } = data;
             update.driverLicense = driverLicense;
             update.age = age;
+            update.gender = gender;
             break;
           }
 
@@ -354,6 +356,7 @@ export default class SurveyPage extends Component {
 
       driverLicense,
       age,
+      gender,
 
       group,
 
@@ -511,6 +514,7 @@ export default class SurveyPage extends Component {
             age,
             driverLicense,
             group,
+            gender,
             results: runs.map(
               (r, idx) => ({ name: r.name, answer: runResults[idx] })
             )

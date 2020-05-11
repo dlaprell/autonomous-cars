@@ -85,12 +85,30 @@ export default {
         '**/ffmpeg-worker-mp4.js'
       ]
     }),
-    nodeResolve(),
-    babel({
-      exclude: 'node_modules/**', // only transpile our source code
-      babelHelpers: 'bundled'
-    }),
     commonjs(),
+    nodeResolve(),
+    isProd
+      ? babel({
+        babelrc: false,
+        presets: [
+          'preact',
+          [
+            '@babel/env',
+            {
+              targets: "> 0.25%, not dead", 
+              modules: false,
+              useBuiltIns: 'usage',
+              corejs: 3
+            }
+          ]
+        ],
+        plugins: [ 'styled-jsx/babel' ],
+        babelHelpers: 'bundled',
+        exclude: [/\/core-js\//]
+      }) : babel({
+        exclude: 'node_modules/**', // only transpile our source code
+        babelHelpers: 'bundled'
+      }),
     json(),
     isProd ? terser() : null,
     isProd ? gzipPlugin({}) : null,

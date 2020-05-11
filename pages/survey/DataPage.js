@@ -13,6 +13,7 @@ export default class IntroPage extends Component {
     this.state = {
       agreed: false,
       driverLicense: null,
+      gender: null,
       age: ''
     };
 
@@ -33,18 +34,27 @@ export default class IntroPage extends Component {
       });
     };
 
+    this.handleGenderChange = (evt) => {
+      const { value } = evt.target;
+
+      this.setState({
+        gender: value
+      });
+    }
+
     this.submitResult = (evt) => {
       evt.preventDefault();
 
       const {
-        driverLicense, age
+        driverLicense, age, gender
       } = this.state;
 
       const { onNext } = this.props;
       if (onNext) {
         onNext({
           driverLicense,
-          age: Math.round(Number(age))
+          age: Math.round(Number(age)),
+          gender
         });
       }
     }
@@ -54,14 +64,15 @@ export default class IntroPage extends Component {
     const { footer } = this.props;
     const {
       driverLicense,
-      age
+      age,
+      gender
     } = this.state;
 
     const invalidAge = age === '' ? false : (isNaN(Number(age)) || Number(age) <= 0 || Number(age) > 130);
     const validAge = age !== '' && !invalidAge;
 
     const dataReady = (
-      validAge && driverLicense !== null
+      validAge && driverLicense !== null && gender !== null
     );
 
     return (
@@ -119,6 +130,47 @@ export default class IntroPage extends Component {
               required
               onInput={linkState(this, 'age')}
             />
+          </fieldset>
+
+          <fieldset>
+            <label>
+              <input
+                type="radio"
+                name="gender"
+                value="male"
+                checked={gender === 'male'}
+                onChange={this.handleGenderChange}
+              />
+              <span>
+               Männlich
+              </span>
+            </label>
+
+            <label>
+              <input
+                type="radio"
+                name="gender"
+                value="female"
+                checked={gender === 'female'}
+                onChange={this.handleGenderChange}
+              />
+              <span>
+               Weiblich
+              </span>
+            </label>
+
+            <label>
+              <input
+                type="radio"
+                name="gender"
+                value="diverse"
+                checked={gender === 'diverse'}
+                onChange={this.handleGenderChange}
+              />
+              <span>
+               Divers
+              </span>
+            </label>
           </fieldset>
 
           <ButtonBar align="center">

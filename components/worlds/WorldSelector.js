@@ -86,8 +86,7 @@ const worldsGroupA = [
 /** @type {Array<WorldData>} */
 const worldsGroupB = [
  { name: 'groupB1', ...groupB1 },
- // TODO: this one has no cars
- // { name: 'groupB2', ...groupB2 },
+ { name: 'groupB2', ...groupB2 },
  { name: 'groupB3', ...groupB3 },
  { name: 'groupB4', ...groupB4 },
  { name: 'groupB5', ...groupB5 },

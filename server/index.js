@@ -48,6 +48,7 @@ if (!existsSync(resultFile)) {
     csvStringify([[
       'unique id',
       'timestamp',
+      'group',
       'trial',
       'situation',
       'answer',
@@ -113,6 +114,7 @@ app.post('/results', asyncHandler(async function (req, res) {
   const {
     results,
     gender,
+    group,
     driverLicense,
     age,
     email
@@ -150,6 +152,7 @@ app.post('/results', asyncHandler(async function (req, res) {
     results.map((e, idx) => ([
       uid,
       now,
+      group,
       idx + 1,
       e.name,
       e.answer ? 'true' : 'false',
@@ -164,7 +167,7 @@ app.post('/results', asyncHandler(async function (req, res) {
     await fs.appendFile(resultFile, resultCsv, 'utf8');
 
     if (email) {
-      await fs.appendFile(emailFile, email, 'utf8');
+      await fs.appendFile(emailFile, `${email}\n`, 'utf8');
     }
 
     await fs.writeFile(
@@ -172,6 +175,7 @@ app.post('/results', asyncHandler(async function (req, res) {
       JSON.stringify(
         {
           uid,
+          group,
           age,
           gender,
           platform,

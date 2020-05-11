@@ -137,8 +137,20 @@ function removeTargets(world) {
     map: world.map
       .map(row => row.map(tile => {
         const opt = tile[2];
-        if (!opt || (!opt.bench && !opt.trashCan && !opt.signs)) {
+        if (!opt || (!opt.bench && !opt.trashCan && !opt.signs && !opt.decorations)) {
           return tile;
+        }
+
+        let updDecs = null;
+        if (opt.decorations) {
+          updDecs = {};
+
+          for (const [ key, data ] of Object.entries(opt.decorations)) {
+            updDecs[key] = data ? {
+              ...data,
+              target: false
+            } : null;
+          }
         }
 
         return [
@@ -146,6 +158,7 @@ function removeTargets(world) {
           tile[1],
           {
             ...opt,
+            decorations: updDecs,
             bench: opt.bench ? {} : null,
             trashCan: opt.trashCan ? {} : null,
             signs: !opt.signs ? [] : opt.signs.filter(s => s.type !== 'Target')

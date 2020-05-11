@@ -59,12 +59,12 @@ export default {
 
       [`import "preact/debug";`]: ''
     }) : null,
-    isProd ? babel({
+    babel({
       babelrc: false,
       presets: [ 'preact' ],
       plugins: [ 'styled-jsx/babel' ],
       babelHelpers: 'bundled'
-    }) : null,
+    }),
     isProd ? strip({
       functions: ['assert']
     }) : null,

@@ -28,8 +28,8 @@ const languages = {
 };
 
 const RUN_TIME = process.env.NODE_ENV !== 'production'
-  ? Number(new URLSearchParams(window.location.search).get('run_time') || '20000')
-  : 20000;
+  ? Number(new URLSearchParams(window.location.search).get('run_time') || '25000')
+  : 25000;
 
 const NUM_MAX_RUNS = process.env.NODE_ENV !== 'production'
   ? Number(new URLSearchParams(window.location.search).get('run_count') || 'Infinity')
@@ -229,41 +229,48 @@ export default class SurveyPage extends Component {
           debug(`Started preloading for run=${preLoadedRun}`);
         }
 
-        const attentionTest = runsWithAttnTests.indexOf(curRun) !== -1;
-
         return {
           preLoadGrid,
           preLoadedRun,
-          curRunFinished: true,
-
-          uiState: attentionTest ? UI_STATE.ATTENTION : UI_STATE.RUNS
+          curRunFinished: true
         };
       });
     };
 
     this.moveToNextRun = (result) => {
-      this.setState(({ curRun, runResults, models, preLoadGrid, preLoadedRun }) => {
+      this.setState(({ curRun, runResults, models, preLoadGrid, preLoadedRun, uiState }) => {
         let updatedResults;
+        if (curRun === null || typeof result !== 'boolean') {
+          updatedResults = runResults;
+        } else {
+          updatedResults = [ ...runResults ];
+          updatedResults[curRun] = result;
+        }
+
+        const attentionTest = runsWithAttnTests.indexOf(curRun) !== -1;
+        if (uiState !== UI_STATE.ATTENTION && attentionTest) {
+          return {
+            runResults: updatedResults,
+            uiState: UI_STATE.ATTENTION
+          };
+        }
+
         let nextRun;
         let finished = false;
-        let uiState;
+        let newUiState;
 
         debug(`Requested next run, cur=${curRun}, preLoaded=${preLoadedRun}`);
 
         if (curRun === null) {
-          updatedResults = runResults;
           nextRun = 0;
-          uiState = UI_STATE.RUNS;
+          newUiState = UI_STATE.RUNS;
         } else {
-          updatedResults = [ ...runResults ];
-          updatedResults[curRun] = result;
-
           if (curRun + 1 < runs.length) {
             nextRun = curRun + 1;
-            uiState = UI_STATE.RUNS;
+            newUiState = UI_STATE.RUNS;
           } else {
             nextRun = null;
-            uiState = UI_STATE.FINISHED;
+            newUiState = UI_STATE.FINISHED;
           }
         }
 
@@ -283,7 +290,7 @@ export default class SurveyPage extends Component {
         }
 
         return {
-          uiState,
+          uiState: newUiState,
           curRun: nextRun,
 
           preLoadedRun: loaded,
@@ -473,7 +480,7 @@ export default class SurveyPage extends Component {
       return (
         <AttentionTest
           footer={progress}
-          onNext={this.handleAttentionTestFinished}
+          onNext={this.moveToNextRun}
         />
       );
     }

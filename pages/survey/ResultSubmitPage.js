@@ -133,6 +133,12 @@ export default class TutorialPage extends Component {
             {' '}für weitere Informationen.
           </p>
 
+          {uiState === UI_STATE.FINISHED && (
+            <h5>
+              Sie können das Browserfenster jetzt schließen
+            </h5>
+          )}
+
           {uiState === UI_STATE.ERROR && (
             <p>
               An error occured:

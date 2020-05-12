@@ -72,7 +72,7 @@ export default class TutorialPage extends Component {
               withTraffic
               world={world}
               preLoadedGrid={this.grid}
-              stopAfter={duration}
+              stopAfter={Math.min(duration, 20000)}
               models={models}
               onStop={this.handleSimulationStop}
             />

@@ -25,22 +25,23 @@ export default class IntroPage extends Component {
     return (
       <Content footer={footer}>
         <form onSubmit={this.submitResult}>
+          <h6>
+            Wichtig: Wenn Sie an einer Farbsehschwäche leiden, können Sie leider nicht an dieser Studie teilnehmen.
+          </h6>
+
           <div className="top-spacer" />
 
           <h1>
-            Studie
+            Wie aufmerksam bist Du?
           </h1>
 
-          <h5>
-            Wichtig: Wenn Sie an einer Farbsehschwäche leiden, können Sie leider nicht an dieser Studie teilnehmen.
-          </h5>
-
           <p>
-            Herzlich willkommen zur … Studie. Vielen Dank für Ihr Interesse an dieser Studie.
-            Die Teilnahme dauert ungefähr 35 bis 45 Minuten und wenn Sie Psychologie an der
-            Heinrich-Heine Universität studieren, können Sie am Ende der Studie Ihre E-Mail
-            Adresse angeben und zwei halbe VP-Stunden erhalten. Die E-Mail Adresse wird
-            separat von Ihren Daten gespeichert. 
+            Herzlich willkommen zu dieser Aufmerksamkeitsstudie. Vielen Dank für Ihr
+            Interesse an dieser Studie. Die Teilnahme dauert ungefähr 35 bis 45 Minuten und
+            wenn Sie Psychologie an der Heinrich-Heine Universität studieren, können Sie am
+            Ende der Studie Ihre E-Mail Adresse angeben und zwei halbe VP-Stunden erhalten.
+            Die E-Mail Adresse wird separat von Ihren Daten gespeichert und nicht an Dritte
+            weitergegeben. 
           </p>
           <p>
             Die Teilnahme an der Studie ist freiwillig. Sie können jederzeit ohne Angabe von Gründen
@@ -102,9 +103,7 @@ export default class IntroPage extends Component {
 
           <p>
             <i>
-              Hiermit bestätige ich meine freiwillige Teilnahme an dieser Umfrage. Ich habe alle Informationen verstanden.
-              Ich bin darüber informiert worden, dass ich den Versuch jederzeit ohne Angabe von Gründen beenden kann,
-              ohne dass mir dadurch Nachteile entstehen. Ich verzichte auf mein dauerhaftes Widerrufsrecht.
+              Hiermit bestätige ich meine freiwillige Teilnahme an dieser Umfrage. Ich habe alle Informationen verstanden. Ich bin darüber informiert worden, dass ich den Versuch jederzeit ohne Angabe von Gründen beenden kann, ohne dass mir dadurch Nachteile entstehen. Ich verzichte auf mein dauerhaftes Widerrufsrecht. Außerdem bestätigen Sie, dass Sie mindestens 18 Jahre oder älter sind.
             </i>
           </p>
 

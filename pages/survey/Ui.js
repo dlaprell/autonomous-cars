@@ -96,17 +96,22 @@ export function Content({ children, footer }) {
 
           display: flex;
           flex-direction: column;
-
-          max-width: 768px;
-          margin: 0 auto;
         }
 
         main {
           flex: 1;
+
+          width: 100%;
+          max-width: 768px;
+          margin: 0 auto;
         }
 
         footer {
           flex: 0 0 auto;
+
+          width: 100%;
+          max-width: 768px;
+          margin: 0 auto;
         }
       `}</style>
     </div>

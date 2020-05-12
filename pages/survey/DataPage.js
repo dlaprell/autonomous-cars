@@ -68,7 +68,7 @@ export default class IntroPage extends Component {
       gender
     } = this.state;
 
-    const invalidAge = age === '' ? false : (isNaN(Number(age)) || Number(age) <= 0 || Number(age) > 130);
+    const invalidAge = age === '' ? false : (isNaN(Number(age)) || Number(age) <= 17 || Number(age) > 130);
     const validAge = age !== '' && !invalidAge;
 
     const dataReady = (

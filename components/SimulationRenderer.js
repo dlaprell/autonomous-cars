@@ -168,7 +168,9 @@ class SimulationRenderer extends Component {
   }
 
   removeRenderer() {
-    this._renderer.domElement.remove();
+    if (this._renderer) {
+      this._renderer.domElement.remove();
+    }
     this._mounted = false;
 
     this._provider.stop();
@@ -202,6 +204,12 @@ class SimulationRenderer extends Component {
   componentWillUnmount() {
     window.removeEventListener('resize', this._resizeHandler);
     this._provider.stop();
+
+    if (this._renderer) {
+      this._renderer.domElement.remove();
+      this._renderer.dispose();
+    }
+    this._renderer = null;
   }
 
   componentDidUpdate() {

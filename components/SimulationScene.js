@@ -75,10 +75,19 @@ class SimulationScene extends Component {
   }
 
   removeElement(e) {
-    this._scene.remove(e.group());
+    if (this._scene) {
+      this._scene.remove(e.group());
+    }
 
     this._updateableVisualizationElements.delete(e);
     this._updateableTimeElements.delete(e);
+  }
+
+  componentWillUnmount() {
+    if (this._scene) {
+      this._scene.dispose();
+      this._scene = null;
+    }
   }
 
   render() {

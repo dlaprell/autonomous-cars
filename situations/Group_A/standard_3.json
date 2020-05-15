@@ -1406,7 +1406,7 @@
     "movement": {
       "type": "path",
       "initial": [ 4, 7 ],
-      "path": [ 1, 1, 2, -1, 0, 1]
+      "path": [ 1, 1, 1, -1, 2]
     },
     "options": {
       "noDriver": true
@@ -1423,7 +1423,7 @@
     "options": {
       "noDriver": true
     },
-    "startOffset": 0
+    "startOffset": 500
   },
   {
     "following": false,

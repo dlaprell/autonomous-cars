@@ -1905,8 +1905,8 @@
       "following": false,
       "movement": {
         "type": "path",
-        "initial": [ 8, 7 ],
-        "path": [ -1, 0, -1, 0 ]
+        "initial": [ 9, 8 ],
+        "path": [ 0, 0, -1, 0 ]
       },
       "options": {
         "noDriver": true

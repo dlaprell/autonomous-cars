@@ -556,7 +556,8 @@
           "decorations": {
             "topLeft": {
               "type": "trashcan",
-              "target": false
+              "target": true,
+              "rotation": 0
             },
             "bottomLeft": null
           }
@@ -653,7 +654,7 @@
             },
             "bottomLeft": {
               "type": "bench",
-              "target": true
+              "target": false
             }
           }
         }
@@ -1406,6 +1407,7 @@
       ]
     ]
   ]
+
 
 ,
 "cars": [

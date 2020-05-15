@@ -1885,7 +1885,7 @@
       "movement": {
         "type": "path",
         "initial": [ 6, 2 ],
-        "path": [ 2, 1, 1 ]
+        "path": [ 2, -1, 0, 1 ]
       },
       "options": {
         "noHead": true
@@ -1902,19 +1902,31 @@
       "options": {
         "noDriver": true
       },
-      "startOffset": 1380
+      "startOffset": 2100
     },
     {
       "following": false,
       "movement": {
         "type": "path",
         "initial": [ 6, 4 ],
-        "path": [ 2, 2, 1 ]
+        "path": [ 2, -1, 0, 1 ]
       },
       "options": {
         "noDriver": false
       },
       "startOffset": 0
+    },
+    {
+      "following": false,
+      "movement": {
+        "type": "path",
+        "initial": [ 6, 3 ],
+        "path": [ 2, 2, 1 ]
+      },
+      "options": {
+        "noDriver": false
+      },
+      "startOffset": 2000
     },
     {
       "following": false,

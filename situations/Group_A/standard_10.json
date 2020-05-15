@@ -1417,13 +1417,13 @@
     "following": false,
     "movement": {
       "type": "path",
-      "initial": [8, 13],
+      "initial": [7, 13],
       "path": [1, 1, -1]
     },
     "options": {
       "noDriver": true
     },
-    "startOffset": 0
+    "startOffset": 500
   },
   {
     "following": false,

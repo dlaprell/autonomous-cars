@@ -123,13 +123,16 @@
         30,
         2,
         {
-          "type": "Bungalow"
+          "type": "Bungalow",
+          "bench": null
         }
       ],
       [
         30,
         2,
-        {}
+        {
+          "bench": null
+        }
       ],
       [
         0,
@@ -206,31 +209,27 @@
       [
         3,
         1,
+        {
+          "signs": [
+            {
+              "type": "Target",
+              "side": 1,
+              "rotation": -1
+            }
+          ]
+        }
+      ],
+      [
+        1,
+        1,
+        {
+          "signs": []
+        }
+      ],
+      [
+        1,
+        -1,
         {}
-      ],
-      [
-        1,
-        1,
-        {
-          "decorations": {
-            "topLeft": null,
-            "bottomLeft": null
-          }
-        }
-      ],
-      [
-        1,
-        1,
-        {
-          "decorations": {
-            "topLeft": {
-              "type": "bench",
-              "rotation": -1,
-              "target": true
-            },
-            "bottomLeft": null
-          }
-        }
       ],
       [
         1,
@@ -308,11 +307,22 @@
       [
         1,
         0,
-        {}
+        {
+          "signs": [
+            {
+              "type": "PriorityRoad",
+              "side": 0
+            },
+            {
+              "type": "PriorityRoad",
+              "side": 2
+            }
+          ]
+        }
       ],
       [
         30,
-        -1,
+        0,
         {}
       ],
       [
@@ -1405,38 +1415,50 @@
     ]
   ]
 
-  ,
+,
   "cars": [
     {
       "following": true,
       "movement": {
         "type": "path",
-        "initial": [4, 7],
-        "path": [1, 0, 1, -1]
+        "initial": [ 6, 8 ],
+        "path": [ 0, 0, 1, 2, -1]
       },
       "options": {
         "noDriver": true
       },
-      "startOffset": 0
+      "startOffset": 1000
     },
     {
       "following": false,
       "movement": {
         "type": "path",
-        "initial": [3, 2],
-        "path": [1, 2, 1, 1]
+        "initial": [ 12, 2 ],
+        "path": [ -1, -1, 2, 2, 1]
       },
       "options": {
         "noDriver": true
       },
-      "startOffset": 0
+      "startOffset": 3500
     },
     {
       "following": false,
       "movement": {
         "type": "path",
-        "initial": [6, 8],
-        "path": [0, 0, 1, 2]
+        "initial": [ 6, 6 ],
+        "path": [ 0, 1, 2, -1, 0, 1]
+      },
+      "options": {
+        "noDriver": false
+      },
+      "startOffset": 2000
+    },
+    {
+      "following": false,
+      "movement": {
+        "type": "path",
+        "initial": [ 6, 5 ],
+        "path": [ 0, -1, 2, 2, 2, 1]
       },
       "options": {
         "noDriver": false
@@ -1447,8 +1469,8 @@
       "following": false,
       "movement": {
         "type": "path",
-        "initial": [2, 4],
-        "path": [0, 1, 2, 1, 2]
+        "initial": [ 6, 2 ],
+        "path": [2, 1, 1, -1, 2]
       },
       "options": {
         "noDriver": false
@@ -1456,4 +1478,4 @@
       "startOffset": 0
     }
   ]
-  }
+}

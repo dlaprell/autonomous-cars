@@ -860,7 +860,17 @@
       [
         3,
         1,
-        {}
+        {
+          "signs": [],
+          "decorations": {
+            "topLeft": {
+              "type": "bench",
+              "target": true,
+              "rotation": 1
+            },
+            "bottomLeft": null
+          }
+        }
       ],
       [
         1,

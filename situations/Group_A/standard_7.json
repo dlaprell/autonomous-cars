@@ -1420,7 +1420,7 @@
     "options": {
       "noDriver": true
     },
-    "startOffset": 0
+    "startOffset": 400
   },
   {
     "following": false,
@@ -1432,7 +1432,7 @@
     "options": {
       "noDriver": false
     },
-    "startOffset": 500
+    "startOffset": 800
   },
   {
     "following": false,
@@ -1445,6 +1445,18 @@
       "noDriver": true
     },
     "startOffset": 1500
+  },
+  {
+    "following": false,
+    "movement": {
+      "type": "path",
+      "initial": [ 12, 6 ],
+      "path": [2, 2, -1, 0]
+    },
+    "options": {
+      "noDriver": false
+    },
+    "startOffset": 1300
   },
   {
     "following": false,

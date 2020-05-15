@@ -214,14 +214,14 @@
             {
               "type": "Target",
               "side": 1,
-              "rotation": 0
+              "rotation": -1
             }
           ]
         }
       ],
       [
         1,
-        -1,
+        1,
         {
           "signs": []
         }

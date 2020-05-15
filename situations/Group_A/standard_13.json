@@ -1898,11 +1898,23 @@
       "following": false,
       "movement": {
         "type": "path",
+        "initial": [ 2, 6 ],
+        "path": [ 2, 2, 1, 1 ]
+      },
+      "options": {
+        "noDriver": true
+      },
+      "startOffset": 0
+    },
+    {
+      "following": false,
+      "movement": {
+        "type": "path",
         "initial": [ 2, 7 ],
         "path": [ 2, 1, 1 ]
       },
       "options": {
-        "noDriver": true
+        "noDriver": false
       },
       "startOffset": 0
     },

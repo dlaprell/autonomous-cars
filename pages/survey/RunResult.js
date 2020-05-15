@@ -35,7 +35,7 @@ export default class RunResult extends Component {
   }
 
   render() {
-    const { footer } = this.props;
+    const { footer, buttonText } = this.props;
     const { answer } = this.state;
 
     return (
@@ -77,7 +77,7 @@ export default class RunResult extends Component {
 
           <ButtonBar align="center">
             <Button type="submit" disabled={answer === null}>
-              Nächste Szene
+              {buttonText || 'Nächste Szene'}
             </Button>
           </ButtonBar>
         </form>

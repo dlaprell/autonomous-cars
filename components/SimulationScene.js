@@ -63,6 +63,10 @@ class SimulationScene extends Component {
   }
 
   addElement(e) {
+    if (!this._scene) {
+      return;
+    }
+
     this._scene.add(e.group());
 
     if (typeof e.updateVisualization === 'function') {
@@ -75,9 +79,11 @@ class SimulationScene extends Component {
   }
 
   removeElement(e) {
-    if (this._scene) {
-      this._scene.remove(e.group());
+    if (!this._scene) {
+      return;
     }
+
+    this._scene.remove(e.group());
 
     this._updateableVisualizationElements.delete(e);
     this._updateableTimeElements.delete(e);
@@ -88,6 +94,9 @@ class SimulationScene extends Component {
       this._scene.dispose();
       this._scene = null;
     }
+
+    this._updateableTimeElements.clear();
+    this._updateableVisualizationElements.clear();
   }
 
   render() {
@@ -140,6 +149,7 @@ class SimulationSceneElement extends Component {
   componentWillUnmount() {
     if (this._assignedScene) {
       this._assignedScene.removeElement(this);
+      this._assignedScene = null;
     }
   }
 

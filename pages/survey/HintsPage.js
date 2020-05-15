@@ -37,15 +37,15 @@ export default class IntroPage extends Component {
         <div className="top-spacer" />
 
         <h1>
-          Hinweise zur Study
+          Hinweise zur Studie
         </h1>
 
         {group === 'a' && (
           <Fragment>
             <p>
               In der Studie geht es darum, Ihre Aufmerksamkeit im Straßenverkehr zu testen
-              und Faktoren, die diese beeinflussen könnte zu analysieren. Dazu werden Sie
-              einige kurze Video-Sequenzen einer Straßenszene sehen und im Anschluss eine
+              und Faktoren, die diese beeinflussen könnten zu analysieren. Dazu werden Sie
+              einige kurze Sequenzen einer Straßenszene sehen und im Anschluss eine
               Frage beantworten. Es ist uns wichtig, dass Sie sich ganz auf den Verkehr und
               Ihre Aufgabe konzentrieren, wenn Sie die Videos anschauen. Ab und zu wird es
               einen kleinen Aufmerksamkeitstest geben, wenn Sie diesen nicht bestehen, ist
@@ -83,7 +83,7 @@ export default class IntroPage extends Component {
         {group === 'b' && (
           <Fragment>
             <p>
-              In der Studie geht es darum, Ihre Aufmerksamkeit im Straßenverkehr zu testen und ob zum Beispiel autonom-fahrende Autos diese beeinflussen könnten. Dazu werden Sie einige kurze Video-Sequenzen einer Straßenszene sehen und im Anschluss eine Frage beantworten. Es ist uns wichtig, dass Sie sich ganz auf den Verkehr und Ihre Aufgabe konzentrieren, wenn Sie die Videos anschauen. Ab und zu wird es einen kleinen Aufmerksamkeitstest geben, wenn Sie diesen nicht bestehen, ist Ihre Teilnahme an der Studie leider beendet und Sie können keine VP-Stunden mehr bekommen.
+              In der Studie geht es darum, Ihre Aufmerksamkeit im Straßenverkehr zu testen und ob zum Beispiel autonom-fahrende Autos diese beeinflussen könnten. Dazu werden Sie einige kurze Sequenzen einer Straßenszene sehen und im Anschluss eine Frage beantworten. Es ist uns wichtig, dass Sie sich ganz auf den Verkehr und Ihre Aufgabe konzentrieren, wenn Sie die Videos anschauen. Ab und zu wird es einen kleinen Aufmerksamkeitstest geben, wenn Sie diesen nicht bestehen, ist Ihre Teilnahme an der Studie leider beendet und Sie können keine VP-Stunden mehr bekommen.
             </p>
             <p>
               Ihre Aufgabe ist es, dieses Symbol entlang der Strecke zu suchen, aber trotzdem das Verkehrsgeschehen und insbesondere die autonomen Autos aufmerksam zu verfolgen.

@@ -85,7 +85,7 @@ export default class IntroPage extends Component {
           </h1>
 
           <p>
-            Zunächsten bitten wir Sie ein paar allgemeine Daten zu Ihnen zu beantworten:
+            Zunächst bitten wir Sie, ein paar allgemeine Fragen zu beantworten:
           </p>
 
           <fieldset>

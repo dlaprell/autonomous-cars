@@ -68,12 +68,25 @@ export default class IntroPage extends Component {
           <Fragment>
             <p>
               Bitte klicken Sie innerhalb der nächsten <strong>{Math.max(secondsLeft, 0)}</strong> Sekunden
-              auf Weiter.
+              auf "Super".
             </p>
 
             <ButtonBar align="center">
-              <Button onClick={this.handleNextClick}>
+              <Button >
                 Weiter
+              </Button>
+            </ButtonBar>
+
+
+            <ButtonBar align="center">
+              <Button onClick={this.handleNextClick}>
+                Super
+              </Button>
+            </ButtonBar>
+
+            <ButtonBar align="center">
+              <Button >
+                Hallo
               </Button>
             </ButtonBar>
           </Fragment>

@@ -29,6 +29,10 @@ export default class IntroPage extends Component {
             Wichtig: Wenn Sie an einer Farbsehschwäche leiden, können Sie leider nicht an dieser Studie teilnehmen.
           </h6>
 
+          <h6>
+           Bitte nehmen Sie nur an einem Laptop oder Computer teil, da ein Handybildschirm zu klein ist.
+          </h6>
+
           <div className="top-spacer" />
 
           <h1>
@@ -37,14 +41,16 @@ export default class IntroPage extends Component {
 
           <p>
             Herzlich willkommen zu dieser Aufmerksamkeitsstudie. Vielen Dank für Ihr
-            Interesse an dieser Studie. Die Teilnahme dauert ungefähr 35 bis 45 Minuten und
-            wenn Sie Psychologie an der Heinrich-Heine Universität studieren, können Sie am
-            Ende der Studie Ihre E-Mail Adresse angeben und zwei halbe VP-Stunden erhalten.
-            Die E-Mail Adresse wird separat von Ihren Daten gespeichert und nicht an Dritte
+            Interesse an dieser Studie. Die Teilnahme dauert ungefähr 35 bis 40 Minuten und
+            wenn Sie Psychologie an der Heinrich-Heine-Universität studieren, können Sie am
+            Ende der Studie Ihre E-Mail-Adresse angeben und zwei halbe VP-Stunden erhalten.
+            Die E-Mail-Adresse wird separat von Ihren Daten gespeichert und nicht an Dritte
             weitergegeben. 
           </p>
           <p>
-            Die Teilnahme an der Studie ist freiwillig. Sie können jederzeit ohne Angabe von Gründen
+            Die Teilnahme an der Studie ist freiwillig. Sie müssen mindestens 18 Jahre alt sein und
+            dürfen keine Farbsehschwäche haben. Für diese Studie wird kein Ton benötigt.
+            Sie können jederzeit ohne Angabe von Gründen
             abbrechen, ohne dass Ihnen dadurch ein Nachteil entsteht. Ihre Teilnahme ist mit keinen
             vorhersehbaren Risiken verbunden. Sollten Sie jedoch zu irgendeinem Zeitpunkt nachteilige
             Auswirkungen feststellen, empfehlen wir Ihnen, die Studie zu beenden, indem Sie Ihren
@@ -103,7 +109,7 @@ export default class IntroPage extends Component {
 
           <p>
             <i>
-              Hiermit bestätige ich meine freiwillige Teilnahme an dieser Umfrage. Ich habe alle Informationen verstanden. Ich bin darüber informiert worden, dass ich den Versuch jederzeit ohne Angabe von Gründen beenden kann, ohne dass mir dadurch Nachteile entstehen. Ich verzichte auf mein dauerhaftes Widerrufsrecht. Außerdem bestätigen Sie, dass Sie mindestens 18 Jahre oder älter sind.
+              Hiermit bestätige ich meine freiwillige Teilnahme an dieser Umfrage. Ich habe alle Informationen verstanden. Ich bin darüber informiert worden, dass ich den Versuch jederzeit ohne Angabe von Gründen beenden kann, ohne dass mir dadurch Nachteile entstehen. Ich verzichte auf mein dauerhaftes Widerrufsrecht. Außerdem bestätige ich, dass ich mindestens 18 Jahre oder älter bin.
             </i>
           </p>
 

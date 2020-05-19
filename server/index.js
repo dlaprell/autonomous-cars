@@ -16,7 +16,7 @@ let uidInternalCounter = 0;
 const resultSchema = Joi
   .object({
     driverLicense: Joi.boolean().required(),
-    age: Joi.number().min(1).max(130).required(),
+    age: Joi.number().min(18).max(130).required(),
     group: Joi.string().pattern(/^(a|b)$/),
     gender: Joi.string().pattern(/^(male|female|diverse)$/),
 
@@ -28,7 +28,11 @@ const resultSchema = Joi
         Joi
           .object({
             name: Joi.string().required(),
-            answer: Joi.boolean().required()
+            answer: Joi
+              .object({
+                car: Joi.boolean().allow(null),
+                target: Joi.boolean().allow(null)
+              })
           })
           .required()
       )
@@ -51,7 +55,8 @@ if (!existsSync(resultFile)) {
       'group',
       'trial',
       'situation',
-      'answer',
+      'answer_car',
+      'answer_target',
       'platform',
       'gender',
       'driverLicense',
@@ -155,7 +160,8 @@ app.post('/results', asyncHandler(async function (req, res) {
       group,
       idx + 1,
       e.name,
-      e.answer ? 'true' : 'false',
+      String(e.answer.car),
+      String(e.answer.target),
       platform,
       gender,
       driverLicense ? 'true' : 'false',

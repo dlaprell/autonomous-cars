@@ -70,7 +70,7 @@ export default class TutorialPage extends Component {
   }
 
   render() {
-    const { footer, models, duration } = this.props;
+    const { footer, models, duration, group } = this.props;
     const { fullRunAtLeastOnce, uiState, worldKey } = this.state;
 
     return (
@@ -103,6 +103,7 @@ export default class TutorialPage extends Component {
               onResult={this.handleResult}
               footer={null}
               buttonText="Weiter"
+              group={group}
             />
           )}
 

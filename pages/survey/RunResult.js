@@ -6,12 +6,23 @@ import { h, Component } from 'preact';
 import { Content, Button, ButtonBar } from './Ui';
 import { assert } from '../../components/utils/assert';
 
+const UI_STATE = {
+  Q_CAR: 'q_car',
+  Q_TARGET: 'q_target'
+};
+
 export default class RunResult extends Component {
   constructor(...args) {
     super(...args);
 
+    const { group } = this.props;
+    assert(group === 'a' || group === 'b');
+
     this.state = {
-      answer: null
+      uiState: group === 'b' ? UI_STATE.Q_CAR : UI_STATE.Q_TARGET,
+
+      answerTarget: null,
+      answerCar: null
     };
 
     this.handleAnswerChange = (evt) => {
@@ -19,33 +30,53 @@ export default class RunResult extends Component {
 
       assert(value !== 'unspecified');
 
-      this.setState({
-        answer: value === 'yes'
+      this.setState(st => {
+        const answer = value === 'yes';
+        return st.uiState == UI_STATE.Q_CAR ? { answerCar: answer } : { answerTarget: answer };
       });
     };
 
     this.submitResult = (evt) => {
       evt.preventDefault();
       const { onResult } = this.props;
-      if (onResult) {
-        const { answer } = this.state;
-        onResult(answer);
+      const { uiState } = this.state;
+
+      if (uiState === UI_STATE.Q_CAR) {
+        this.setState({ uiState: UI_STATE.Q_TARGET });
+      } else if (onResult) {
+        const { answerCar, answerTarget } = this.state;
+        onResult({
+          car: answerCar,
+          target: answerTarget
+        });
       }
     }
   }
 
   render() {
-    const { footer, buttonText } = this.props;
-    const { answer } = this.state;
+    const { footer, buttonText, group } = this.props;
+    const { answerCar, answerTarget, uiState } = this.state;
+
+    assert(group === 'a' || group === 'b');
+
+    const curAnswer = uiState === UI_STATE.Q_CAR ? answerCar : answerTarget;
 
     return (
       <Content footer={footer}>
         <form onSubmit={this.submitResult}>
           <div className="top-spacer" />
 
-          <p>
-            Haben Sie das grüne Dreieck in der vorherigen Szene gesehen?
-          </p>
+          {uiState === UI_STATE.Q_CAR && (
+            <p>
+              Haben Sie ein fahrerloses Auto in der vorherigen Szene gesehen?
+            </p>
+          )}
+            
+          {uiState === UI_STATE.Q_TARGET && (
+            <p>
+              Haben Sie das grüne Dreieck in der vorherigen Szene gesehen?
+            </p>
+          )}
 
           <fieldset>
             <label>
@@ -53,7 +84,7 @@ export default class RunResult extends Component {
                 type="radio"
                 name="answer"
                 value="yes"
-                checked={answer === true}
+                checked={curAnswer === true}
                 onChange={this.handleAnswerChange}
               />
               <span>
@@ -66,7 +97,7 @@ export default class RunResult extends Component {
                 type="radio"
                 name="answer"
                 value="no"
-                checked={answer === false}
+                checked={curAnswer === false}
                 onChange={this.handleAnswerChange}
               />
               <span>
@@ -76,8 +107,8 @@ export default class RunResult extends Component {
           </fieldset>
 
           <ButtonBar align="center">
-            <Button type="submit" disabled={answer === null}>
-              {buttonText || 'Nächste Szene'}
+            <Button type="submit" disabled={curAnswer === null}>
+              {buttonText || 'Weiter'}
             </Button>
           </ButtonBar>
         </form>

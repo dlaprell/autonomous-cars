@@ -53,7 +53,7 @@ export default class IntroPage extends Component {
               mehr bekommen.
             </p>
             <p>
-            Ihre Aufgabe ist es, dieses Symbol entlang der Strecke zu suchen, aber
+            Ihre Aufgabe ist es, dieses grüne Dreieck entlang der Strecke zu suchen, aber
             trotzdem das Verkehrsgeschehen aufmerksam zu verfolgen.
             </p>
 
@@ -86,7 +86,7 @@ export default class IntroPage extends Component {
               In der Studie geht es darum, Ihre Aufmerksamkeit im Straßenverkehr zu testen und ob zum Beispiel autonom-fahrende Autos diese beeinflussen könnten. Dazu werden Sie einige kurze Sequenzen einer Straßenszene sehen und im Anschluss eine Frage beantworten. Es ist uns wichtig, dass Sie sich ganz auf den Verkehr und Ihre Aufgabe konzentrieren, wenn Sie die Videos anschauen. Ab und zu wird es einen kleinen Aufmerksamkeitstest geben, wenn Sie diesen nicht bestehen, ist Ihre Teilnahme an der Studie leider beendet und Sie können keine VP-Stunden mehr bekommen.
             </p>
             <p>
-              Ihre Aufgabe ist es, alle fahrerlosen Autos auf der Strecke zu finden und zusätzlich dieses Symbol entlang der Strecke zu suchen. Sie sollten insbesondere die autonomen Autos aufmerksam verfolgen und ihr Verhalten beobachten, aber gleichzeitig nach dem grünen Dreieck suchen.
+              Ihre Aufgabe ist es, alle fahrerlosen Autos auf der Strecke zu finden und zusätzlich dieses grüne Dreieck zu suchen. Sie sollten zusätzlich darauf achten, ob in der Szene autonome Autos auf der Strecke fahren, aber gleichzeitig auch nach dem grünen Dreieck suchen.
             </p>
 
             <img
@@ -96,7 +96,7 @@ export default class IntroPage extends Component {
             />
 
             <p>
-              Stellen Sie sich vor, Sie sitzen am Steuer und suchen zum Beispiel eine bestimmte Straße. Das heißt, Sie achten auf die Umgebung, müssen aber gleichzeitig den Verkehr beobachten, um keinen Unfall zu verursachen.  Am Ende jeder Video-Sequenz, sollen Sie jeweils beantworten, ob Sie ein autonomes Auto in der Szene gesehen haben oder nicht. Danach werden Sie gefragt, ob Sie das grüne Dreieck gesehen haben oder nicht. Also achten Sie auf die fahrerlosen Autos und gleichzeitig auf Ihre Umgebung und ob Sie das Symbol sehen.
+              Stellen Sie sich vor, Sie sitzen am Steuer und suchen zum Beispiel eine bestimmte Straße. Das heißt, Sie achten auf die Umgebung, müssen aber gleichzeitig den Verkehr beobachten, um keinen Unfall zu verursachen.  Am Ende jeder Video-Sequenz, sollen Sie jeweils beantworten, ob Sie ein autonomes Auto in der Szene gesehen haben oder nicht. Danach werden Sie gefragt, ob Sie das grüne Dreieck gesehen haben oder nicht. Also achten Sie auf die fahrerlosen Autos und gleichzeitig auf Ihre Umgebung und suchen Sie das Symbol.
             </p>
             <p>
               Zu Beginn der Studie wird es einen Übungsdurchlauf geben, damit Sie sich an die Situation gewöhnen können. Mit einem Klick auf „Weiter“, geht die Studie los.

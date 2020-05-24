@@ -109,9 +109,9 @@ export default class TutorialPage extends Component {
 
           {uiState == UI_STATE.READY && (
             <p>
-              Das Tutorial ist nun beendet. Klicken Sie auf "Zur ersten Szene" um
+              Das Tutorial ist nun beendet. Klicken Sie auf "Zur ersten Szene", um
               die erste Szene aus der Studie zu sehen. Um das Tutorial nocheinmal zu
-              sehen klicken Sie bitte auf "Testszene wiederholen".
+              sehen, klicken Sie bitte auf "Testszene wiederholen".
             </p>
           )}
 

@@ -85,7 +85,7 @@ export default class IntroPage extends Component {
           </p>
 
           <p>
-            Diese Studie wurde durch die Ethikkommission der Heinrich-Heine-Universität Düsseldorf genehmigt.
+            Diese Studie wurde von einer vollständigen Ethikprüfung durch die Ethikkommission der Heinrich-Heine-Universität Düsseldorf ausgenommen.
           </p>
           <p>
             Wenn Sie noch Fragen haben, können Sie diese an die Projektleiterin wenden:

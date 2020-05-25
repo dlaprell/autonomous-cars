@@ -68,35 +68,6 @@ function getUserLanguages() {
   );
 }
 
-function storageAvailable(type) {
-  let storage;
-  try {
-      /** @type {WindowLocalStorage|WindowSessionStorage} */
-      storage = window[type];
-      let x = '__storage_test__';
-
-      // @ts-ignore
-      storage.setItem(x, x);
-
-      // @ts-ignore
-      storage.removeItem(x);
-      return true;
-  } catch(e) {
-      return e instanceof DOMException && (
-          // everything except Firefox
-          e.code === 22 ||
-          // Firefox
-          e.code === 1014 ||
-          // test name field too, because code might not be present
-          // everything except Firefox
-          e.name === 'QuotaExceededError' ||
-          // Firefox
-          e.name === 'NS_ERROR_DOM_QUOTA_REACHED') &&
-          // acknowledge QuotaExceededError only if there's something already stored
-          (storage && storage.length !== 0);
-  }
-}
-
 export default class SurveyPage extends Component {
   constructor(...args) {
     super(...args);
@@ -449,7 +420,7 @@ export default class SurveyPage extends Component {
       if (modelsLoading) {
         return (
           <Content footer={progress}>
-            Loading models
+            Lade verbliebende Daten ...
           </Content>
         );
       }
@@ -472,6 +443,7 @@ export default class SurveyPage extends Component {
           models={models}
           onReady={this.moveToNextRun}
           footer={progress}
+          group={group}
         />
       );
     }
@@ -509,7 +481,11 @@ export default class SurveyPage extends Component {
         );
       } else {
         return (
-          <RunResult onResult={this.moveToNextRun} footer={progress} />
+          <RunResult
+            onResult={this.moveToNextRun}
+            footer={progress}
+            group={group}
+          />
         );
       }
     }

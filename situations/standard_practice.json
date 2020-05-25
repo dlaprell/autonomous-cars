@@ -1417,7 +1417,7 @@
     "movement": {
       "type": "path",
       "initial": [ 12, 9 ],
-      "path": [ 0, 2, 1]
+      "path": [ 0, 2, 1, 1]
     },
     "options": {
       "noDriver": true
@@ -1465,7 +1465,7 @@
     "movement": {
       "type": "path",
       "initial": [ 4, 7],
-      "path": [ 1, 2, -1, 0]
+      "path": [ 1, 2, -1, 0, 1]
     },
     "options": {
       "noDriver": false

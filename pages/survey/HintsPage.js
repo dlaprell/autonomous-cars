@@ -53,8 +53,8 @@ export default class IntroPage extends Component {
               mehr bekommen.
             </p>
             <p>
-            Ihre Aufgabe ist es, dieses grüne Dreieck entlang der Strecke zu suchen, aber
-            trotzdem das Verkehrsgeschehen aufmerksam zu verfolgen.
+              Ihre Aufgabe ist es, dieses grüne Dreieck entlang der Strecke zu suchen, aber
+              trotzdem das Verkehrsgeschehen aufmerksam zu verfolgen.
             </p>
 
             <img

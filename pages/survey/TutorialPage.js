@@ -11,6 +11,7 @@ import * as world from '../../situations/standard_practice.json';
 import { GridMap } from '../../components/src/grid';
 
 import RunResult from './RunResult';
+import { assert } from '../../components/utils/assert';
 
 const UI_STATE = {
   RUN: 'run',
@@ -72,6 +73,8 @@ export default class TutorialPage extends Component {
   render() {
     const { footer, models, duration, group } = this.props;
     const { fullRunAtLeastOnce, uiState, worldKey } = this.state;
+
+    assert(group === 'a' || group === 'b');
 
     return (
       <Content footer={footer}>

@@ -6,7 +6,7 @@ $email_file = './data/emails.txt';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if (isset($_POST['email']) && !empty($_POST['email'])) {
-    $email_file = fopen($email_file, 'a');
+    $email_file = fopen($email_file, 'a+');
 
     $email = $_POST['email'];
     fwrite($email_file, "$email\n");
@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   }
 
   $res_file_exists = file_exists($data_file);
-  $fp = fopen($data_file, 'a');
+  $fp = fopen($data_file, 'a+');
 
   if (!$res_file_exists) {
     // Header for the csv file

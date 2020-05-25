@@ -48,13 +48,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       array(
         $timestamp,
         $input['group'],
-        $index,
+        $index + 1,
         $result['name'],
-        $result['answer']['car'],
-        $result['answer']['target'],
+        $result['answer']['car'] ? 'true' : 'false',
+        $result['answer']['target'] ? 'true' : 'false',
         $_SERVER['HTTP_USER_AGENT'], // <- potentially something different wanted
         $input['gender'],
-        $input['driverLicense'],
+        $input['driverLicense'] ? 'true' : 'false',
         $input['age']
       )
     );

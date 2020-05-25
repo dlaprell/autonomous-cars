@@ -20,16 +20,21 @@ const isProd = process.env.NODE_ENV === 'production';
 function Main({ root }) {
   return (
     <Fragment>
-      <Router>
-        {!isProd && <Home path="/" root={root} />}
+      {isProd ? (
+        <SurveyPage root={root} />
+      ) : (
+        <Router>
+          <Home path="/" root={root} />
 
-        {!isProd && <Creator path="/creator" root={root} />}
-        {!isProd && <Recorder path="/recorder" root={root} />}
-        <SurveyPage path="/survey" root={root} />
-        {!isProd && <TestPage path="/test" root={root} />}
+          <Creator path="/creator" root={root} />
+          <Recorder path="/recorder" root={root} />
+          <SurveyPage path="/survey" root={root} />
+          <TestPage path="/test" root={root} />
 
-        <NotFound default />
-      </Router>
+          <NotFound default />
+        </Router>
+      )}
+
       <style jsx global>{`
         html {
           height: 100%;

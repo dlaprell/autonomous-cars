@@ -86,7 +86,7 @@ export default class IntroPage extends Component {
               In der Studie geht es darum, Ihre Aufmerksamkeit im Straßenverkehr zu testen und ob zum Beispiel autonom-fahrende Autos diese beeinflussen könnten. Dazu werden Sie einige kurze Sequenzen einer Straßenszene sehen und im Anschluss eine Frage beantworten. Es ist uns wichtig, dass Sie sich ganz auf den Verkehr und Ihre Aufgabe konzentrieren, wenn Sie die Videos anschauen. Ab und zu wird es einen kleinen Aufmerksamkeitstest geben, wenn Sie diesen nicht bestehen, ist Ihre Teilnahme an der Studie leider beendet und Sie können keine VP-Stunden mehr bekommen.
             </p>
             <p>
-              Ihre Aufgabe ist es, alle fahrerlosen Autos auf der Strecke zu finden und zusätzlich dieses grüne Dreieck zu suchen. Sie sollten zusätzlich darauf achten, ob in der Szene autonome Autos auf der Strecke fahren, aber gleichzeitig auch nach dem grünen Dreieck suchen.
+              Ihre Aufgabe ist es, alle fahrerlosen Autos auf der Strecke zu finden und zusätzlich dieses grüne Dreieck zu suchen.
             </p>
 
             <img

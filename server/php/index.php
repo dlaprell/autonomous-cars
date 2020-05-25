@@ -50,11 +50,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $input['group'],
         $index + 1,
         $result['name'],
-        $result['answer']['car'] ? 'true' : 'false',
-        $result['answer']['target'] ? 'true' : 'false',
+        strval($result['answer']['car']),
+        strval($result['answer']['target']),
         $_SERVER['HTTP_USER_AGENT'], // <- potentially something different wanted
         $input['gender'],
-        $input['driverLicense'] ? 'true' : 'false',
+        strval($input['driverLicense']),
         $input['age']
       )
     );

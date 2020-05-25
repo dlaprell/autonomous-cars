@@ -211,7 +211,7 @@ export default class SurveyPage extends Component {
     this.moveToNextRun = (result) => {
       this.setState(({ curRun, runResults, models, preLoadGrid, preLoadedRun, uiState }) => {
         let updatedResults;
-        if (curRun === null || typeof result !== 'boolean') {
+        if (curRun === null || typeof result === 'undefined') {
           updatedResults = runResults;
         } else {
           updatedResults = [ ...runResults ];
@@ -253,7 +253,7 @@ export default class SurveyPage extends Component {
           loaded = nextRun;
           grid.ensureReady();
         } else {
-          assert(!models || uiState === UI_STATE.FINISHED);
+          assert(!models || newUiState === UI_STATE.FINISHED);
         }
 
         if (!finished) {

@@ -19,8 +19,10 @@ steps:
   commands:
     - yarn
     - yarn build
+    - yarn build-php
+    - rm server/php/index.html
 
-- name: docker build and push
+- name: docker build and push [node]
   image: plugins/docker
   environment:
     DOCKER_USERNAME:
@@ -31,7 +33,23 @@ steps:
     tags: [ "latest" ]
     repo: hub.laprell.eu/autonomous-cars
     registry: https://hub.laprell.eu
-    dockerfile: server/Dockerfile
+    dockerfile: server/node/Dockerfile
+  when:
+    branch:
+    - master
+
+- name: docker build and push [php]
+  image: plugins/docker
+  environment:
+    DOCKER_USERNAME:
+      from_secret: docker_username
+    DOCKER_PASSWORD:
+      from_secret: docker_password
+  settings:
+    tags: [ "php" ]
+    repo: hub.laprell.eu/autonomous-cars
+    registry: https://hub.laprell.eu
+    dockerfile: server/php/Dockerfile
   when:
     branch:
     - master

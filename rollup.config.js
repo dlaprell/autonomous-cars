@@ -16,11 +16,16 @@ import gzipPlugin from 'rollup-plugin-gzip';
 import { brotliCompressSync } from 'zlib';
 
 const isProd = process.env.NODE_ENV === 'production';
+const target = process.env.BUILD_TARGET || 'node';
 
 export default {
   input: 'pages/index.js',
   output: {
-    dir: isProd ? resolve(__dirname, 'server', 'static') : 'build',
+    dir: isProd ? (
+      target === 'node'
+        ? resolve(__dirname, 'server', 'node', 'static')
+        : resolve(__dirname, 'server', 'php')
+    ) : 'build',
     format: isProd ? 'iife' : 'esm'
   },
   manualChunks(id) {
@@ -95,7 +100,7 @@ export default {
           [
             '@babel/env',
             {
-              targets: "> 0.25%, not dead", 
+              targets: "> 0.25%, not dead",
               modules: false,
               useBuiltIns: 'usage',
               corejs: 3

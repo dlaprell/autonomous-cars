@@ -8,7 +8,8 @@
   "type": "module",
   "scripts": {
     "dev": "rollup --config --watch",
-    "build": "cross-env NODE_ENV=production rollup --config"
+    "build": "cross-env NODE_ENV=production rollup --config",
+    "build-php": "cross-env NODE_ENV=production BUILD_TARGET=php rollup --config"
   },
   "browserslist": {
     "development": "last 1 chrome versions, last 1 firefox versions, last 1 edge versions, not ie > 0, not op_mini all"

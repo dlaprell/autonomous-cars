@@ -42,8 +42,12 @@ export default class TutorialPage extends Component {
       const { email } = this.state;
       const { resultData } = this.props;
 
+      /** @type {HTMLMetaElement?} */
+      const node = document.querySelector('meta[name="x-survey-data-endpoint"]');
+      const endpoint = node ? node.content : '/results';
+
       fetch(
-        '/results',
+        endpoint,
         {
           method: 'POST',
           headers: {
@@ -105,7 +109,7 @@ export default class TutorialPage extends Component {
             schon in naher Zukunft ein fester Bestandteil des Verkehrsgeschehens sein, aber
             bisher ist nur wenig Forschung zum Einfluss auf andere Verkehrsteilnehmer
             betrieben worden. Aus diesem Grund wollten wir die Untersuchung dieser Frage
-            mit dieser Studie anstoßen. 
+            mit dieser Studie anstoßen.
           </p>
 
           {uiState === UI_STATE.START && (

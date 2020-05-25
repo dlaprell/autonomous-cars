@@ -1,6 +1,6 @@
 FROM node:14.2-buster-slim
 
-COPY server /app
+COPY server/node /app
 
 RUN (cd /app && yarn install --production --frozen-lockfile && yarn cache clean --all)
 

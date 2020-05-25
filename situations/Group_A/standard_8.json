@@ -1416,19 +1416,19 @@
     "options": {
       "noDriver": true
     },
-    "startOffset": 1800
+    "startOffset": 2200
   },
   {
     "following": false,
     "movement": {
       "type": "path",
-      "initial": [ 4, 10],
+      "initial": [ 2, 10],
       "path": [1, 0, 1, 1, -1]
     },
     "options": {
       "noDriver": true
     },
-    "startOffset": 0
+    "startOffset": 800
   },
   {
     "following": false,

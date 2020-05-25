@@ -5,10 +5,14 @@ $data_file = './data/results.csv';
 $email_file = './data/emails.txt';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  if (isset($_POST['email']) && !empty($_POST['email'])) {
+  // We can't use $_POST directly as this does not contain the JSON data
+  $inputBody = file_get_contents('php://input');
+  $input = json_decode($inputBody, TRUE);
+
+  if (!empty($input['email'])) {
     $email_file = fopen($email_file, 'a+');
 
-    $email = $_POST['email'];
+    $email = $input['email'];
     fwrite($email_file, "$email\n");
     fclose($email_file);
   }
@@ -38,20 +42,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $datetime = new DateTime();
   $timestamp = $datetime->format('c');
 
-  foreach ($_POST['results'] as $index => $result) {
+  foreach ($input['results'] as $index => $result) {
     fputcsv(
       $fp,
       array(
         $timestamp,
-        $_POST['group'],
+        $input['group'],
         $index,
         $result['name'],
         $result['answer']['car'],
         $result['answer']['target'],
         $_SERVER['HTTP_USER_AGENT'], // <- potentially something different wanted
-        $_POST['gender'],
-        $_POST['driverLicense'],
-        $_POST['age']
+        $input['gender'],
+        $input['driverLicense'],
+        $input['age']
       )
     );
   }

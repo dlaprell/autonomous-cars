@@ -8,6 +8,8 @@ import { TimeProvider } from '../components/TimeProvider';
 // IMPORTANT: Will be imported as a URL
 import ffmpegWorkerUrl from '../node_modules/ffmpeg.js/ffmpeg-worker-mp4.js';
 
+const RENDER_TIMESPAN = 25 * 1000;
+
 class RecorderProvider extends TimeProvider {
   constructor(...args) {
     super(...args);
@@ -25,7 +27,7 @@ class RecorderProvider extends TimeProvider {
       }, 1);
     });
 
-    this._frameRate = 24;
+    this._frameRate = 120;
 
     this._time = 0;
     this._last = 0;
@@ -337,7 +339,7 @@ export default class RecorderPage extends Component {
               <Simulation
                 withTraffic
                 world={world}
-                stopAfter={30000}
+                stopAfter={RENDER_TIMESPAN}
                 onStop={() => rec.stopRecording()}
                 timeProvider={rec}
                 renderOptions={{

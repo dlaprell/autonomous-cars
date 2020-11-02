@@ -47,7 +47,7 @@ import { shuffleArray, pickRandomEntries } from '../utils/array';
  * @typedef {Object} CarData
  * @property {boolean} following
  * @property {number} startOffset
- * @property {{ noDriver?: boolean, noHead?: boolean, color?: string, initialSpeed?: number }} options
+ * @property {{ noDriver?: boolean, noHead?: boolean, color?: string, initialSpeed?: number, hiddenCar: boolean? }} options
  * @property {MovementData} movement
  */
 
@@ -60,41 +60,42 @@ import { shuffleArray, pickRandomEntries } from '../utils/array';
 
 /** @type {Array<WorldData>} */
 const worldsGroupA = [
-  { name: 'groupA1', ...groupA1 },
-  { name: 'groupA2', ...groupA2 },
-  { name: 'groupA3', ...groupA3 },
-  { name: 'groupA4', ...groupA4 },
-  { name: 'groupA5', ...groupA5 },
-  { name: 'groupA6', ...groupA6 },
-  { name: 'groupA7', ...groupA7 },
-  { name: 'groupA8', ...groupA8 },
-  { name: 'groupA9', ...groupA9 },
-  { name: 'groupA10', ...groupA10 },
-  { name: 'groupA11', ...groupA11 },
-  { name: 'groupA12', ...groupA12 },
-  { name: 'groupA13', ...groupA13 },
-  { name: 'groupA14', ...groupA14 },
-  { name: 'groupA15', ...groupA15 },
-  { name: 'groupA16', ...groupA16 },
-  { name: 'groupA17', ...groupA17 },
-  { name: 'groupA18', ...groupA18 },
-  { name: 'groupA19', ...groupA19 },
-  { name: 'groupA20', ...groupA20 },
-  { name: 'groupA21', ...groupA21 }
+  //{ name: 'groupA1', ...groupA1 },
+  //{ name: 'groupA2', ...groupA2 },
+  { name: 'shortA3', ...groupA3 },
+  //{ name: 'groupA4', ...groupA4 },
+  //{ name: 'groupA5', ...groupA5 },
+  //{ name: 'groupA6', ...groupA6 },
+  //{ name: 'groupA7', ...groupA7 },
+  //{ name: 'groupA8', ...groupA8 },
+  //{ name: 'groupA9', ...groupA9 },
+  //{ name: 'groupA10', ...groupA10 },
+  //{ name: 'groupA11', ...groupA11 },
+  { name: 'shortA12', ...groupA12 },
+  //{ name: 'groupA13', ...groupA13 },
+  { name: 'shortA14', ...groupA14 },
+  //{ name: 'groupA15', ...groupA15 },
+  { name: 'shortA16', ...groupA16 },
+  //{ name: 'groupA17', ...groupA17 },
+  //{ name: 'groupA18', ...groupA18 },
+  //{ name: 'groupA19', ...groupA19 },
+  //{ name: 'groupA20', ...groupA20 },
+  { name: 'shortA21', ...groupA21 }
 ];
 
 /** @type {Array<WorldData>} */
 const worldsGroupB = [
- { name: 'groupB1', ...groupB1 },
- { name: 'groupB2', ...groupB2 },
- { name: 'groupB3', ...groupB3 },
- { name: 'groupB4', ...groupB4 },
- { name: 'groupB5', ...groupB5 },
- { name: 'groupB6', ...groupB6 },
- { name: 'groupB7', ...groupB7 },
- { name: 'groupB8', ...groupB8 },
- { name: 'groupB9', ...groupB9 },
- { name: 'groupB10', ...groupB10 }
+ //{ name: 'groupB1', ...groupB1 },
+ //{ name: 'groupB2', ...groupB2 },
+ //{ name: 'groupB3', ...groupB3 },
+ { name: 'longB4', ...groupA4 },
+ //{ name: 'groupB5', ...groupB5 },
+ { name: 'longB6', ...groupA6 },
+ //{ name: 'groupB7', ...groupB7 },
+ //{ name: 'groupB8', ...groupB8 },
+ { name: 'longB9', ...groupB9 },
+ { name: 'longB10', ...groupB10 },
+ { name: 'longA10', ...groupA10 }
 ];
 
 /** @type {Array<WorldData>} */
@@ -121,6 +122,21 @@ function removeNoDriver(world) {
             noDriver: false
           }
         };
+      })
+  };
+}
+
+/**
+ * @param {WorldData} world
+ * @returns {WorldData}
+ */
+function removeHiddenCar(world) {
+  return {
+    name: world.name,
+    map: world.map,
+    cars: world.cars
+      .filter(car => {
+        return (!car || !car.options || !car.options.hiddenCar); 
       })
   };
 }
@@ -167,7 +183,7 @@ function removeTargets(world) {
   };
 }
 
-/** @typedef {"noDriver" | "target" | "targetAndNoDriver" | "bare"} RunConfig */
+/** @typedef {"noDriver" | "target" | "targetAndNoDriver" | "bare" | "nothing" } RunConfig */
 
 function getAllPossibleWorlds() {
   const worlds = {
@@ -183,7 +199,8 @@ function getAllPossibleWorlds() {
       /** @type {Array<WorldData>} */
       target: [],
       /** @type {Array<WorldData>} */
-      targetAndNoDriver: [ ...worldsGroupB ]
+      targetAndNoDriver: [ ...worldsGroupB ],
+      nothing: []
     }
   };
 
@@ -196,6 +213,10 @@ function getAllPossibleWorlds() {
   worlds.groupA.bare.push(
     ...worldsGroupA.map(removeNoDriver).map(removeTargets)
   );
+
+  worlds.groupB.nothing.push(
+    ...worldsGroupB.map(removeHiddenCar)
+  )
 
   worlds.groupB.target.push(
     ...worldsGroupB.map(removeNoDriver)

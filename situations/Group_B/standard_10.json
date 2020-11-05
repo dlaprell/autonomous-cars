@@ -1425,7 +1425,8 @@
       "path": [2, 1, 0, -1]
     },
     "options": {
-      "noDriver": true
+      "noDriver": true,
+      "hiddenCar": true 
     },
     "startOffset": 2500
   },

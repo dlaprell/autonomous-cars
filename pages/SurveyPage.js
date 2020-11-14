@@ -28,8 +28,8 @@ const languages = {
 };
 
 const RUN_TIME = process.env.NODE_ENV !== 'production'
-  ? Number(new URLSearchParams(window.location.search).get('run_time') || '10000')
-  : 10000;
+  ? Number(new URLSearchParams(window.location.search).get('run_time') || '20000')
+  : 20000;
 
 const NUM_MAX_RUNS = process.env.NODE_ENV !== 'production'
   ? Number(new URLSearchParams(window.location.search).get('run_count') || 'Infinity')

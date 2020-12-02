@@ -43,7 +43,7 @@ export default class IntroPage extends Component {
             Herzlich willkommen zu dieser Aufmerksamkeitsstudie. Vielen Dank für Ihr
             Interesse an dieser Studie. Die Teilnahme dauert ungefähr 15 bis 20 Minuten und
             wenn Sie Psychologie an der Heinrich-Heine-Universität studieren, können Sie am
-            Ende der Studie Ihre E-Mail-Adresse angeben und zwei halbe VP-Stunden erhalten.
+            Ende der Studie Ihre E-Mail-Adresse angeben und eine halbe VP-Stunde erhalten.
             Die E-Mail-Adresse wird separat von Ihren Daten gespeichert und nicht an Dritte
             weitergegeben. 
           </p>

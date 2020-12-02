@@ -116,7 +116,7 @@ export default class TutorialPage extends Component {
             <div>
               <p>
                 Wenn Sie Psychologie an der Heinrich-Heine-Universität Düsseldorf studieren, können
-                Sie hier Ihre E-Mail-Adresse angeben, um zwei halbe VP-Stunden zu erhalten. Die
+                Sie hier Ihre E-Mail-Adresse angeben, um eine halbe VP-Stunde zu erhalten. Die
                 E-Mail-Adresse wird separat von Ihren Daten gespeichert.
               </p>
 
